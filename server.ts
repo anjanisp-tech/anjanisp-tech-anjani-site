@@ -17,10 +17,18 @@ db.exec(`
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     website TEXT,
+    phone TEXT,
     comment TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `);
+
+// Ensure phone column exists for existing databases
+try {
+  db.exec("ALTER TABLE comments ADD COLUMN phone TEXT");
+} catch (e) {
+  // Column likely already exists
+}
 
 async function startServer() {
   const app = express();
@@ -37,13 +45,13 @@ async function startServer() {
 
   app.post("/api/blog/:id/comments", (req, res) => {
     const { id } = req.params;
-    const { name, email, website, comment } = req.body;
+    const { name, email, website, phone, comment } = req.body;
 
     if (!name || !email || !comment) {
       return res.status(400).json({ error: "Name, email, and comment are mandatory." });
     }
 
-    const info = db.prepare("INSERT INTO comments (post_id, name, email, website, comment) VALUES (?, ?, ?, ?, ?)").run(id, name, email, website, comment);
+    const info = db.prepare("INSERT INTO comments (post_id, name, email, website, phone, comment) VALUES (?, ?, ?, ?, ?, ?)").run(id, name, email, website, phone, comment);
     
     const newComment = db.prepare("SELECT * FROM comments WHERE id = ?").get(info.lastInsertRowid);
     res.status(201).json(newComment);

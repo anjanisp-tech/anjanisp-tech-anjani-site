@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Tag, MessageSquare, User, Mail, Globe, Send } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, MessageSquare, User, Mail, Globe, Send, Phone } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { useState, useEffect } from 'react';
 import { blogPosts } from '../data/blogData';
@@ -9,6 +9,7 @@ interface Comment {
   name: string;
   email: string;
   website?: string;
+  phone?: string;
   comment: string;
   created_at: string;
 }
@@ -22,6 +23,7 @@ export default function BlogPostDetail() {
     name: '',
     email: '',
     website: '',
+    phone: '',
     comment: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,7 +60,7 @@ export default function BlogPostDetail() {
       if (response.ok) {
         const newComment = await response.json();
         setComments(prev => [newComment, ...prev]);
-        setFormData({ name: '', email: '', website: '', comment: '' });
+        setFormData({ name: '', email: '', website: '', phone: '', comment: '' });
         setSubmitStatus('success');
       } else {
         setSubmitStatus('error');
@@ -162,18 +164,34 @@ export default function BlogPostDetail() {
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Website (Optional)</label>
-                    <div className="relative">
-                      <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-accent/20" size={18} />
-                      <input 
-                        type="url" 
-                        name="website"
-                        value={formData.website}
-                        onChange={handleInputChange}
-                        placeholder="https://yourwebsite.com" 
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-border focus:border-accent bg-white outline-none transition-all text-sm"
-                      />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Website (Optional)</label>
+                      <div className="relative">
+                        <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-accent/20" size={18} />
+                        <input 
+                          type="url" 
+                          name="website"
+                          value={formData.website}
+                          onChange={handleInputChange}
+                          placeholder="https://yourwebsite.com" 
+                          className="w-full pl-12 pr-4 py-3 rounded-xl border border-border focus:border-accent bg-white outline-none transition-all text-sm"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Phone (Optional)</label>
+                      <div className="relative">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-accent/20" size={18} />
+                        <input 
+                          type="tel" 
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          placeholder="Your Phone Number" 
+                          className="w-full pl-12 pr-4 py-3 rounded-xl border border-border focus:border-accent bg-white outline-none transition-all text-sm"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -224,13 +242,21 @@ export default function BlogPostDetail() {
                     <div key={c.id} className="bg-white p-8 rounded-2xl border border-border/50 shadow-sm">
                       <div className="flex justify-between items-start mb-4">
                         <div>
-                          <div className="font-bold text-lg flex items-center gap-2">
+                          <div className="font-bold text-lg flex items-center gap-3">
                             {c.name}
-                            {c.website && (
-                              <a href={c.website} target="_blank" rel="noopener noreferrer" className="text-accent/30 hover:text-accent transition-colors">
-                                <Globe size={14} />
-                              </a>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {c.website && (
+                                <a href={c.website} target="_blank" rel="noopener noreferrer" className="text-accent/30 hover:text-accent transition-colors" title="Website">
+                                  <Globe size={14} />
+                                </a>
+                              )}
+                              {c.phone && (
+                                <span className="text-accent/30 flex items-center gap-1 text-xs" title="Phone">
+                                  <Phone size={12} />
+                                  {c.phone}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="text-xs font-bold uppercase tracking-widest text-accent/30">
                             {new Date(c.created_at).toLocaleDateString('en-US', { 

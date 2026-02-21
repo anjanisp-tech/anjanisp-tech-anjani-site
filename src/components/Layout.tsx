@@ -79,8 +79,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <div className="space-y-4">
                 <h4 className="text-xs font-bold uppercase tracking-widest text-accent/40">Legal</h4>
                 <nav className="flex flex-col gap-2 text-sm font-medium">
-                  <a href="#" className="hover:text-accent transition-colors">Privacy Policy</a>
-                  <a href="#" className="hover:text-accent transition-colors">Terms of Service</a>
+                  <Link to="/privacy" className="hover:text-accent transition-colors">Privacy Policy</Link>
+                  <Link to="/terms" className="hover:text-accent transition-colors">Terms of Service</Link>
                 </nav>
               </div>
             </div>
