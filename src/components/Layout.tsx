@@ -1,0 +1,96 @@
+// Deployment Sync Test: 2026-02-21
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, Linkedin, Facebook, Instagram, Globe, BookOpen } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
+  // Close menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location]);
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <header className="sticky top-0 left-0 right-0 bg-white/95 backdrop-blur-md z-50 border-b border-border">
+        <div className="container-custom h-24 flex items-center justify-between">
+          <Link to="/" className="text-2xl font-bold tracking-tighter flex items-center gap-3">
+            <div className="w-10 h-10 bg-accent text-white flex items-center justify-center rounded-lg shadow-sm">AP</div>
+            <span>ANJANI PANDEY</span>
+          </Link>
+
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-10">
+            <Link to="/" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Home</Link>
+            <Link to="/services" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Services</Link>
+            <Link to="/blog" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Blog</Link>
+            <Link to="/book" className="btn-primary py-2.5 px-6 text-sm">Book Call</Link>
+          </nav>
+
+          {/* Mobile Toggle */}
+          <button className="md:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+
+        {/* Mobile Nav */}
+        {isMenuOpen && (
+          <div className="md:hidden bg-white border-b border-border p-6 flex flex-col gap-4 animate-in fade-in slide-in-from-top-5">
+            <Link to="/" className="text-lg font-medium py-2">Home</Link>
+            <Link to="/services" className="text-lg font-medium py-2">Services</Link>
+            <Link to="/blog" className="text-lg font-medium py-2">Blog</Link>
+            <Link to="/book" className="btn-primary w-full">Book Call</Link>
+          </div>
+        )}
+      </header>
+
+      <main className="flex-grow">
+        {children}
+      </main>
+
+      <footer className="bg-muted border-t border-border py-16">
+        <div className="container-custom">
+          <div className="grid md:grid-cols-2 gap-12 items-start">
+            <div>
+              <div className="text-xl font-bold tracking-tighter mb-4">ANJANI PANDEY</div>
+              <p className="text-sm text-accent-light/70 max-w-xs mb-8">
+                Fractional COO & Operating Model Specialist. CEO at <a href="https://metmov.com/" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov LLP</a>.
+              </p>
+              <div className="flex gap-4">
+                <a href="https://linkedin.com/in/anjani-pandey" target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="LinkedIn"><Linkedin size={18} /></a>
+                <a href="https://facebook.com/anjani.pandey" target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="Facebook"><Facebook size={18} /></a>
+                <a href="https://instagram.com/anjani.pandey" target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="Instagram"><Instagram size={18} /></a>
+                <a href="https://metmov.com/" target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="MetMov Website"><Globe size={18} /></a>
+                <Link to="/blog" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="Personal Blog"><BookOpen size={18} /></Link>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-accent/40">Navigation</h4>
+                <nav className="flex flex-col gap-2 text-sm font-medium">
+                  <Link to="/" className="hover:text-accent transition-colors">Home</Link>
+                  <Link to="/services" className="hover:text-accent transition-colors">Services</Link>
+                  <Link to="/blog" className="hover:text-accent transition-colors">Blog</Link>
+                  <Link to="/book" className="hover:text-accent transition-colors">Book Call</Link>
+                </nav>
+              </div>
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-accent/40">Legal</h4>
+                <nav className="flex flex-col gap-2 text-sm font-medium">
+                  <a href="#" className="hover:text-accent transition-colors">Privacy Policy</a>
+                  <a href="#" className="hover:text-accent transition-colors">Terms of Service</a>
+                </nav>
+              </div>
+            </div>
+          </div>
+          <div className="mt-16 pt-8 border-t border-border/50 text-xs text-accent-light/50 flex flex-col md:flex-row justify-between gap-4">
+            <p>© 2026 Anjani Pandey. All rights reserved.</p>
+            <p>CEO at MetMov LLP</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

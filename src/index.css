@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-accent: #0f172a; /* Deep Slate/Indigo for high trust */
+  --color-accent-light: #334155;
+  --color-surface: #ffffff;
+  --color-muted: #f8fafc;
+  --color-border: #e2e8f0;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-accent font-sans antialiased selection:bg-accent/10;
+  }
+  
+  h1, h2, h3, h4 {
+    @apply tracking-tight font-semibold text-accent;
+  }
+
+  p {
+    @apply leading-relaxed text-accent-light;
+  }
+}
+
+.container-custom {
+  @apply max-w-[1100px] mx-auto px-6;
+}
+
+.btn-primary {
+  @apply bg-accent text-white px-7 py-3.5 rounded-md font-semibold hover:bg-accent-light transition-all duration-200 inline-flex items-center justify-center shadow-sm;
+}
+
+.btn-outline {
+  @apply border border-accent text-accent px-7 py-3.5 rounded-md font-semibold hover:bg-muted transition-all duration-200 inline-flex items-center justify-center;
+}
+
+section {
+  @apply py-24 md:py-40;
+}
+
+h1 { @apply text-4xl md:text-6xl font-bold mb-8 leading-tight; }
+h2 { @apply text-3xl md:text-4xl font-bold mb-10 leading-tight; }
+h3 { @apply text-xl md:text-2xl font-semibold mb-4 leading-snug; }
