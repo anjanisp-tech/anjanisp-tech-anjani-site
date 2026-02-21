@@ -11,12 +11,24 @@ interface Comment {
   website?: string;
   phone?: string;
   comment: string;
+  parent_id?: number;
+  is_admin: number;
   created_at: string;
+}
+
+interface BlogPost {
+  id: string;
+  title: string;
+  date: string;
+  category: string;
+  excerpt: string;
+  content: string;
 }
 
 export default function BlogPostDetail() {
   const { id } = useParams<{ id: string }>();
-  const post = blogPosts.find((p) => p.id === id);
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [formData, setFormData] = useState({
@@ -31,6 +43,20 @@ export default function BlogPostDetail() {
 
   useEffect(() => {
     if (id) {
+      setIsLoading(true);
+      // Fetch Post
+      fetch(`/api/posts/${id}`)
+        .then(res => res.json())
+        .then(data => {
+          setPost(data);
+          setIsLoading(false);
+        })
+        .catch(err => {
+          console.error("Failed to fetch post", err);
+          setIsLoading(false);
+        });
+
+      // Fetch Comments
       fetch(`/api/blog/${id}/comments`)
         .then(res => res.json())
         .then(data => setComments(data))
@@ -240,38 +266,57 @@ export default function BlogPostDetail() {
               {/* Comments List */}
               <div className="space-y-8">
                 {comments.length > 0 ? (
-                  comments.map((c) => (
-                    <div key={c.id} className="bg-white p-8 rounded-2xl border border-border/50 shadow-sm">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <div className="font-bold text-lg flex items-center gap-3">
-                            {c.name}
-                            <div className="flex items-center gap-2">
-                              {c.website && (
-                                <a href={c.website} target="_blank" rel="noopener noreferrer" className="text-accent/30 hover:text-accent transition-colors" title="Website">
-                                  <Globe size={14} />
-                                </a>
-                              )}
-                              {c.phone && (
-                                <span className="text-accent/30 flex items-center gap-1 text-xs" title="Phone">
-                                  <Phone size={12} />
-                                  {c.phone}
-                                </span>
-                              )}
+                  comments.filter(c => !c.parent_id).map((c) => (
+                    <div key={c.id} className="space-y-6">
+                      <div className="bg-white p-8 rounded-2xl border border-border/50 shadow-sm">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <div className="font-bold text-lg flex items-center gap-3">
+                              {c.name}
+                              <div className="flex items-center gap-2">
+                                {c.website && (
+                                  <a href={c.website} target="_blank" rel="noopener noreferrer" className="text-accent/30 hover:text-accent transition-colors" title="Website">
+                                    <Globe size={14} />
+                                  </a>
+                                )}
+                                {c.phone && (
+                                  <span className="text-accent/30 flex items-center gap-1 text-xs" title="Phone">
+                                    <Phone size={12} />
+                                    {c.phone}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-xs font-bold uppercase tracking-widest text-accent/30">
+                              {new Date(c.created_at).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric', 
+                                year: 'numeric' 
+                              })}
                             </div>
                           </div>
-                          <div className="text-xs font-bold uppercase tracking-widest text-accent/30">
-                            {new Date(c.created_at).toLocaleDateString('en-US', { 
-                              month: 'short', 
-                              day: 'numeric', 
-                              year: 'numeric' 
-                            })}
-                          </div>
                         </div>
+                        <p className="text-accent-light leading-relaxed whitespace-pre-wrap">
+                          {c.comment}
+                        </p>
                       </div>
-                      <p className="text-accent-light leading-relaxed whitespace-pre-wrap">
-                        {c.comment}
-                      </p>
+
+                      {/* Replies */}
+                      {comments.filter(r => r.parent_id === c.id).map(reply => (
+                        <div key={reply.id} className="ml-8 md:ml-16 bg-accent/5 p-6 rounded-2xl border border-accent/10 relative">
+                          <div className="absolute -left-4 top-8 w-4 h-px bg-accent/20" />
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="w-6 h-6 bg-accent text-white text-[10px] flex items-center justify-center rounded-full font-bold">AP</div>
+                            <span className="font-bold text-sm text-accent">{reply.name}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-accent/30">
+                              {new Date(reply.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-accent-light leading-relaxed">
+                            {reply.comment}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   ))
                 ) : (

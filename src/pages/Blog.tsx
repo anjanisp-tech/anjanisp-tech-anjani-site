@@ -1,23 +1,44 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Filter, X } from 'lucide-react';
-import { useState, useMemo } from 'react';
-import { blogPosts } from '../data/blogData';
+import { ArrowRight, Filter, X, Loader2 } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+
+interface BlogPost {
+  id: string;
+  title: string;
+  date: string;
+  category: string;
+  excerpt: string;
+  content: string;
+}
 
 export default function Blog() {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null); // Format: "YYYY-MM"
+
+  useEffect(() => {
+    fetch('/api/posts')
+      .then(res => res.json())
+      .then(data => {
+        setBlogPosts(data);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch posts", err);
+        setIsLoading(false);
+      });
+  }, []);
 
   // Extract unique categories
   const categories = useMemo(() => {
     return Array.from(new Set(blogPosts.map(post => post.category)));
-  }, []);
+  }, [blogPosts]);
 
   // Extract unique months (Format: "Month YYYY")
   const months = useMemo(() => {
     const monthMap = new Map<string, string>(); // "YYYY-MM" -> "Month YYYY"
     blogPosts.forEach(post => {
-      // Assuming date format "DD-MMM-YYYY" or similar. Let's parse it.
-      // Our data uses "18-Feb-2026"
       const parts = post.date.split('-');
       if (parts.length === 3) {
         const monthStr = parts[1];
@@ -27,7 +48,7 @@ export default function Blog() {
       }
     });
     return Array.from(monthMap.entries()).sort((a, b) => b[0].localeCompare(a[0]));
-  }, []);
+  }, [blogPosts]);
 
   const filteredPosts = useMemo(() => {
     return blogPosts.filter(post => {
@@ -41,12 +62,20 @@ export default function Blog() {
       
       return categoryMatch && dateMatch;
     });
-  }, [selectedCategory, selectedMonth]);
+  }, [selectedCategory, selectedMonth, blogPosts]);
 
   const clearFilters = () => {
     setSelectedCategory(null);
     setSelectedMonth(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin text-accent" size={48} />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen">
