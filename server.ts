@@ -7,7 +7,12 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const db = new Database("blog.db");
+const dbPath = process.env.NODE_ENV === "production" 
+  ? path.join("/tmp", "blog.db") 
+  : path.join(__dirname, "blog.db");
+
+console.log(`Initializing database at: ${dbPath}`);
+const db = new Database(dbPath);
 
 // Initialize database
 db.exec(`
@@ -47,14 +52,23 @@ async function startServer() {
     const { id } = req.params;
     const { name, email, website, phone, comment } = req.body;
 
+    console.log(`Received comment for post ${id}:`, { name, email, website, phone });
+
     if (!name || !email || !comment) {
+      console.error("Validation failed: Missing mandatory fields");
       return res.status(400).json({ error: "Name, email, and comment are mandatory." });
     }
 
-    const info = db.prepare("INSERT INTO comments (post_id, name, email, website, phone, comment) VALUES (?, ?, ?, ?, ?, ?)").run(id, name, email, website, phone, comment);
-    
-    const newComment = db.prepare("SELECT * FROM comments WHERE id = ?").get(info.lastInsertRowid);
-    res.status(201).json(newComment);
+    try {
+      const info = db.prepare("INSERT INTO comments (post_id, name, email, website, phone, comment) VALUES (?, ?, ?, ?, ?, ?)").run(id, name, email, website, phone, comment);
+      
+      const newComment = db.prepare("SELECT * FROM comments WHERE id = ?").get(info.lastInsertRowid);
+      console.log("Comment saved successfully:", newComment.id);
+      res.status(201).json(newComment);
+    } catch (err) {
+      console.error("Database error while saving comment:", err);
+      res.status(500).json({ error: "Internal server error while saving comment." });
+    }
   });
 
   // Vite middleware for development

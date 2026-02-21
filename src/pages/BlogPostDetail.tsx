@@ -63,10 +63,12 @@ export default function BlogPostDetail() {
         setFormData({ name: '', email: '', website: '', phone: '', comment: '' });
         setSubmitStatus('success');
       } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Server returned error:", response.status, errorData);
         setSubmitStatus('error');
       }
     } catch (err) {
-      console.error("Failed to submit comment:", err);
+      console.error("Network or client error while submitting comment:", err);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
