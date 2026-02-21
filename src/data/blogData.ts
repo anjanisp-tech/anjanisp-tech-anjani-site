@@ -151,7 +151,7 @@ If your company depends on exceptional effort to function, it is not scalable ye
   },
   {
     id: "hiring-trap-growing-companies",
-    title: "The Hiring Trap Most Growing Companies Fall Into",
+    title: "THE HIRING TRAP MOST GROWING COMPANIES FALL INTO",
     date: "21-Feb-2026",
     category: "Scaling",
     excerpt: "Hiring increases capacity, but it doesn't improve design. Discover why adding headcount to a broken process only multiplies your problems.",
