@@ -1,29 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar } from 'lucide-react';
-
-const blogPosts = [
-  {
-    id: 1,
-    title: "The Founder's Dilemma: Moving from Heroics to Systems",
-    excerpt: "Why most founder-led companies stall at the $5M-$10M revenue mark and how to break through using structured operating models.",
-    date: "Feb 20, 2026",
-    category: "Operations"
-  },
-  {
-    id: 2,
-    title: "Scaling Supply Chains in Volatile Markets",
-    excerpt: "Lessons from leading global operations at Y-Not and Udaan on building resilient, cost-effective supply chain architectures.",
-    date: "Feb 15, 2026",
-    category: "Supply Chain"
-  },
-  {
-    id: 3,
-    title: "Execution Discipline: The Secret Sauce of High-Growth Teams",
-    excerpt: "How to move your team from reactive firefighting to proactive, goal-oriented execution using simple governance frameworks.",
-    date: "Feb 10, 2026",
-    category: "Leadership"
-  }
-];
+import { ArrowRight } from 'lucide-react';
+import { blogPosts } from '../data/blogData';
 
 export default function Blog() {
   return (

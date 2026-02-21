@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, Search, Layers, Rocket } from 'lucide-react';
+import { blogPosts } from '../data/blogData';
 
 export default function Home() {
   return (
@@ -197,19 +198,8 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
-            {[
-              {
-                title: "The Founder's Dilemma: Moving from Heroics to Systems",
-                date: "Feb 20, 2026",
-                category: "Operations"
-              },
-              {
-                title: "Scaling Supply Chains in Volatile Markets",
-                date: "Feb 15, 2026",
-                category: "Supply Chain"
-              }
-            ].map((post, i) => (
-              <Link key={i} to="/blog" className="bg-white p-10 rounded-2xl border border-border hover:border-accent transition-all group">
+            {blogPosts.slice(0, 2).map((post) => (
+              <Link key={post.id} to={`/blog/${post.id}`} className="bg-white p-10 rounded-2xl border border-border hover:border-accent transition-all group">
                 <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">{post.date} • {post.category}</div>
                 <h3 className="text-2xl font-bold mb-6 group-hover:text-accent-light transition-colors">{post.title}</h3>
                 <span className="text-sm font-bold flex items-center gap-2">
