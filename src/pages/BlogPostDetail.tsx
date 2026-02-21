@@ -1,11 +1,75 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, MessageSquare, User, Mail, Globe, Send } from 'lucide-react';
 import Markdown from 'react-markdown';
+import { useState, useEffect } from 'react';
 import { blogPosts } from '../data/blogData';
+
+interface Comment {
+  id: number;
+  name: string;
+  email: string;
+  website?: string;
+  comment: string;
+  created_at: string;
+}
 
 export default function BlogPostDetail() {
   const { id } = useParams<{ id: string }>();
   const post = blogPosts.find((p) => p.id === id);
+
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    website: '',
+    comment: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  useEffect(() => {
+    if (id) {
+      fetch(`/api/blog/${id}/comments`)
+        .then(res => res.json())
+        .then(data => setComments(data))
+        .catch(err => console.error("Failed to fetch comments:", err));
+    }
+  }, [id]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      const response = await fetch(`/api/blog/${id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        const newComment = await response.json();
+        setComments(prev => [newComment, ...prev]);
+        setFormData({ name: '', email: '', website: '', comment: '' });
+        setSubmitStatus('success');
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (err) {
+      console.error("Failed to submit comment:", err);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (!post) {
     return (
@@ -50,12 +114,148 @@ export default function BlogPostDetail() {
             </header>
 
             {/* Content */}
-            <div className="markdown-body prose prose-lg max-w-none prose-accent">
+            <div className="markdown-body prose prose-lg max-w-none prose-accent mb-24">
               <Markdown>{post.content}</Markdown>
             </div>
 
-            {/* Footer */}
-            <footer className="mt-24 pt-12 border-t border-border">
+            {/* Comments Section */}
+            <section className="mt-32 pt-16 border-t border-border">
+              <div className="flex items-center gap-3 mb-12">
+                <MessageSquare className="text-accent" size={24} />
+                <h2 className="text-3xl font-bold mb-0">Discussion ({comments.length})</h2>
+              </div>
+
+              {/* Comment Form */}
+              <div className="bg-muted/30 p-8 rounded-3xl border border-border mb-16">
+                <h3 className="text-xl font-bold mb-6">Leave a Comment</h3>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Name *</label>
+                      <div className="relative">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-accent/20" size={18} />
+                        <input 
+                          type="text" 
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          placeholder="Your Name" 
+                          required
+                          className="w-full pl-12 pr-4 py-3 rounded-xl border border-border focus:border-accent bg-white outline-none transition-all text-sm"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Email *</label>
+                      <div className="relative">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-accent/20" size={18} />
+                        <input 
+                          type="email" 
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          placeholder="Email Address" 
+                          required
+                          className="w-full pl-12 pr-4 py-3 rounded-xl border border-border focus:border-accent bg-white outline-none transition-all text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Website (Optional)</label>
+                    <div className="relative">
+                      <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-accent/20" size={18} />
+                      <input 
+                        type="url" 
+                        name="website"
+                        value={formData.website}
+                        onChange={handleInputChange}
+                        placeholder="https://yourwebsite.com" 
+                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-border focus:border-accent bg-white outline-none transition-all text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Comment *</label>
+                    <div className="relative">
+                      <MessageSquare className="absolute left-4 top-4 text-accent/20" size={18} />
+                      <textarea 
+                        name="comment"
+                        value={formData.comment}
+                        onChange={handleInputChange}
+                        placeholder="Share your thoughts..." 
+                        rows={5}
+                        required
+                        className="w-full pl-12 pr-4 py-4 rounded-xl border border-border focus:border-accent bg-white outline-none transition-all text-sm resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className="btn-primary flex items-center gap-2 px-8 py-3 disabled:opacity-50"
+                    >
+                      {isSubmitting ? 'Posting...' : 'Post Comment'}
+                      <Send size={16} />
+                    </button>
+                    
+                    {submitStatus === 'success' && (
+                      <span className="text-sm font-bold text-emerald-600 animate-in fade-in slide-in-from-right-4">
+                        Comment posted successfully!
+                      </span>
+                    )}
+                    {submitStatus === 'error' && (
+                      <span className="text-sm font-bold text-red-500 animate-in fade-in slide-in-from-right-4">
+                        Failed to post comment. Please try again.
+                      </span>
+                    )}
+                  </div>
+                </form>
+              </div>
+
+              {/* Comments List */}
+              <div className="space-y-8">
+                {comments.length > 0 ? (
+                  comments.map((c) => (
+                    <div key={c.id} className="bg-white p-8 rounded-2xl border border-border/50 shadow-sm">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <div className="font-bold text-lg flex items-center gap-2">
+                            {c.name}
+                            {c.website && (
+                              <a href={c.website} target="_blank" rel="noopener noreferrer" className="text-accent/30 hover:text-accent transition-colors">
+                                <Globe size={14} />
+                              </a>
+                            )}
+                          </div>
+                          <div className="text-xs font-bold uppercase tracking-widest text-accent/30">
+                            {new Date(c.created_at).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric', 
+                              year: 'numeric' 
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-accent-light leading-relaxed whitespace-pre-wrap">
+                        {c.comment}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12 border-2 border-dashed border-border rounded-3xl">
+                    <p className="text-accent/40 font-medium">No comments yet. Be the first to join the discussion!</p>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Author Footer */}
+            <footer className="mt-32 pt-12 border-t border-border">
               <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-accent text-white rounded-full flex items-center justify-center font-bold">AP</div>
@@ -64,9 +264,9 @@ export default function BlogPostDetail() {
                     <div className="text-sm text-accent-light">Fractional COO & Scaling Specialist</div>
                   </div>
                 </div>
-                <Link to="/book" className="btn-primary">
+                <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="btn-primary">
                   Book a Diagnostic Call
-                </Link>
+                </a>
               </div>
             </footer>
           </div>
