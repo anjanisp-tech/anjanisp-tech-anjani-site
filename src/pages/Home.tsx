@@ -17,10 +17,10 @@ export default function Home() {
             <p className="text-sm md:text-base font-bold uppercase tracking-widest text-accent/40 mb-12">
               Structured systems. Clear ownership. Scalable execution.
             </p>
-            <Link to="/book" className="btn-primary text-lg px-12 py-5 gap-3 shadow-xl shadow-accent/10">
+            <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-12 py-5 gap-3 shadow-xl shadow-accent/10">
               Book a Diagnostic Call
               <ArrowRight size={22} />
-            </Link>
+            </a>
           </div>
         </div>
       </section>
@@ -231,9 +231,9 @@ export default function Home() {
             <p className="text-xl text-white/70 mb-12">
               Stop being the bottleneck. Start leading a high-performance organization.
             </p>
-            <Link to="/book" className="bg-white text-accent hover:bg-muted px-14 py-5 rounded-md font-bold text-lg transition-all inline-block shadow-2xl shadow-black/20">
+            <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="bg-white text-accent hover:bg-muted px-14 py-5 rounded-md font-bold text-lg transition-all inline-block shadow-2xl shadow-black/20">
               Book Your Diagnostic Call
-            </Link>
+            </a>
           </div>
         </div>
       </section>

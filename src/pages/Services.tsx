@@ -134,10 +134,10 @@ export default function Services() {
                   </div>
 
                   <div className="pt-6">
-                    <Link to="/book" className="btn-primary gap-3 px-10">
+                    <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="btn-primary gap-3 px-10">
                       {service.cta}
                       <ArrowRight size={20} />
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -153,9 +153,9 @@ export default function Services() {
           <p className="text-xl text-accent-light mb-12 max-w-2xl mx-auto leading-relaxed">
             Every engagement begins with a diagnostic call to understand your specific bottlenecks and scaling goals.
           </p>
-          <Link to="/book" className="btn-primary text-lg px-12 py-5">
+          <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-12 py-5">
             Book a Diagnostic Call
-          </Link>
+          </a>
         </div>
       </section>
     </div>

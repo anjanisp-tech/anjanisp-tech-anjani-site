@@ -42,17 +42,19 @@ export default function BookCall() {
 
             <div className="space-y-24">
               {/* Calendar Section */}
-              <div className="max-w-2xl mx-auto">
+              <div className="max-w-4xl mx-auto">
                 <div className="flex items-center justify-center gap-3 mb-8">
                   <Calendar className="text-accent" size={24} />
                   <h2 className="text-2xl font-bold mb-0">1. Schedule Your Time</h2>
                 </div>
-                <div className="aspect-[16/10] bg-muted rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center p-12 text-center shadow-inner">
-                  <Calendar size={48} className="text-accent/10 mb-4" />
-                  <p className="text-sm text-accent-light/60 font-medium">
-                    [Calendar Embed Placeholder]<br />
-                    (e.g., Calendly or SavvyCal)
-                  </p>
+                <div className="bg-white rounded-2xl border border-border overflow-hidden shadow-sm">
+                  <iframe 
+                    src="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone?hide_landing_page_details=1&hide_gdpr_banner=1" 
+                    width="100%" 
+                    height="700" 
+                    frameBorder="0"
+                    title="Schedule a Call"
+                  ></iframe>
                 </div>
               </div>
 
