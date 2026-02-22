@@ -85,9 +85,11 @@ export default function Admin() {
       // Fetch debug info too
       fetch('/api/debug').then(res => res.json()).then(data => {
         if (data.status === 'ok') {
+          const typeEl = document.getElementById('db-type');
           const initEl = document.getElementById('db-init-time');
           const postEl = document.getElementById('db-post-count');
           const commEl = document.getElementById('db-comment-count');
+          if (typeEl) typeEl.innerText = data.dbType;
           if (initEl) initEl.innerText = new Date(data.initializedAt).toLocaleString();
           if (postEl) postEl.innerText = data.counts.posts.count;
           if (commEl) commEl.innerText = data.counts.comments.count;
@@ -259,7 +261,7 @@ export default function Admin() {
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
                   <span className="font-bold uppercase tracking-wider">Storage:</span>
-                  <span>Vercel Ephemeral (/tmp)</span>
+                  <span id="db-type">Loading...</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold uppercase tracking-wider">DB Initialized:</span>
@@ -274,7 +276,7 @@ export default function Admin() {
                   <span id="db-comment-count">...</span>
                 </div>
                 <div className="w-full mt-2 pt-2 border-t border-blue-100 italic opacity-80">
-                  Note: SQLite on Vercel is ephemeral. Data in /tmp is lost when the serverless function restarts.
+                  Note: If Storage shows "SQLite", data is ephemeral. Connect Vercel Postgres for permanent storage.
                 </div>
               </div>
 
