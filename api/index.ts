@@ -9,6 +9,8 @@ const dbPath = process.env.NODE_ENV === "production"
   ? path.join("/tmp", "blog.db") 
   : path.join(process.cwd(), "blog.db");
 
+const dbInitializedAt = new Date().toISOString();
+console.log(`Database initialization started at: ${dbInitializedAt}`);
 console.log(`DB Path: ${dbPath}`);
 
 let db: any;
@@ -96,7 +98,29 @@ const adminAuth = (req: any, res: any, next: any) => {
 
 // API Routes
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", env: process.env.NODE_ENV, db: !!db });
+  res.json({ 
+    status: "ok", 
+    env: process.env.NODE_ENV, 
+    db: !!db,
+    initializedAt: dbInitializedAt,
+    vercel: !!process.env.VERCEL
+  });
+});
+
+app.get("/api/debug", (req, res) => {
+  try {
+    const postCount = db.prepare("SELECT COUNT(*) as count FROM posts").get();
+    const commentCount = db.prepare("SELECT COUNT(*) as count FROM comments").get();
+    res.json({
+      status: "ok",
+      initializedAt: dbInitializedAt,
+      counts: { posts: postCount, comments: commentCount },
+      env: process.env.NODE_ENV,
+      vercel: !!process.env.VERCEL
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get("/api/posts", (req, res) => {

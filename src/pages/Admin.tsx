@@ -82,6 +82,18 @@ export default function Admin() {
   const fetchComments = async () => {
     const secret = password || localStorage.getItem('admin_pwd') || '';
     try {
+      // Fetch debug info too
+      fetch('/api/debug').then(res => res.json()).then(data => {
+        if (data.status === 'ok') {
+          const initEl = document.getElementById('db-init-time');
+          const postEl = document.getElementById('db-post-count');
+          const commEl = document.getElementById('db-comment-count');
+          if (initEl) initEl.innerText = new Date(data.initializedAt).toLocaleString();
+          if (postEl) postEl.innerText = data.counts.posts.count;
+          if (commEl) commEl.innerText = data.counts.comments.count;
+        }
+      }).catch(() => {});
+
       const res = await fetch('/api/admin/comments', {
         headers: { 'x-admin-password': secret }
       });
@@ -242,6 +254,30 @@ export default function Admin() {
 
           {activeTab === 'comments' ? (
             <div className="space-y-6">
+              {/* System Status Info */}
+              <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex flex-wrap gap-6 text-xs text-blue-700">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                  <span className="font-bold uppercase tracking-wider">Storage:</span>
+                  <span>Vercel Ephemeral (/tmp)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold uppercase tracking-wider">DB Initialized:</span>
+                  <span id="db-init-time">Loading...</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold uppercase tracking-wider">Posts:</span>
+                  <span id="db-post-count">...</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold uppercase tracking-wider">Comments:</span>
+                  <span id="db-comment-count">...</span>
+                </div>
+                <div className="w-full mt-2 pt-2 border-t border-blue-100 italic opacity-80">
+                  Note: SQLite on Vercel is ephemeral. Data in /tmp is lost when the serverless function restarts.
+                </div>
+              </div>
+
               {Array.isArray(comments) && comments.length > 0 ? (
                 comments.filter(c => !c.is_admin).map((c) => (
                   <div key={c.id} className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
