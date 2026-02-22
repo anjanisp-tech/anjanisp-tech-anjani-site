@@ -14,7 +14,60 @@ interface Comment {
 }
 
 export default function Admin() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'comments' | 'upload'>('comments');
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, this would be a server-side check. 
+    // For this simple dashboard, we'll check against an environment variable or a hardcoded value if not set.
+    const secret = (import.meta as any).env.VITE_ADMIN_PASSWORD || 'admin123';
+    if (password === secret) {
+      setIsAuthenticated(true);
+      localStorage.setItem('admin_auth', 'true');
+      localStorage.setItem('admin_pwd', password);
+    } else {
+      alert("Incorrect password");
+    }
+  };
+
+  useEffect(() => {
+    if (localStorage.getItem('admin_auth') === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+        <div className="bg-white p-8 rounded-3xl border border-border shadow-xl max-w-md w-full">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-accent text-white flex items-center justify-center rounded-2xl mx-auto mb-4 font-bold text-2xl shadow-lg">AP</div>
+            <h1 className="text-2xl font-bold">Admin Access</h1>
+            <p className="text-accent-light text-sm">Please enter your password to continue.</p>
+          </div>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all"
+              autoFocus
+            />
+            <button type="submit" className="w-full btn-primary py-3">Login</button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_auth');
+    localStorage.removeItem('admin_pwd');
+    setIsAuthenticated(false);
+  };
   const [comments, setComments] = useState<Comment[]>([]);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
@@ -36,8 +89,15 @@ export default function Admin() {
   }, [activeTab]);
 
   const fetchComments = async () => {
+    const secret = password || localStorage.getItem('admin_pwd') || '';
     try {
-      const res = await fetch('/api/admin/comments');
+      const res = await fetch('/api/admin/comments', {
+        headers: { 'x-admin-password': secret }
+      });
+      if (res.status === 401) {
+        handleLogout();
+        return;
+      }
       const data = await res.json();
       setComments(data);
     } catch (err) {
@@ -47,8 +107,12 @@ export default function Admin() {
 
   const handleDeleteComment = async (id: number) => {
     if (!confirm("Are you sure you want to delete this comment?")) return;
+    const secret = password || localStorage.getItem('admin_pwd') || '';
     try {
-      const res = await fetch(`/api/admin/comments/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/comments/${id}`, { 
+        method: 'DELETE',
+        headers: { 'x-admin-password': secret }
+      });
       if (res.ok) {
         setComments(comments.filter(c => c.id !== id));
       }
@@ -85,11 +149,15 @@ export default function Admin() {
   const handleBlogSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus({ type: 'idle', message: '' });
+    const secret = password || localStorage.getItem('admin_pwd') || '';
     
     try {
       const res = await fetch('/api/admin/posts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-password': secret
+        },
         body: JSON.stringify(blogForm)
       });
       
@@ -132,6 +200,12 @@ export default function Admin() {
               className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'upload' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
             >
               <PlusCircle size={18} /> Upload Blog
+            </button>
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold text-red-400 hover:text-red-600 transition-all"
+            >
+              Logout
             </button>
           </div>
         </div>

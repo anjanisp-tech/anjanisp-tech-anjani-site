@@ -85,6 +85,17 @@ app.use(express.json());
 
 // --- API Routes ---
 
+// Middleware for admin routes
+const adminAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const password = req.headers['x-admin-password'];
+  const secret = process.env.ADMIN_PASSWORD || 'admin123';
+  if (password === secret) {
+    next();
+  } else {
+    res.status(401).json({ error: "Unauthorized" });
+  }
+};
+
 // Posts
 app.get("/api/posts", (req, res) => {
   const posts = db.prepare("SELECT * FROM posts ORDER BY created_at DESC").all();
@@ -97,7 +108,7 @@ app.get("/api/posts/:id", (req, res) => {
   res.json(post);
 });
 
-app.post("/api/admin/posts", (req, res) => {
+app.post("/api/admin/posts", adminAuth, (req, res) => {
   const { title, date, category, excerpt, content } = req.body;
   if (!title || !date || !category || !excerpt || !content) {
     return res.status(400).json({ error: "All fields are mandatory." });
@@ -143,7 +154,7 @@ app.post("/api/blog/:id/comments", (req, res) => {
 });
 
 // Admin Comments Management
-app.get("/api/admin/comments", (req, res) => {
+app.get("/api/admin/comments", adminAuth, (req, res) => {
   const comments = db.prepare(`
     SELECT c.*, p.title as post_title 
     FROM comments c 
@@ -153,7 +164,7 @@ app.get("/api/admin/comments", (req, res) => {
   res.json(comments);
 });
 
-app.delete("/api/admin/comments/:id", (req, res) => {
+app.delete("/api/admin/comments/:id", adminAuth, (req, res) => {
   try {
     db.prepare("DELETE FROM comments WHERE id = ? OR parent_id = ?").run(req.params.id, req.params.id);
     res.json({ success: true });
