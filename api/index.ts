@@ -8,6 +8,11 @@ app.use(express.json());
 
 const dbInitializedAt = new Date().toISOString();
 const isPostgres = !!(process.env.POSTGRES_URL || process.env.DATABASE_URL);
+console.log("Database configuration detected:", isPostgres ? "Postgres" : "SQLite");
+if (isPostgres) {
+  console.log("Postgres URL present:", !!process.env.POSTGRES_URL);
+  console.log("Database URL present:", !!process.env.DATABASE_URL);
+}
 
 // SQLite Fallback (for local/preview without Postgres)
 let sqliteDb: any;
@@ -59,7 +64,8 @@ async function initDb() {
           content TEXT NOT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-      `;
+      `.catch(e => console.error("Error creating posts table:", e));
+      
       await sql`
         CREATE TABLE IF NOT EXISTS comments (
           id SERIAL PRIMARY KEY,
@@ -73,14 +79,17 @@ async function initDb() {
           is_admin INTEGER DEFAULT 0,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-      `;
+      `.catch(e => console.error("Error creating comments table:", e));
+      
       await sql`
         CREATE TABLE IF NOT EXISTS subscriptions (
           id SERIAL PRIMARY KEY,
           email TEXT UNIQUE NOT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-      `;
+      `.catch(e => console.error("Error creating subscriptions table:", e));
+      
+      console.log("Postgres tables check complete.");
       
       // Check if seed data is needed
       const { rowCount } = await sql`SELECT id FROM posts LIMIT 1`;
@@ -304,19 +313,24 @@ app.delete("/api/admin/comments/:id", adminAuth, async (req, res) => {
 
 app.post("/api/subscribe", async (req, res) => {
   const { email } = req.body;
+  console.log("Subscription request received for:", email);
   if (!email) return res.status(400).json({ error: "Email is required" });
   
   try {
     if (isPostgres) {
+      console.log("Attempting Postgres subscription insert...");
       await sql`INSERT INTO subscriptions (email) VALUES (${email}) ON CONFLICT (email) DO NOTHING`;
     } else {
+      console.log("Attempting SQLite subscription insert...");
       // Create table if not exists for SQLite
       sqliteDb.exec("CREATE TABLE IF NOT EXISTS subscriptions (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
       sqliteDb.prepare("INSERT OR IGNORE INTO subscriptions (email) VALUES (?)").run(email);
     }
+    console.log("Subscription successful for:", email);
     res.json({ success: true, message: "Subscribed successfully!" });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to subscribe" });
+  } catch (err: any) {
+    console.error("Subscription error:", err);
+    res.status(500).json({ error: "Failed to subscribe", details: err.message });
   }
 });
 
@@ -335,11 +349,12 @@ app.get("/api/admin/subscriptions", adminAuth, async (req, res) => {
   }
 });
 
-// For local development
-if (process.env.NODE_ENV !== "production") {
+// For local development (only if run directly)
+const isMain = import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('api/index.ts');
+if (isMain && process.env.NODE_ENV !== "production") {
   const PORT = 3000;
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`API-only server running on http://localhost:${PORT}`);
   });
 }
 

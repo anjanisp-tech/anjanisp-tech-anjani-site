@@ -46,6 +46,7 @@ export default function BlogPostDetail() {
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Newsletter form submitted with email:", newsletterEmail);
     if (!newsletterEmail) return;
     setNewsletterStatus('loading');
     try {
@@ -58,9 +59,12 @@ export default function BlogPostDetail() {
         setNewsletterStatus('success');
         setNewsletterEmail('');
       } else {
+        const data = await res.json().catch(() => ({}));
+        console.error("Subscription failed:", res.status, data);
         setNewsletterStatus('error');
       }
     } catch (err) {
+      console.error("Subscription network error:", err);
       setNewsletterStatus('error');
     }
   };

@@ -12,6 +12,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     setIsMenuOpen(false);
   }, [location]);
 
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      setIsAdminAuthenticated(localStorage.getItem('admin_auth') === 'true');
+    };
+    checkAuth();
+    // Also check on storage events (from other tabs)
+    window.addEventListener('storage', checkAuth);
+    // And a small interval just in case
+    const interval = setInterval(checkAuth, 1000);
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const showAdminLink = location.pathname.startsWith('/admin') && isAdminAuthenticated;
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 left-0 right-0 bg-white/95 backdrop-blur-md z-50 border-b border-border">
@@ -23,8 +42,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-10">
+            {showAdminLink && (
+              <Link to="/admin" className="text-sm font-semibold text-accent transition-colors">Admin</Link>
+            )}
             <Link to="/" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Home</Link>
-            <Link to="/admin" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Admin</Link>
             <Link to="/services" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Services</Link>
             <Link to="/blog" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Blog</Link>
             <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="btn-primary py-2.5 px-6 text-sm">Book Call</a>
@@ -39,8 +60,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {/* Mobile Nav */}
         {isMenuOpen && (
           <div className="md:hidden bg-white border-b border-border p-6 flex flex-col gap-4 animate-in fade-in slide-in-from-top-5">
+            {showAdminLink && (
+              <Link to="/admin" className="text-lg font-medium py-2 text-accent">Admin</Link>
+            )}
             <Link to="/" className="text-lg font-medium py-2">Home</Link>
-            <Link to="/admin" className="text-lg font-medium py-2">Admin</Link>
             <Link to="/services" className="text-lg font-medium py-2">Services</Link>
             <Link to="/blog" className="text-lg font-medium py-2">Blog</Link>
             <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="btn-primary w-full">Book Call</a>
