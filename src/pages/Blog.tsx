@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Filter, X, Loader2 } from 'lucide-react';
+import { ArrowRight, Filter, X, Loader2, AlertCircle } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 
 interface BlogPost {
@@ -14,18 +14,26 @@ interface BlogPost {
 export default function Blog() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null); // Format: "YYYY-MM"
 
   useEffect(() => {
     fetch('/api/posts')
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || `Server error: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
         setBlogPosts(data);
         setIsLoading(false);
       })
       .catch(err => {
         console.error("Failed to fetch posts", err);
+        setError(err.message);
         setIsLoading(false);
       });
   }, []);
@@ -73,6 +81,24 @@ export default function Blog() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="animate-spin text-accent" size={48} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="bg-red-50 text-red-700 p-8 rounded-3xl border border-red-100 max-w-2xl w-full text-center">
+          <AlertCircle className="mx-auto mb-4" size={48} />
+          <h2 className="text-2xl font-bold mb-2">Oops! Something went wrong</h2>
+          <p className="mb-6">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="btn-primary"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }

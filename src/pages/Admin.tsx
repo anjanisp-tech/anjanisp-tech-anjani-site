@@ -65,9 +65,13 @@ export default function Admin() {
               placeholder="Password"
               className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all"
               autoFocus
+              autoComplete="current-password"
             />
             <button type="submit" className="w-full btn-primary py-3">Login</button>
           </form>
+          <div className="mt-6 text-center">
+            <a href="/" className="text-xs text-accent/40 hover:text-accent">Back to Website</a>
+          </div>
         </div>
       </div>
     );
@@ -197,187 +201,210 @@ export default function Admin() {
     }
   };
 
-  return (
-    <div className="bg-white min-h-screen pt-32 pb-20">
-      <div className="container-custom">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
-          <div>
-            <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-accent-light">Manage your blog content and discussions.</p>
+  // Defensive rendering to prevent blank screen
+  try {
+    return (
+      <div className="bg-white min-h-screen pt-32 pb-20">
+        <div className="container-custom">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
+              <p className="text-accent-light">Manage your blog content and discussions.</p>
+            </div>
+            
+            <div className="flex bg-muted p-1 rounded-xl">
+              <button 
+                onClick={() => setActiveTab('comments')}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'comments' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
+              >
+                <MessageSquare size={18} /> Comments
+              </button>
+              <button 
+                onClick={() => setActiveTab('upload')}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'upload' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
+              >
+                <PlusCircle size={18} /> Upload Blog
+              </button>
+              <button 
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold text-red-400 hover:text-red-600 transition-all"
+              >
+                Logout
+              </button>
+            </div>
           </div>
-          
-          <div className="flex bg-muted p-1 rounded-xl">
-            <button 
-              onClick={() => setActiveTab('comments')}
-              className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'comments' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
-            >
-              <MessageSquare size={18} /> Comments
-            </button>
-            <button 
-              onClick={() => setActiveTab('upload')}
-              className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'upload' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
-            >
-              <PlusCircle size={18} /> Upload Blog
-            </button>
-            <button 
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold text-red-400 hover:text-red-600 transition-all"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
 
-        {activeTab === 'comments' ? (
-          <div className="space-y-6">
-            {Array.isArray(comments) && comments.length > 0 ? (
-              comments.filter(c => !c.is_admin).map((c) => (
-                <div key={c.id} className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className="font-bold text-lg">{c.name}</span>
-                        <span className="text-xs font-bold uppercase tracking-widest text-accent/30">on {c.post_title}</span>
+          {activeTab === 'comments' ? (
+            <div className="space-y-6">
+              {Array.isArray(comments) && comments.length > 0 ? (
+                comments.filter(c => !c.is_admin).map((c) => (
+                  <div key={c.id} className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <span className="font-bold text-lg">{c.name || 'Anonymous'}</span>
+                          <span className="text-xs font-bold uppercase tracking-widest text-accent/30">on {c.post_title || 'Unknown Post'}</span>
+                        </div>
+                        <div className="text-xs text-accent-light flex gap-4">
+                          <span>{c.email}</span>
+                          {c.phone && <span>{c.phone}</span>}
+                          <span>{c.created_at ? new Date(c.created_at).toLocaleString() : 'Date Unknown'}</span>
+                        </div>
                       </div>
-                      <div className="text-xs text-accent-light flex gap-4">
-                        <span>{c.email}</span>
-                        {c.phone && <span>{c.phone}</span>}
-                        <span>{new Date(c.created_at).toLocaleString()}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => setReplyTo(replyTo === c.id ? null : c.id)}
-                        className="p-2 text-accent/40 hover:text-accent hover:bg-accent/5 rounded-lg transition-all"
-                        title="Reply"
-                      >
-                        <Reply size={20} />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteComment(c.id)}
-                        className="p-2 text-accent/40 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                        title="Delete"
-                      >
-                        <Trash2 size={20} />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <p className="text-accent-light bg-muted/30 p-4 rounded-xl mb-4 italic">"{c.comment}"</p>
-                  
-                  {replyTo === c.id && (
-                    <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2">
-                      <textarea 
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                        placeholder="Write your reply as Admin..."
-                        className="w-full p-4 rounded-xl border border-accent/20 focus:border-accent outline-none text-sm resize-none"
-                        rows={3}
-                      />
-                      <div className="flex justify-end gap-3">
-                        <button onClick={() => setReplyTo(null)} className="text-xs font-bold text-accent/40 hover:text-accent">Cancel</button>
+                      <div className="flex gap-2">
                         <button 
-                          onClick={() => handleReply(c)}
-                          className="bg-accent text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-accent-light transition-colors"
+                          onClick={() => setReplyTo(replyTo === c.id ? null : c.id)}
+                          className="p-2 text-accent/40 hover:text-accent hover:bg-accent/5 rounded-lg transition-all"
+                          title="Reply"
                         >
-                          <Send size={14} /> Post Reply
+                          <Reply size={20} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteComment(c.id)}
+                          className="p-2 text-accent/40 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                          title="Delete"
+                        >
+                          <Trash2 size={20} />
                         </button>
                       </div>
                     </div>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-20 border-2 border-dashed border-border rounded-3xl">
-                <MessageSquare className="mx-auto text-accent/10 mb-4" size={48} />
-                <p className="text-accent/40 font-medium">No comments to manage yet.</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="max-w-4xl mx-auto">
-            <form onSubmit={handleBlogSubmit} className="bg-white border border-border rounded-3xl p-8 md:p-12 shadow-sm space-y-8">
-              {status.type !== 'idle' && (
-                <div className={`p-4 rounded-xl flex items-center gap-3 ${status.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-                  {status.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
-                  <span className="font-bold text-sm">{status.message}</span>
+                    
+                    <p className="text-accent-light bg-muted/30 p-4 rounded-xl mb-4 italic">"{c.comment}"</p>
+                    
+                    {replyTo === c.id && (
+                      <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2">
+                        <textarea 
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder="Write your reply as Admin..."
+                          className="w-full p-4 rounded-xl border border-accent/20 focus:border-accent outline-none text-sm resize-none"
+                          rows={3}
+                        />
+                        <div className="flex justify-end gap-3">
+                          <button onClick={() => setReplyTo(null)} className="text-xs font-bold text-accent/40 hover:text-accent">Cancel</button>
+                          <button 
+                            onClick={() => handleReply(c)}
+                            className="bg-accent text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-accent-light transition-colors"
+                          >
+                            <Send size={14} /> Post Reply
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-20 border-2 border-dashed border-border rounded-3xl">
+                  <MessageSquare className="mx-auto text-accent/10 mb-4" size={48} />
+                  <p className="text-accent/40 font-medium">No comments to manage yet.</p>
                 </div>
               )}
+            </div>
+          ) : (
+            <div className="max-w-4xl mx-auto">
+              <form onSubmit={handleBlogSubmit} className="bg-white border border-border rounded-3xl p-8 md:p-12 shadow-sm space-y-8">
+                {status.type !== 'idle' && (
+                  <div className={`p-4 rounded-xl flex items-center gap-3 ${status.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                    {status.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+                    <span className="font-bold text-sm">{status.message}</span>
+                  </div>
+                )}
 
-              <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Blog Title *</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={blogForm.title}
+                      onChange={(e) => setBlogForm({...blogForm, title: e.target.value})}
+                      placeholder="e.g. The Scaling Framework"
+                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Date *</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={blogForm.date}
+                      onChange={(e) => setBlogForm({...blogForm, date: e.target.value})}
+                      placeholder="DD-MMM-YYYY"
+                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Blog Title *</label>
-                  <input 
-                    type="text" 
+                  <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Category *</label>
+                  <select 
                     required
-                    value={blogForm.title}
-                    onChange={(e) => setBlogForm({...blogForm, title: e.target.value})}
-                    placeholder="e.g. The Scaling Framework"
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all"
+                    value={blogForm.category}
+                    onChange={(e) => setBlogForm({...blogForm, category: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all appearance-none bg-white"
+                  >
+                    <option value="Scaling">Scaling</option>
+                    <option value="Operations">Operations</option>
+                    <option value="Leadership">Leadership</option>
+                    <option value="Strategy">Strategy</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Excerpt * (Short summary)</label>
+                  <textarea 
+                    required
+                    value={blogForm.excerpt}
+                    onChange={(e) => setBlogForm({...blogForm, excerpt: e.target.value})}
+                    placeholder="A brief summary of the article..."
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all resize-none"
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Date *</label>
-                  <input 
-                    type="text" 
+                  <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Full Blog Content * (Markdown supported)</label>
+                  <textarea 
                     required
-                    value={blogForm.date}
-                    onChange={(e) => setBlogForm({...blogForm, date: e.target.value})}
-                    placeholder="DD-MMM-YYYY"
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all"
+                    value={blogForm.content}
+                    onChange={(e) => setBlogForm({...blogForm, content: e.target.value})}
+                    placeholder="Write your article content here..."
+                    rows={15}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all font-mono text-sm"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Category *</label>
-                <select 
-                  required
-                  value={blogForm.category}
-                  onChange={(e) => setBlogForm({...blogForm, category: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all appearance-none bg-white"
+                <button 
+                  type="submit"
+                  className="w-full btn-primary py-4 flex items-center justify-center gap-3"
                 >
-                  <option value="Scaling">Scaling</option>
-                  <option value="Operations">Operations</option>
-                  <option value="Leadership">Leadership</option>
-                  <option value="Strategy">Strategy</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Excerpt * (Short summary)</label>
-                <textarea 
-                  required
-                  value={blogForm.excerpt}
-                  onChange={(e) => setBlogForm({...blogForm, excerpt: e.target.value})}
-                  placeholder="A brief summary of the article..."
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all resize-none"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Full Blog Content * (Markdown supported)</label>
-                <textarea 
-                  required
-                  value={blogForm.content}
-                  onChange={(e) => setBlogForm({...blogForm, content: e.target.value})}
-                  placeholder="Write your article content here..."
-                  rows={15}
-                  className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all font-mono text-sm"
-                />
-              </div>
-
-              <button 
-                type="submit"
-                className="w-full btn-primary py-4 flex items-center justify-center gap-3"
-              >
-                <FileText size={20} /> Publish Blog Post
-              </button>
-            </form>
-          </div>
-        )}
+                  <FileText size={20} /> Publish Blog Post
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  } catch (err) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="bg-red-50 text-red-700 p-8 rounded-3xl border border-red-100 max-w-2xl w-full shadow-lg">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <AlertCircle /> Dashboard Error
+          </h2>
+          <p className="mb-6">The admin dashboard encountered a rendering error. This might be due to unexpected data from the server.</p>
+          <pre className="bg-white/50 p-4 rounded-xl text-xs overflow-auto mb-6 max-h-40">
+            {err instanceof Error ? err.message : String(err)}
+          </pre>
+          <button 
+            onClick={() => { localStorage.clear(); window.location.reload(); }}
+            className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all"
+          >
+            Reset & Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 }
