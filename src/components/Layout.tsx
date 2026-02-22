@@ -24,6 +24,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-10">
             <Link to="/" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Home</Link>
+            <Link to="/admin" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Admin</Link>
             <Link to="/services" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Services</Link>
             <Link to="/blog" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Blog</Link>
             <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="btn-primary py-2.5 px-6 text-sm">Book Call</a>
@@ -39,6 +40,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {isMenuOpen && (
           <div className="md:hidden bg-white border-b border-border p-6 flex flex-col gap-4 animate-in fade-in slide-in-from-top-5">
             <Link to="/" className="text-lg font-medium py-2">Home</Link>
+            <Link to="/admin" className="text-lg font-medium py-2">Admin</Link>
             <Link to="/services" className="text-lg font-medium py-2">Services</Link>
             <Link to="/blog" className="text-lg font-medium py-2">Blog</Link>
             <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="btn-primary w-full">Book Call</a>

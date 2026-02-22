@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle } from 'lucide-react';
+import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail } from 'lucide-react';
 
 interface Comment {
   id: number;
@@ -18,8 +18,9 @@ export default function Admin() {
     return typeof window !== 'undefined' && localStorage.getItem('admin_auth') === 'true';
   });
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'comments' | 'upload'>('comments');
+  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers'>('comments');
   const [comments, setComments] = useState<Comment[]>([]);
+  const [subscribers, setSubscribers] = useState<{ id: number, email: string, created_at: string }[]>([]);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
   
@@ -75,6 +76,9 @@ export default function Admin() {
     if (activeTab === 'comments' && isAuthenticated) {
       fetchComments();
     }
+    if (activeTab === 'subscribers' && isAuthenticated) {
+      fetchSubscribers();
+    }
     
     return () => window.removeEventListener('error', handleError);
   }, [activeTab, isAuthenticated]);
@@ -115,6 +119,21 @@ export default function Admin() {
     } catch (err) {
       console.error("Failed to fetch comments", err);
       setComments([]);
+    }
+  };
+
+  const fetchSubscribers = async () => {
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    try {
+      const res = await fetch('/api/admin/subscriptions', {
+        headers: { 'x-admin-password': secret }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSubscribers(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch subscribers", err);
     }
   };
 
@@ -246,6 +265,12 @@ export default function Admin() {
                 <PlusCircle size={18} /> Upload Blog
               </button>
               <button 
+                onClick={() => setActiveTab('subscribers')}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'subscribers' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
+              >
+                <Mail size={18} /> Subscribers
+              </button>
+              <button 
                 onClick={handleLogout}
                 className="flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold text-red-400 hover:text-red-600 transition-all"
               >
@@ -344,7 +369,7 @@ export default function Admin() {
                 </div>
               )}
             </div>
-          ) : (
+          ) : activeTab === 'upload' ? (
             <div className="max-w-4xl mx-auto">
               <form onSubmit={handleBlogSubmit} className="bg-white border border-border rounded-3xl p-8 md:p-12 shadow-sm space-y-8">
                 {status.type !== 'idle' && (
@@ -425,6 +450,52 @@ export default function Admin() {
                   <FileText size={20} /> Publish Blog Post
                 </button>
               </form>
+            </div>
+          ) : (
+            <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-bold">Newsletter Subscribers</h2>
+                <button 
+                  onClick={() => {
+                    const csv = subscribers.map(s => s.email).join('\n');
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.setAttribute('hidden', '');
+                    a.setAttribute('href', url);
+                    a.setAttribute('download', 'subscribers.csv');
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                  }}
+                  className="text-sm font-bold text-accent hover:underline"
+                >
+                  Export to CSV
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="py-4 text-xs font-bold uppercase tracking-widest text-accent/40">Email</th>
+                      <th className="py-4 text-xs font-bold uppercase tracking-widest text-accent/40">Joined Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subscribers.map((s) => (
+                      <tr key={s.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                        <td className="py-4 font-medium">{s.email}</td>
+                        <td className="py-4 text-sm text-accent-light">{new Date(s.created_at).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                    {subscribers.length === 0 && (
+                      <tr>
+                        <td colSpan={2} className="py-12 text-center text-accent/40">No subscribers yet.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

@@ -37,6 +37,11 @@ if (!isPostgres) {
       is_admin INTEGER DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+    CREATE TABLE IF NOT EXISTS subscriptions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 }
 
@@ -312,6 +317,21 @@ app.post("/api/subscribe", async (req, res) => {
     res.json({ success: true, message: "Subscribed successfully!" });
   } catch (err) {
     res.status(500).json({ error: "Failed to subscribe" });
+  }
+});
+
+app.get("/api/admin/subscriptions", adminAuth, async (req, res) => {
+  try {
+    if (isPostgres) {
+      const { rows } = await sql`SELECT * FROM subscriptions ORDER BY created_at DESC`;
+      res.json(rows);
+    } else {
+      sqliteDb.exec("CREATE TABLE IF NOT EXISTS subscriptions (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+      const rows = sqliteDb.prepare("SELECT * FROM subscriptions ORDER BY created_at DESC").all();
+      res.json(rows);
+    }
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch subscriptions" });
   }
 });
 
