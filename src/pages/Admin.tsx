@@ -14,74 +14,11 @@ interface Comment {
 }
 
 export default function Admin() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return typeof window !== 'undefined' && localStorage.getItem('admin_auth') === 'true';
+  });
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'comments' | 'upload'>('comments');
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const secret = (import.meta as any).env?.VITE_ADMIN_PASSWORD || 'admin123';
-      if (password === secret) {
-        setIsAuthenticated(true);
-        localStorage.setItem('admin_auth', 'true');
-        localStorage.setItem('admin_pwd', password);
-      } else {
-        alert("Incorrect password");
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      // Fallback to hardcoded if env access fails for some reason
-      if (password === 'admin123') {
-        setIsAuthenticated(true);
-        localStorage.setItem('admin_auth', 'true');
-        localStorage.setItem('admin_pwd', password);
-      } else {
-        alert("Incorrect password or system error.");
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (localStorage.getItem('admin_auth') === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30">
-        <div className="bg-white p-8 rounded-3xl border border-border shadow-xl max-w-md w-full">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-accent text-white flex items-center justify-center rounded-2xl mx-auto mb-4 font-bold text-2xl shadow-lg">AP</div>
-            <h1 className="text-2xl font-bold">Admin Access</h1>
-            <p className="text-accent-light text-sm">Please enter your password to continue.</p>
-          </div>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input 
-              type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all"
-              autoFocus
-              autoComplete="current-password"
-            />
-            <button type="submit" className="w-full btn-primary py-3">Login</button>
-          </form>
-          <div className="mt-6 text-center">
-            <a href="/" className="text-xs text-accent/40 hover:text-accent">Back to Website</a>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('admin_auth');
-    localStorage.removeItem('admin_pwd');
-    setIsAuthenticated(false);
-  };
   const [comments, setComments] = useState<Comment[]>([]);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
@@ -96,11 +33,51 @@ export default function Admin() {
   
   const [status, setStatus] = useState<{ type: 'success' | 'error' | 'idle', message: string }>({ type: 'idle', message: '' });
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const secret = (import.meta as any).env?.VITE_ADMIN_PASSWORD || 'admin123';
+      if (password === secret) {
+        setIsAuthenticated(true);
+        localStorage.setItem('admin_auth', 'true');
+        localStorage.setItem('admin_pwd', password);
+      } else {
+        alert("Incorrect password");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      if (password === 'admin123') {
+        setIsAuthenticated(true);
+        localStorage.setItem('admin_auth', 'true');
+        localStorage.setItem('admin_pwd', password);
+      } else {
+        alert("Incorrect password or system error.");
+      }
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_auth');
+    localStorage.removeItem('admin_pwd');
+    setIsAuthenticated(false);
+  };
+
   useEffect(() => {
-    if (activeTab === 'comments') {
+    const handleError = (e: ErrorEvent) => {
+      console.error("Caught global error:", e);
+      // Only alert in development or if it's a critical error
+      if ((import.meta as any).env.MODE !== 'production') {
+        alert("Admin Dashboard Error: " + e.message);
+      }
+    };
+    window.addEventListener('error', handleError);
+    
+    if (activeTab === 'comments' && isAuthenticated) {
       fetchComments();
     }
-  }, [activeTab]);
+    
+    return () => window.removeEventListener('error', handleError);
+  }, [activeTab, isAuthenticated]);
 
   const fetchComments = async () => {
     const secret = password || localStorage.getItem('admin_pwd') || '';
@@ -201,6 +178,35 @@ export default function Admin() {
     }
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+        <div className="bg-white p-8 rounded-3xl border border-border shadow-xl max-w-md w-full">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-accent text-white flex items-center justify-center rounded-2xl mx-auto mb-4 font-bold text-2xl shadow-lg">AP</div>
+            <h1 className="text-2xl font-bold">Admin Access</h1>
+            <p className="text-accent-light text-sm">Please enter your password to continue.</p>
+          </div>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all"
+              autoFocus
+              autoComplete="current-password"
+            />
+            <button type="submit" className="w-full btn-primary py-3">Login</button>
+          </form>
+          <div className="mt-6 text-center">
+            <a href="/" className="text-xs text-accent/40 hover:text-accent">Back to Website</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Defensive rendering to prevent blank screen
   try {
     return (
@@ -242,13 +248,13 @@ export default function Admin() {
                     <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          <span className="font-bold text-lg">{c.name || 'Anonymous'}</span>
-                          <span className="text-xs font-bold uppercase tracking-widest text-accent/30">on {c.post_title || 'Unknown Post'}</span>
+                          <span className="font-bold text-lg">{c?.name || 'Anonymous'}</span>
+                          <span className="text-xs font-bold uppercase tracking-widest text-accent/30">on {c?.post_title || 'Unknown Post'}</span>
                         </div>
                         <div className="text-xs text-accent-light flex gap-4">
-                          <span>{c.email}</span>
-                          {c.phone && <span>{c.phone}</span>}
-                          <span>{c.created_at ? new Date(c.created_at).toLocaleString() : 'Date Unknown'}</span>
+                          <span>{c?.email || 'No Email'}</span>
+                          {c?.phone && <span>{c.phone}</span>}
+                          <span>{c?.created_at ? new Date(c.created_at).toLocaleString() : 'Date Unknown'}</span>
                         </div>
                       </div>
                       <div className="flex gap-2">
