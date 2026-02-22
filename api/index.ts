@@ -106,7 +106,7 @@ async function initDb() {
           },
           {
             id: "systems-outlast-heroics",
-            title: "SYSTEMS OUTLAST HEROICS",
+            title: "WHY SPEED BECOMES DANGEROUS INSIDE GROWING ORGANIZATIONS",
             date: "19-Feb-2026",
             category: "Scaling",
             excerpt: "Heroic execution works until complexity increases. Learn why systems, not stamina, are the key to winning at scale and building a durable organization.",
@@ -153,6 +153,37 @@ const adminAuth = (req: any, res: any, next: any) => {
     res.status(401).json({ error: "Unauthorized" });
   }
 };
+
+// Notification Helper
+async function sendNotification(subject: string, message: string) {
+  const recipient = "contact@anjanipandey.com";
+  console.log(`[NOTIFICATION] To: ${recipient} | Subject: ${subject}`);
+  console.log(`Message: ${message}`);
+  
+  // In a real app, you would use a service like Resend or SendGrid here.
+  // Example with Resend:
+  /*
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
+        },
+        body: JSON.stringify({
+          from: 'Anjani Pandey Site <notifications@anjanipandey.com>',
+          to: [recipient],
+          subject: subject,
+          text: message
+        })
+      });
+    } catch (err) {
+      console.error("Failed to send email via Resend:", err);
+    }
+  }
+  */
+}
 
 // API Routes
 app.get("/api/health", async (req, res) => {
@@ -226,11 +257,13 @@ app.post("/api/admin/posts", adminAuth, async (req, res) => {
         VALUES (${id}, ${title}, ${date}, ${category}, ${excerpt}, ${content})
       `;
       const { rows } = await sql`SELECT * FROM posts WHERE id = ${id}`;
+      await sendNotification("New Blog Post Published", `Title: ${title}\nCategory: ${category}\nExcerpt: ${excerpt}`);
       res.status(201).json(rows[0]);
     } else {
       sqliteDb.prepare("INSERT INTO posts (id, title, date, category, excerpt, content) VALUES (?, ?, ?, ?, ?, ?)")
         .run(id, title, date, category, excerpt, content);
       const newPost = sqliteDb.prepare("SELECT * FROM posts WHERE id = ?").get(id);
+      await sendNotification("New Blog Post Published", `Title: ${title}\nCategory: ${category}\nExcerpt: ${excerpt}`);
       res.status(201).json(newPost);
     }
   } catch (err) {
@@ -262,11 +295,16 @@ app.post("/api/blog/:id/comments", async (req, res) => {
         VALUES (${id}, ${name}, ${email}, ${website}, ${phone}, ${comment}, ${parent_id || null}, ${is_admin ? 1 : 0})
         RETURNING *
       `;
-      res.status(201).json(rows[0]);
+      const commentObj = rows[0];
+      const type = is_admin ? "Admin Reply" : "New User Comment";
+      await sendNotification(`${type} on ${id}`, `From: ${name} (${email})\nComment: ${comment}`);
+      res.status(201).json(commentObj);
     } else {
       const info = sqliteDb.prepare("INSERT INTO comments (post_id, name, email, website, phone, comment, parent_id, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
         .run(id, name, email, website, phone, comment, parent_id || null, is_admin ? 1 : 0);
       const newComment = sqliteDb.prepare("SELECT * FROM comments WHERE id = ?").get(info.lastInsertRowid);
+      const type = is_admin ? "Admin Reply" : "New User Comment";
+      await sendNotification(`${type} on ${id}`, `From: ${name} (${email})\nComment: ${comment}`);
       res.status(201).json(newComment);
     }
   } catch (err) {
@@ -305,6 +343,7 @@ app.delete("/api/admin/comments/:id", adminAuth, async (req, res) => {
     } else {
       sqliteDb.prepare("DELETE FROM comments WHERE id = ? OR parent_id = ?").run(req.params.id, req.params.id);
     }
+    await sendNotification("Comment Deleted", `Comment ID ${req.params.id} and its replies have been removed.`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Failed to delete comment" });
@@ -327,6 +366,7 @@ app.post("/api/subscribe", async (req, res) => {
       sqliteDb.prepare("INSERT OR IGNORE INTO subscriptions (email) VALUES (?)").run(email);
     }
     console.log("Subscription successful for:", email);
+    await sendNotification("New Newsletter Subscriber", `Email: ${email}`);
     res.json({ success: true, message: "Subscribed successfully!" });
   } catch (err: any) {
     console.error("Subscription error:", err);

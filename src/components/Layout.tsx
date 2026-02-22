@@ -75,6 +75,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
+      {/* Back to Top Button */}
+      <button 
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className="fixed bottom-8 right-8 p-3 bg-white border border-border rounded-full shadow-lg hover:text-accent transition-all z-40 group"
+        title="Back to Top"
+      >
+        <ArrowLeft className="rotate-90 group-hover:-translate-y-1 transition-transform" size={20} />
+      </button>
+
       <footer className="bg-muted border-t border-border py-16">
         <div className="container-custom">
           <div className="grid md:grid-cols-2 gap-12 items-start">

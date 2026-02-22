@@ -394,6 +394,22 @@ export default function BlogPostDetail() {
               </div>
             </section>
 
+            {/* Related Posts */}
+            <section className="mt-32 pt-16 border-t border-border">
+              <h2 className="text-3xl font-bold mb-12">Related Frameworks</h2>
+              <div className="grid md:grid-cols-2 gap-8">
+                {blogPosts.filter(p => p.id !== id).slice(0, 2).map((p) => (
+                  <Link key={p.id} to={`/blog/${p.id}`} className="group p-8 bg-muted/30 rounded-3xl border border-border hover:border-accent transition-all">
+                    <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">{p.category}</div>
+                    <h3 className="text-xl font-bold mb-4 group-hover:text-accent transition-colors">{p.title}</h3>
+                    <div className="text-sm font-bold text-accent flex items-center gap-2">
+                      Read Framework <ArrowLeft className="rotate-180" size={14} />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+
             {/* Author Footer */}
             <footer className="mt-32 pt-12 border-t border-border">
               <div className="flex flex-col md:flex-row justify-between items-center gap-8">
