@@ -41,6 +41,30 @@ export default function BlogPostDetail() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    setNewsletterStatus('loading');
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newsletterEmail })
+      });
+      if (res.ok) {
+        setNewsletterStatus('success');
+        setNewsletterEmail('');
+      } else {
+        setNewsletterStatus('error');
+      }
+    } catch (err) {
+      setNewsletterStatus('error');
+    }
+  };
+
   useEffect(() => {
     if (id) {
       setIsLoading(true);
@@ -146,6 +170,45 @@ export default function BlogPostDetail() {
             {/* Content */}
             <div className="markdown-body prose prose-lg max-w-none prose-accent mb-24">
               <Markdown>{post.content}</Markdown>
+            </div>
+
+            {/* Newsletter Section */}
+            <div className="bg-accent text-white p-8 md:p-12 rounded-[2rem] my-24 relative overflow-hidden">
+              <div className="relative z-10">
+                <h3 className="text-2xl md:text-3xl font-bold mb-4">Want these insights in your inbox?</h3>
+                <p className="text-white/80 mb-8 max-w-xl">
+                  I share weekly frameworks on operations and scaling for founder-led businesses.
+                </p>
+                <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-4">
+                  <input 
+                    type="email" 
+                    required
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    placeholder="Enter your email" 
+                    className="flex-1 px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/40 outline-none focus:bg-white/20 transition-all"
+                  />
+                  <button 
+                    type="submit" 
+                    disabled={newsletterStatus === 'loading'}
+                    className="bg-white text-accent px-8 py-4 rounded-xl font-bold hover:bg-white/90 transition-all disabled:opacity-50"
+                  >
+                    {newsletterStatus === 'loading' ? 'Joining...' : 'Join Frameworks'}
+                  </button>
+                </form>
+                {newsletterStatus === 'success' && (
+                  <p className="mt-4 text-sm font-bold text-white/90 animate-in fade-in slide-in-from-top-2">
+                    Welcome! You're now on the list.
+                  </p>
+                )}
+                {newsletterStatus === 'error' && (
+                  <p className="mt-4 text-sm font-bold text-red-200 animate-in fade-in slide-in-from-top-2">
+                    Something went wrong. Please try again.
+                  </p>
+                )}
+              </div>
+              {/* Decorative background element */}
+              <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
             </div>
 
             {/* Comments Section */}

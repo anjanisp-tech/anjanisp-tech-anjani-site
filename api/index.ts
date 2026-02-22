@@ -69,6 +69,13 @@ async function initDb() {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `;
+      await sql`
+        CREATE TABLE IF NOT EXISTS subscriptions (
+          id SERIAL PRIMARY KEY,
+          email TEXT UNIQUE NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
       
       // Check if seed data is needed
       const { rowCount } = await sql`SELECT id FROM posts LIMIT 1`;
@@ -287,6 +294,24 @@ app.delete("/api/admin/comments/:id", adminAuth, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Failed to delete comment" });
+  }
+});
+
+app.post("/api/subscribe", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "Email is required" });
+  
+  try {
+    if (isPostgres) {
+      await sql`INSERT INTO subscriptions (email) VALUES (${email}) ON CONFLICT (email) DO NOTHING`;
+    } else {
+      // Create table if not exists for SQLite
+      sqliteDb.exec("CREATE TABLE IF NOT EXISTS subscriptions (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+      sqliteDb.prepare("INSERT OR IGNORE INTO subscriptions (email) VALUES (?)").run(email);
+    }
+    res.json({ success: true, message: "Subscribed successfully!" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to subscribe" });
   }
 });
 
