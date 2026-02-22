@@ -212,7 +212,7 @@ export default function BlogPostDetail() {
                 )}
               </div>
               {/* Decorative background element */}
-              <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+              <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
             </div>
 
             {/* Comments Section */}

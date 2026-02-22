@@ -17,6 +17,32 @@ export default function Blog() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null); // Format: "YYYY-MM"
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    setNewsletterStatus('loading');
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newsletterEmail })
+      });
+      if (res.ok) {
+        setNewsletterStatus('success');
+        setNewsletterEmail('');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        console.error("Subscription failed:", res.status, data);
+        setNewsletterStatus('error');
+      }
+    } catch (err) {
+      console.error("Subscription network error:", err);
+      setNewsletterStatus('error');
+    }
+  };
 
   useEffect(() => {
     fetch('/api/posts')
@@ -206,14 +232,33 @@ export default function Blog() {
             <p className="text-accent-light mb-8 max-w-md mx-auto">
               I share weekly frameworks on operations and scaling for founder-led businesses.
             </p>
-            <form className="max-w-md mx-auto flex flex-col sm:flex-row gap-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="max-w-md mx-auto flex flex-col sm:flex-row gap-4" onSubmit={handleNewsletterSubmit}>
               <input 
                 type="email" 
+                required
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
                 placeholder="Email Address" 
                 className="flex-grow px-6 py-3 rounded-md border border-border focus:border-accent outline-none"
               />
-              <button className="btn-primary">Subscribe</button>
+              <button 
+                type="submit" 
+                disabled={newsletterStatus === 'loading'}
+                className="btn-primary disabled:opacity-50"
+              >
+                {newsletterStatus === 'loading' ? 'Joining...' : 'Subscribe'}
+              </button>
             </form>
+            {newsletterStatus === 'success' && (
+              <p className="mt-4 text-sm font-bold text-emerald-600 animate-in fade-in slide-in-from-top-2">
+                Welcome! You're now on the list.
+              </p>
+            )}
+            {newsletterStatus === 'error' && (
+              <p className="mt-4 text-sm font-bold text-red-500 animate-in fade-in slide-in-from-top-2">
+                Something went wrong. Please try again.
+              </p>
+            )}
           </div>
         </div>
       </section>

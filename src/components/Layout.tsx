@@ -29,7 +29,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const showAdminLink = location.pathname.startsWith('/admin') && isAdminAuthenticated;
+  const showAdminLink = isAdminAuthenticated;
 
   return (
     <div className="min-h-screen flex flex-col">
