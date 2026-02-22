@@ -20,15 +20,25 @@ export default function Admin() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would be a server-side check. 
-    // For this simple dashboard, we'll check against an environment variable or a hardcoded value if not set.
-    const secret = (import.meta as any).env.VITE_ADMIN_PASSWORD || 'admin123';
-    if (password === secret) {
-      setIsAuthenticated(true);
-      localStorage.setItem('admin_auth', 'true');
-      localStorage.setItem('admin_pwd', password);
-    } else {
-      alert("Incorrect password");
+    try {
+      const secret = (import.meta as any).env?.VITE_ADMIN_PASSWORD || 'admin123';
+      if (password === secret) {
+        setIsAuthenticated(true);
+        localStorage.setItem('admin_auth', 'true');
+        localStorage.setItem('admin_pwd', password);
+      } else {
+        alert("Incorrect password");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      // Fallback to hardcoded if env access fails for some reason
+      if (password === 'admin123') {
+        setIsAuthenticated(true);
+        localStorage.setItem('admin_auth', 'true');
+        localStorage.setItem('admin_pwd', password);
+      } else {
+        alert("Incorrect password or system error.");
+      }
     }
   };
 
@@ -94,14 +104,22 @@ export default function Admin() {
       const res = await fetch('/api/admin/comments', {
         headers: { 'x-admin-password': secret }
       });
+      
       if (res.status === 401) {
         handleLogout();
         return;
       }
+
       const data = await res.json();
-      setComments(data);
+      if (Array.isArray(data)) {
+        setComments(data);
+      } else {
+        console.error("Expected array of comments, got:", data);
+        setComments([]);
+      }
     } catch (err) {
       console.error("Failed to fetch comments", err);
+      setComments([]);
     }
   };
 
@@ -212,7 +230,7 @@ export default function Admin() {
 
         {activeTab === 'comments' ? (
           <div className="space-y-6">
-            {comments.length > 0 ? (
+            {Array.isArray(comments) && comments.length > 0 ? (
               comments.filter(c => !c.is_admin).map((c) => (
                 <div key={c.id} className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">

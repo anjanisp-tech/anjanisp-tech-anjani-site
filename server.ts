@@ -155,13 +155,18 @@ app.post("/api/blog/:id/comments", (req, res) => {
 
 // Admin Comments Management
 app.get("/api/admin/comments", adminAuth, (req, res) => {
-  const comments = db.prepare(`
-    SELECT c.*, p.title as post_title 
-    FROM comments c 
-    JOIN posts p ON c.post_id = p.id 
-    ORDER BY c.created_at DESC
-  `).all();
-  res.json(comments);
+  try {
+    const comments = db.prepare(`
+      SELECT c.*, p.title as post_title 
+      FROM comments c 
+      JOIN posts p ON c.post_id = p.id 
+      ORDER BY c.created_at DESC
+    `).all();
+    res.json(comments);
+  } catch (err) {
+    console.error("Error fetching admin comments:", err);
+    res.status(500).json({ error: "Failed to fetch comments" });
+  }
 });
 
 app.delete("/api/admin/comments/:id", adminAuth, (req, res) => {
