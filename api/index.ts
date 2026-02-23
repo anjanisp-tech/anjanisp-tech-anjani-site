@@ -257,19 +257,13 @@ const adminAuth = (req: any, res: any, next: any) => {
 
 // Notification Helper
 async function sendNotification(subject: string, message: string) {
-  const recipient = "contact@anjanipandey.com";
+  const recipient = process.env.RESEND_TO_EMAIL || process.env.VITE_RESEND_TO_EMAIL || "anjanisp@gmail.com";
   const apiKey = getResendKey();
   
   console.log(`[NOTIFICATION ATTEMPT] Subject: ${subject}`);
   
   if (!apiKey) {
     const errorMsg = "RESEND_API_KEY is missing. Please set it in AI Studio Secrets OR use the Manual Override in the Admin panel.";
-    console.error(`[NOTIFICATION ERROR] ${errorMsg}`);
-    throw new Error(errorMsg);
-  }
-
-  if (!apiKey.startsWith('re_')) {
-    const errorMsg = `RESEND_API_KEY appears invalid (starts with '${apiKey.substring(0, 3)}...', should start with 're_').`;
     console.error(`[NOTIFICATION ERROR] ${errorMsg}`);
     throw new Error(errorMsg);
   }
@@ -302,7 +296,7 @@ async function sendNotification(subject: string, message: string) {
       let friendlyError = `Resend API error (${response.status})`;
       if (resData.message) friendlyError += `: ${resData.message}`;
       if (response.status === 403 && fromEmail === 'onboarding@resend.dev') {
-        friendlyError += ". Note: onboarding@resend.dev can only send to your own registered email address until you verify a domain.";
+        friendlyError += ". Note: onboarding@resend.dev can only send to your own registered email address (anjanisp@gmail.com) until you verify a domain.";
       }
       throw new Error(friendlyError);
     }
@@ -504,7 +498,8 @@ router.get("/api/health", async (req, res) => {
       envCheck: {
         hasResendKey: !!resendKey,
         resendKeyLength: resendKey ? resendKey.length : 0,
-        fromEmail: process.env.RESEND_FROM_EMAIL || process.env.VITE_RESEND_FROM_EMAIL || 'default',
+        fromEmail: process.env.RESEND_FROM_EMAIL || process.env.VITE_RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+        toEmail: process.env.RESEND_TO_EMAIL || process.env.VITE_RESEND_TO_EMAIL || 'anjanisp@gmail.com',
         allKeys: Object.keys(process.env).filter(k => 
           k.toUpperCase().includes('RESEND') || 
           k.toUpperCase().includes('ADMIN') ||

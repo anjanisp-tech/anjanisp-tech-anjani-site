@@ -100,6 +100,7 @@ export default function Admin() {
             <div class="mt-4 p-3 bg-black/5 rounded text-[10px] font-mono space-y-1">
               <div class="flex justify-between"><span>RESEND_KEY:</span> <span>${data.envCheck.hasResendKey ? 'PRESENT (' + data.envCheck.resendKeyLength + ' chars)' : 'MISSING'}</span></div>
               <div class="flex justify-between"><span>FROM_EMAIL:</span> <span>${data.envCheck.fromEmail}</span></div>
+              <div class="flex justify-between"><span>TO_EMAIL:</span> <span>${data.envCheck.toEmail}</span></div>
               <div class="flex justify-between"><span>DB_TYPE:</span> <span>${data.dbType}</span></div>
               <div class="flex justify-between"><span>LAST_SYNC:</span> <span>${new Date(data.initializedAt).toLocaleTimeString()}</span></div>
               <div class="flex justify-between"><span>OVERRIDE:</span> <span class="${data.envCheck.usingOverrideFile ? 'text-emerald-500 font-bold' : ''}">${data.envCheck.usingOverrideFile ? 'ACTIVE' : 'NONE'}</span></div>
@@ -555,7 +556,7 @@ export default function Admin() {
                       <span id="resend-status" className="px-2 py-0.5 rounded bg-muted text-accent/60">Checking...</span>
                     </div>
                     <p className="text-sm text-accent-light">
-                      Verify your Resend configuration by sending a test email to <strong>contact@anjanipandey.com</strong>.
+                      Verify your Resend configuration by sending a test email. Note: Free tier accounts can only send to their verified email address.
                     </p>
                     <div id="env-debug"></div>
                     
