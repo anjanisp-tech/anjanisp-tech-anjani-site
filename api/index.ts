@@ -7,15 +7,28 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const KEY_FILE = path.join(__dirname, "../../.resend_key");
+// Use process.cwd() to ensure we are in the project root, or fallback to /tmp
+const KEY_FILE = path.join(process.cwd(), ".resend_key");
+const TMP_KEY_FILE = "/tmp/.resend_key";
+
+let memoryKey: string | null = null;
 
 // Helper to get Resend Key with multiple fallbacks
 function getResendKey() {
-  // 1. Check local override file
-  if (fs.existsSync(KEY_FILE)) {
-    try {
-      return fs.readFileSync(KEY_FILE, 'utf8').trim();
-    } catch (e) {}
+  // 0. Memory cache (fastest, survives until process restart)
+  if (memoryKey) return memoryKey;
+
+  // 1. Check local override files
+  for (const f of [KEY_FILE, TMP_KEY_FILE]) {
+    if (fs.existsSync(f)) {
+      try {
+        const k = fs.readFileSync(f, 'utf8').trim();
+        if (k.startsWith('re_')) {
+          memoryKey = k;
+          return k;
+        }
+      } catch (e) {}
+    }
   }
 
   // 2. Check standard environment variables
@@ -428,12 +441,34 @@ router.post("/api/admin/save-resend-key", adminAuth, (req, res) => {
   if (!key || !key.startsWith('re_')) {
     return res.status(400).json({ error: "Invalid key format. Must start with 're_'" });
   }
+  
+  memoryKey = key;
+  let savedToDisk = false;
+  let diskError = null;
+
   try {
     fs.writeFileSync(KEY_FILE, key, 'utf8');
-    console.log("[ADMIN] Resend key saved to local override file.");
-    res.json({ success: true, message: "Key saved successfully to server storage." });
+    savedToDisk = true;
   } catch (err: any) {
-    res.status(500).json({ error: "Failed to save key to disk", details: err.message });
+    diskError = err.message;
+    // Try /tmp as fallback
+    try {
+      fs.writeFileSync(TMP_KEY_FILE, key, 'utf8');
+      savedToDisk = true;
+      diskError = null; // Cleared if fallback works
+    } catch (e: any) {
+      diskError = `Primary: ${err.message}, Fallback: ${e.message}`;
+    }
+  }
+
+  if (savedToDisk) {
+    res.json({ success: true, message: "Key saved successfully (Memory + Disk)." });
+  } else {
+    res.json({ 
+      success: true, 
+      message: "Key saved to Memory ONLY (Disk write failed). It will work until the next restart.",
+      warning: diskError
+    });
   }
 });
 
@@ -476,7 +511,7 @@ router.get("/api/health", async (req, res) => {
           k.toUpperCase().includes('POSTGRES') ||
           k.toUpperCase().includes('VITE_')
         ),
-        usingOverrideFile: fs.existsSync(KEY_FILE)
+        usingOverrideFile: fs.existsSync(KEY_FILE) || fs.existsSync(TMP_KEY_FILE) || !!memoryKey
       }
     });
   } catch (err: any) {

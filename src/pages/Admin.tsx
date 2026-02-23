@@ -585,10 +585,12 @@ export default function Admin() {
                               });
                               const data = await res.json();
                               if (res.ok) {
-                                alert(data.message);
+                                let msg = data.message;
+                                if (data.warning) msg += "\n\nWarning: " + data.warning;
+                                alert(msg);
                                 window.location.reload();
                               } else {
-                                alert(data.error);
+                                alert("Error: " + (data.error || "Unknown error"));
                               }
                             } catch (err) {
                               alert("Failed to save key");
