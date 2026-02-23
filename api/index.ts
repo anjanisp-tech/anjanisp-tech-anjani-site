@@ -205,14 +205,12 @@ const adminAuth = (req: any, res: any, next: any) => {
 // Notification Helper
 async function sendNotification(subject: string, message: string) {
   const recipient = "contact@anjanipandey.com";
-  console.log(`[NOTIFICATION] To: ${recipient} | Subject: ${subject}`);
-  console.log(`Message: ${message}`);
+  console.log(`[NOTIFICATION ATTEMPT] Subject: ${subject}`);
   
   if (process.env.RESEND_API_KEY) {
     try {
-      // Use onboarding@resend.dev if domain is not verified
-      // Most users start with this. If they have a verified domain, they can change it.
       const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+      console.log(`[RESEND] Sending from: ${fromEmail} to: ${recipient}`);
       
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -227,17 +225,19 @@ async function sendNotification(subject: string, message: string) {
           text: message
         })
       });
+      
+      const resData = await response.json().catch(() => ({}));
       if (response.ok) {
-        console.log("Email notification sent successfully via Resend.");
+        console.log("[RESEND] Success:", resData);
       } else {
-        const errData = await response.json();
-        console.error("Failed to send email via Resend:", response.status, errData);
+        console.error("[RESEND] Error Response:", response.status, resData);
       }
     } catch (err) {
-      console.error("Failed to send email via Resend:", err);
+      console.error("[RESEND] Fetch Error:", err);
     }
   } else {
-    console.log("RESEND_API_KEY not found. Email notification skipped (logged to console only).");
+    console.log("[NOTIFICATION] RESEND_API_KEY missing. Logging to console only:");
+    console.log(`Subject: ${subject}\nMessage: ${message}`);
   }
 }
 
@@ -367,12 +367,22 @@ router.post("/api/admin/test-email", adminAuth, async (req, res) => {
 
 // API Routes
 router.get("/api/health", async (req, res) => {
-  await initDb();
-  res.json({ 
-    status: "ok", 
-    dbType: isPostgres ? "Postgres" : "SQLite",
-    initializedAt: dbInitializedAt
-  });
+  try {
+    if (isPostgres) {
+      await initDb();
+    } else {
+      seedSqlite();
+    }
+    res.json({ 
+      status: "ok", 
+      dbType: isPostgres ? "Postgres" : "SQLite",
+      initializedAt: dbInitializedAt,
+      resendConfigured: !!process.env.RESEND_API_KEY,
+      postgresConfigured: !!process.env.POSTGRES_URL
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.get("/api/debug", async (req, res) => {

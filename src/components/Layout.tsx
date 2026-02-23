@@ -121,7 +121,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <div className="mt-16 pt-8 border-t border-border/50 text-xs text-accent-light/50 flex flex-col md:flex-row justify-between gap-4">
-            <p>© 2026 Anjani Pandey. All rights reserved.</p>
+            <div className="flex flex-col gap-1">
+              <p>© 2026 Anjani Pandey. All rights reserved.</p>
+              <p className="opacity-30 font-mono">v1.0.4-sync-fix</p>
+            </div>
             <p>CEO at MetMov LLP</p>
           </div>
         </div>

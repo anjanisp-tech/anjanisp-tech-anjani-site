@@ -81,6 +81,21 @@ export default function Admin() {
       fetchSubscribers();
     }
     
+    if (activeTab === 'system' && isAuthenticated) {
+      fetch('/api/health').then(res => res.json()).then(data => {
+        const resendEl = document.getElementById('resend-status');
+        const dbEl = document.getElementById('db-status');
+        if (resendEl) {
+          resendEl.innerText = data.resendConfigured ? 'Configured' : 'Missing API Key';
+          resendEl.className = `px-2 py-0.5 rounded ${data.resendConfigured ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`;
+        }
+        if (dbEl) {
+          dbEl.innerText = data.dbType + (data.postgresConfigured ? ' (Postgres)' : ' (Local SQLite)');
+          dbEl.className = `px-2 py-0.5 rounded ${data.postgresConfigured ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`;
+        }
+      }).catch(() => {});
+    }
+    
     return () => window.removeEventListener('error', handleError);
   }, [activeTab, isAuthenticated]);
 
@@ -516,11 +531,19 @@ export default function Admin() {
                     <h3 className="text-lg font-bold flex items-center gap-2">
                       <Mail className="text-accent" size={20} /> Email Notifications
                     </h3>
+                    <div className="flex items-center gap-2 text-xs mb-2">
+                      <span className="font-bold uppercase tracking-wider">Status:</span>
+                      <span id="resend-status" className="px-2 py-0.5 rounded bg-muted text-accent/60">Checking...</span>
+                    </div>
                     <p className="text-sm text-accent-light">
                       Verify your Resend configuration by sending a test email to <strong>contact@anjanipandey.com</strong>.
                     </p>
                     <button 
-                      onClick={async () => {
+                      id="test-email-btn"
+                      onClick={async (e) => {
+                        const btn = e.currentTarget;
+                        btn.disabled = true;
+                        btn.innerText = "Sending...";
                         const secret = password || localStorage.getItem('admin_pwd') || '';
                         try {
                           const res = await fetch('/api/admin/test-email', {
@@ -528,13 +551,16 @@ export default function Admin() {
                             headers: { 'x-admin-password': secret }
                           });
                           const data = await res.json();
-                          if (res.ok) alert(data.message);
-                          else alert("Error: " + data.error);
+                          if (res.ok) alert("Success: " + data.message);
+                          else alert("Error: " + (data.error || "Unknown error"));
                         } catch (err) {
                           alert("Network error sending test email.");
+                        } finally {
+                          btn.disabled = false;
+                          btn.innerText = "Send Test Email";
                         }
                       }}
-                      className="btn-primary w-full py-3 text-sm"
+                      className="btn-primary w-full py-3 text-sm disabled:opacity-50"
                     >
                       Send Test Email
                     </button>
@@ -544,23 +570,39 @@ export default function Admin() {
                     <h3 className="text-lg font-bold flex items-center gap-2">
                       <FileText className="text-accent" size={20} /> Content Sync
                     </h3>
+                    <div className="flex items-center gap-2 text-xs mb-2">
+                      <span className="font-bold uppercase tracking-wider">Database:</span>
+                      <span id="db-status" className="px-2 py-0.5 rounded bg-muted text-accent/60">Checking...</span>
+                    </div>
                     <p className="text-sm text-accent-light">
                       Force update blog titles and structure across the database to match the latest system standards.
                     </p>
                     <button 
-                      onClick={async () => {
+                      id="sync-btn"
+                      onClick={async (e) => {
+                        const btn = e.currentTarget;
+                        btn.disabled = true;
+                        btn.innerText = "Syncing...";
                         const secret = password || localStorage.getItem('admin_pwd') || '';
                         try {
                           const res = await fetch('/api/health', {
                             headers: { 'x-admin-password': secret }
                           });
-                          if (res.ok) alert("System sync triggered successfully. Titles updated.");
-                          else alert("Sync failed.");
+                          const data = await res.json();
+                          if (res.ok) {
+                            alert(`Sync complete! DB: ${data.dbType}. Titles updated.`);
+                            window.location.reload(); // Refresh to see changes
+                          } else {
+                            alert("Sync failed: " + (data.error || "Unknown error"));
+                          }
                         } catch (err) {
                           alert("Network error triggering sync.");
+                        } finally {
+                          btn.disabled = false;
+                          btn.innerText = "Force Sync Content";
                         }
                       }}
-                      className="btn-outline w-full py-3 text-sm"
+                      className="btn-outline w-full py-3 text-sm disabled:opacity-50"
                     >
                       Force Sync Content
                     </button>
