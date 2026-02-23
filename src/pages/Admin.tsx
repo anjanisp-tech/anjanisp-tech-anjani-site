@@ -557,36 +557,63 @@ export default function Admin() {
                       Verify your Resend configuration by sending a test email to <strong>contact@anjanipandey.com</strong>.
                     </p>
                     <div id="env-debug"></div>
-                    <button 
-                      id="test-email-btn"
-                      onClick={async (e) => {
-                        const btn = e.currentTarget;
-                        btn.disabled = true;
-                        btn.innerText = "Sending...";
-                        const secret = password || localStorage.getItem('admin_pwd') || '';
-                        try {
-                          const res = await fetch('/api/admin/test-email', {
-                            method: 'POST',
-                            headers: { 'x-admin-password': secret }
-                          });
-                          const data = await res.json();
-                          if (res.ok) alert("Success: " + data.message);
-                          else {
-                            let msg = data.error || "Unknown error";
-                            if (data.details) msg += "\n\nDetails: " + data.details;
-                            alert("Error: " + msg);
+                    <div className="flex flex-col gap-3 mt-6">
+                      <button 
+                        id="test-email-btn"
+                        onClick={async (e) => {
+                          const btn = e.currentTarget;
+                          btn.disabled = true;
+                          btn.innerText = "Sending...";
+                          const secret = password || localStorage.getItem('admin_pwd') || '';
+                          try {
+                            const res = await fetch('/api/admin/test-email', {
+                              method: 'POST',
+                              headers: { 'x-admin-password': secret }
+                            });
+                            const data = await res.json();
+                            if (res.ok) alert("Success: " + data.message);
+                            else {
+                              let msg = data.error || "Unknown error";
+                              if (data.details) msg += "\n\nDetails: " + data.details;
+                              alert("Error: " + msg);
+                            }
+                          } catch (err) {
+                            alert("Network error sending test email.");
+                          } finally {
+                            btn.disabled = false;
+                            btn.innerText = "Send Test Email";
                           }
-                        } catch (err) {
-                          alert("Network error sending test email.");
-                        } finally {
-                          btn.disabled = false;
-                          btn.innerText = "Send Test Email";
-                        }
-                      }}
-                      className="btn-primary w-full py-3 text-sm disabled:opacity-50"
-                    >
-                      Send Test Email
-                    </button>
+                        }}
+                        className="btn-primary w-full py-3 text-sm disabled:opacity-50"
+                      >
+                        Send Test Email
+                      </button>
+
+                      <button 
+                        onClick={async (e) => {
+                          if (!confirm("This will kill the server process to force a reload of environment variables. The app will be offline for a few seconds. Continue?")) return;
+                          const btn = e.currentTarget;
+                          btn.disabled = true;
+                          btn.innerText = "Restarting...";
+                          const secret = password || localStorage.getItem('admin_pwd') || '';
+                          try {
+                            const res = await fetch('/api/admin/restart-server', {
+                              method: 'POST',
+                              headers: { 'x-admin-password': secret }
+                            });
+                            const data = await res.json();
+                            alert(data.message);
+                            setTimeout(() => window.location.reload(), 3000);
+                          } catch (err) {
+                            alert("Server is restarting...");
+                            setTimeout(() => window.location.reload(), 3000);
+                          }
+                        }}
+                        className="text-[10px] font-bold uppercase tracking-widest text-red-500/50 hover:text-red-500 transition-colors py-2 border border-red-500/20 rounded-lg hover:bg-red-50"
+                      >
+                        Hard Restart Server
+                      </button>
+                    </div>
                   </div>
 
                   <div className="p-6 bg-muted/30 rounded-2xl border border-border space-y-4">

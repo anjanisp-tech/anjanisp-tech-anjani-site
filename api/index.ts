@@ -219,24 +219,25 @@ const adminAuth = (req: any, res: any, next: any) => {
 // Notification Helper
 async function sendNotification(subject: string, message: string) {
   const recipient = "contact@anjanipandey.com";
-  const apiKey = process.env.RESEND_API_KEY;
+  // Check both standard and VITE_ prefixed keys
+  const apiKey = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
   
   console.log(`[NOTIFICATION ATTEMPT] Subject: ${subject}`);
   
   if (!apiKey) {
-    const errorMsg = "RESEND_API_KEY is missing from environment variables.";
+    const errorMsg = "RESEND_API_KEY is missing from environment variables. Please ensure it is set in the Secrets tab of AI Studio.";
     console.error(`[NOTIFICATION ERROR] ${errorMsg}`);
     throw new Error(errorMsg);
   }
 
   if (!apiKey.startsWith('re_')) {
-    const errorMsg = "RESEND_API_KEY appears invalid (should start with 're_').";
+    const errorMsg = `RESEND_API_KEY appears invalid (starts with '${apiKey.substring(0, 3)}...', should start with 're_').`;
     console.error(`[NOTIFICATION ERROR] ${errorMsg}`);
     throw new Error(errorMsg);
   }
 
   try {
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+    const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.VITE_RESEND_FROM_EMAIL || 'onboarding@resend.dev';
     console.log(`[RESEND] Sending from: ${fromEmail} to: ${recipient}`);
     
     const response = await fetch('https://api.resend.com/emails', {
@@ -397,6 +398,14 @@ router.post("/api/admin/test-email", adminAuth, async (req, res) => {
   }
 });
 
+router.post("/api/admin/restart-server", adminAuth, (req, res) => {
+  console.log("[ADMIN] Manual server restart requested.");
+  res.json({ success: true, message: "Server process exiting. The platform should restart it automatically." });
+  setTimeout(() => {
+    process.exit(0);
+  }, 1000);
+});
+
 // API Routes
 router.get("/api/health", async (req, res) => {
   try {
@@ -422,7 +431,12 @@ router.get("/api/health", async (req, res) => {
         hasResendKey: !!resendKey,
         resendKeyLength: resendKey ? resendKey.length : 0,
         fromEmail: process.env.RESEND_FROM_EMAIL || process.env.VITE_RESEND_FROM_EMAIL || 'default',
-        allKeys: Object.keys(process.env).filter(k => k.includes('RESEND') || k.includes('ADMIN'))
+        allKeys: Object.keys(process.env).filter(k => 
+          k.toUpperCase().includes('RESEND') || 
+          k.toUpperCase().includes('ADMIN') ||
+          k.toUpperCase().includes('POSTGRES') ||
+          k.toUpperCase().includes('VITE_')
+        )
       }
     });
   } catch (err: any) {
