@@ -8,6 +8,7 @@ import BookCall from './pages/BookCall';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Admin from './pages/Admin';
+import Sitemap from './pages/Sitemap';
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/sitemap" element={<Sitemap />} />
         </Routes>
       </Layout>
     </Router>

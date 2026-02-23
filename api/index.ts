@@ -16,39 +16,11 @@ if (isPostgres) {
 
 // SQLite Fallback (for local/preview without Postgres)
 let sqliteDb: any;
-if (!isPostgres) {
-  console.log("Using SQLite fallback");
-  const dbPath = path.join(process.cwd(), "blog.db");
-  sqliteDb = new Database(dbPath);
-  sqliteDb.exec(`
-    CREATE TABLE IF NOT EXISTS posts (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      date TEXT NOT NULL,
-      category TEXT NOT NULL,
-      excerpt TEXT NOT NULL,
-      content TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    CREATE TABLE IF NOT EXISTS comments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      post_id TEXT NOT NULL,
-      parent_id INTEGER DEFAULT NULL,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      website TEXT,
-      phone TEXT,
-      comment TEXT NOT NULL,
-      is_admin INTEGER DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    CREATE TABLE IF NOT EXISTS subscriptions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT UNIQUE NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
 
+function seedSqlite() {
+  if (isPostgres) return;
+  
+  console.log("Seeding SQLite database...");
   const initialPosts = [
     {
       id: "founder-overload-map",
@@ -83,6 +55,42 @@ if (!isPostgres) {
       ON CONFLICT(id) DO UPDATE SET title = excluded.title
     `).run(p.id, p.title, p.date, p.category, p.excerpt, p.content);
   }
+  console.log("SQLite seeding complete.");
+}
+
+if (!isPostgres) {
+  console.log("Using SQLite fallback");
+  const dbPath = path.join(process.cwd(), "blog.db");
+  sqliteDb = new Database(dbPath);
+  sqliteDb.exec(`
+    CREATE TABLE IF NOT EXISTS posts (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      date TEXT NOT NULL,
+      category TEXT NOT NULL,
+      excerpt TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS comments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      post_id TEXT NOT NULL,
+      parent_id INTEGER DEFAULT NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      website TEXT,
+      phone TEXT,
+      comment TEXT NOT NULL,
+      is_admin INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS subscriptions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+  seedSqlite();
 }
 
 async function initDb() {
@@ -177,6 +185,8 @@ async function initDb() {
 router.use(async (req, res, next) => {
   if (isPostgres) {
     await initDb();
+  } else {
+    seedSqlite();
   }
   next();
 });
@@ -200,6 +210,10 @@ async function sendNotification(subject: string, message: string) {
   
   if (process.env.RESEND_API_KEY) {
     try {
+      // Use onboarding@resend.dev if domain is not verified
+      // Most users start with this. If they have a verified domain, they can change it.
+      const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+      
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -207,7 +221,7 @@ async function sendNotification(subject: string, message: string) {
           'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
         },
         body: JSON.stringify({
-          from: 'Anjani Pandey Site <notifications@anjanipandey.com>',
+          from: `Anjani Pandey Site <${fromEmail}>`,
           to: [recipient],
           subject: subject,
           text: message
@@ -286,6 +300,70 @@ async function runOptimization() {
 setInterval(runOptimization, 24 * 60 * 60 * 1000);
 // Also run once on startup after a short delay
 setTimeout(runOptimization, 10000);
+
+// Sitemap Route
+router.get("/sitemap.xml", async (req, res) => {
+  try {
+    let posts: any[] = [];
+    if (isPostgres) {
+      const { rows } = await sql`SELECT id, created_at FROM posts`;
+      posts = rows;
+    } else {
+      posts = sqliteDb.prepare("SELECT id, created_at FROM posts").all();
+    }
+
+    const baseUrl = process.env.APP_URL || 'https://www.anjanipandey.com';
+    
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${baseUrl}/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/services</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/blog</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/book</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+
+    posts.forEach(post => {
+      xml += `
+  <url>
+    <loc>${baseUrl}/blog/${post.id}</loc>
+    <lastmod>${new Date(post.created_at || Date.now()).toISOString().split('T')[0]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+    });
+
+    xml += `\n</urlset>`;
+    
+    res.header('Content-Type', 'application/xml');
+    res.send(xml);
+  } catch (err) {
+    res.status(500).send("Error generating sitemap");
+  }
+});
+
+router.post("/api/admin/test-email", adminAuth, async (req, res) => {
+  try {
+    await sendNotification("Test Email", "This is a test email to verify your Resend configuration.");
+    res.json({ success: true, message: "Test email sent. Check your inbox (and spam folder)." });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to send test email", details: err.message });
+  }
+});
 
 // API Routes
 router.get("/api/health", async (req, res) => {

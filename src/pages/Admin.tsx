@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail } from 'lucide-react';
+import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Comment {
   id: number;
@@ -18,7 +19,7 @@ export default function Admin() {
     return typeof window !== 'undefined' && localStorage.getItem('admin_auth') === 'true';
   });
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers'>('comments');
+  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers' | 'system'>('comments');
   const [comments, setComments] = useState<Comment[]>([]);
   const [subscribers, setSubscribers] = useState<{ id: number, email: string, created_at: string }[]>([]);
   const [replyTo, setReplyTo] = useState<number | null>(null);
@@ -271,6 +272,12 @@ export default function Admin() {
                 <Mail size={18} /> Subscribers
               </button>
               <button 
+                onClick={() => setActiveTab('system')}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'system' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
+              >
+                <Rocket size={18} /> System
+              </button>
+              <button 
                 onClick={handleLogout}
                 className="flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold text-red-400 hover:text-red-600 transition-all"
               >
@@ -495,6 +502,81 @@ export default function Admin() {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+          
+          {activeTab === 'system' && (
+            <div className="space-y-8 max-w-4xl mx-auto">
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-6">System Controls</h2>
+                
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="p-6 bg-muted/30 rounded-2xl border border-border space-y-4">
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                      <Mail className="text-accent" size={20} /> Email Notifications
+                    </h3>
+                    <p className="text-sm text-accent-light">
+                      Verify your Resend configuration by sending a test email to <strong>contact@anjanipandey.com</strong>.
+                    </p>
+                    <button 
+                      onClick={async () => {
+                        const secret = password || localStorage.getItem('admin_pwd') || '';
+                        try {
+                          const res = await fetch('/api/admin/test-email', {
+                            method: 'POST',
+                            headers: { 'x-admin-password': secret }
+                          });
+                          const data = await res.json();
+                          if (res.ok) alert(data.message);
+                          else alert("Error: " + data.error);
+                        } catch (err) {
+                          alert("Network error sending test email.");
+                        }
+                      }}
+                      className="btn-primary w-full py-3 text-sm"
+                    >
+                      Send Test Email
+                    </button>
+                  </div>
+
+                  <div className="p-6 bg-muted/30 rounded-2xl border border-border space-y-4">
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                      <FileText className="text-accent" size={20} /> Content Sync
+                    </h3>
+                    <p className="text-sm text-accent-light">
+                      Force update blog titles and structure across the database to match the latest system standards.
+                    </p>
+                    <button 
+                      onClick={async () => {
+                        const secret = password || localStorage.getItem('admin_pwd') || '';
+                        try {
+                          const res = await fetch('/api/health', {
+                            headers: { 'x-admin-password': secret }
+                          });
+                          if (res.ok) alert("System sync triggered successfully. Titles updated.");
+                          else alert("Sync failed.");
+                        } catch (err) {
+                          alert("Network error triggering sync.");
+                        }
+                      }}
+                      className="btn-outline w-full py-3 text-sm"
+                    >
+                      Force Sync Content
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-8 p-6 bg-blue-50 border border-blue-100 rounded-2xl">
+                  <h3 className="text-blue-800 font-bold mb-2">SEO & Sitemap</h3>
+                  <p className="text-sm text-blue-700 mb-4">
+                    Your sitemap is automatically generated and updated. You can view it here:
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <a href="/sitemap.xml" target="_blank" className="text-accent font-bold hover:underline text-sm">/sitemap.xml (Technical)</a>
+                    <Link to="/sitemap" className="text-accent font-bold hover:underline text-sm">/sitemap (Visual)</Link>
+                  </div>
+                </div>
               </div>
             </div>
           )}
