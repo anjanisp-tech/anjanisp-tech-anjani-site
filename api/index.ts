@@ -48,6 +48,41 @@ if (!isPostgres) {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  const initialPosts = [
+    {
+      id: "founder-overload-map",
+      title: "THE FOUNDER OVERLOAD MAP",
+      date: "18-Feb-2026",
+      category: "Operations",
+      excerpt: "If your company stops moving when you step away, you did not build a business. You built a dependency engine. Learn how to diagnose and fix the structural gaps causing founder overload.",
+      content: "Many leaders assume exhaustion is the price of ambition. It is not. Sustainable companies do not demand constant founder energy. They demand sound operating design.\n\nBurnout is usually diagnosed as a personal issue. In practice, it is structural. When execution depends on one person, growth multiplies pressure instead of results.\n\nHere is the pattern visible across scaling firms.\n\n### SYMPTOMS\n\nWhen founders become the system, certain signals appear:\n\n* Decisions require their validation\n* Teams escalate small issues upward\n* Calendars fill with alignment meetings\n* Work slows during their absence\n\nThese symptoms often get misread as growth complexity. They are actually architecture gaps."
+    },
+    {
+      id: "systems-outlast-heroics",
+      title: "WHY SPEED BECOMES DANGEROUS INSIDE GROWING ORGANIZATIONS",
+      date: "19-Feb-2026",
+      category: "Scaling",
+      excerpt: "Heroic execution works until complexity increases. Learn why systems, not stamina, are the key to winning at scale and building a durable organization.",
+      content: "Many early stage companies grow on momentum. A founder pushes hard. A small team stretches capacity. Strong performers step up repeatedly. Results improve.\n\nThis phase creates confidence. It also creates risk.\n\nHeroic execution works because complexity is still manageable. Decisions are fast. Communication is direct. Corrections happen instantly. Intensity compensates for missing structure."
+    },
+    {
+      id: "hiring-trap-growing-companies",
+      title: "THE HIRING TRAP MOST GROWING COMPANIES FALL INTO",
+      date: "21-Feb-2026",
+      category: "Scaling",
+      excerpt: "Hiring increases capacity, but it doesn't improve design. Discover why adding headcount to a broken process only multiplies your problems.",
+      content: "Growth creates pressure. Pressure creates friction. Many leaders respond by adding people.\n\nAt first, this works. Output increases. Deadlines are met. Stress drops.\n\nBut over time, something strange happens. Hiring keeps increasing while efficiency stays flat.\n\nThis pattern reveals a structural issue.\n\n**Hiring increases capacity. It does not improve design.**"
+    }
+  ];
+
+  for (const p of initialPosts) {
+    sqliteDb.prepare(`
+      INSERT INTO posts (id, title, date, category, excerpt, content)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET title = excluded.title
+    `).run(p.id, p.title, p.date, p.category, p.excerpt, p.content);
+  }
 }
 
 async function initDb() {
@@ -93,41 +128,44 @@ async function initDb() {
       
       // Check if seed data is needed
       const { rowCount } = await sql`SELECT id FROM posts LIMIT 1`;
-      if (rowCount === 0) {
-        console.log("Seeding initial posts to Postgres...");
-        const initialPosts = [
-          {
-            id: "founder-overload-map",
-            title: "THE FOUNDER OVERLOAD MAP",
-            date: "18-Feb-2026",
-            category: "Operations",
-            excerpt: "If your company stops moving when you step away, you did not build a business. You built a dependency engine. Learn how to diagnose and fix the structural gaps causing founder overload.",
-            content: "Many leaders assume exhaustion is the price of ambition. It is not. Sustainable companies do not demand constant founder energy. They demand sound operating design.\n\nBurnout is usually diagnosed as a personal issue. In practice, it is structural. When execution depends on one person, growth multiplies pressure instead of results.\n\nHere is the pattern visible across scaling firms.\n\n### SYMPTOMS\n\nWhen founders become the system, certain signals appear:\n\n* Decisions require their validation\n* Teams escalate small issues upward\n* Calendars fill with alignment meetings\n* Work slows during their absence\n\nThese symptoms often get misread as growth complexity. They are actually architecture gaps."
-          },
-          {
-            id: "systems-outlast-heroics",
-            title: "WHY SPEED BECOMES DANGEROUS INSIDE GROWING ORGANIZATIONS",
-            date: "19-Feb-2026",
-            category: "Scaling",
-            excerpt: "Heroic execution works until complexity increases. Learn why systems, not stamina, are the key to winning at scale and building a durable organization.",
-            content: "Many early stage companies grow on momentum. A founder pushes hard. A small team stretches capacity. Strong performers step up repeatedly. Results improve.\n\nThis phase creates confidence. It also creates risk.\n\nHeroic execution works because complexity is still manageable. Decisions are fast. Communication is direct. Corrections happen instantly. Intensity compensates for missing structure."
-          },
-          {
-            id: "hiring-trap-growing-companies",
-            title: "THE HIRING TRAP MOST GROWING COMPANIES FALL INTO",
-            date: "21-Feb-2026",
-            category: "Scaling",
-            excerpt: "Hiring increases capacity, but it doesn't improve design. Discover why adding headcount to a broken process only multiplies your problems.",
-            content: "Growth creates pressure. Pressure creates friction. Many leaders respond by adding people.\n\nAt first, this works. Output increases. Deadlines are met. Stress drops.\n\nBut over time, something strange happens. Hiring keeps increasing while efficiency stays flat.\n\nThis pattern reveals a structural issue.\n\n**Hiring increases capacity. It does not improve design.**"
-          }
-        ];
-        for (const p of initialPosts) {
-          await sql`
-            INSERT INTO posts (id, title, date, category, excerpt, content)
-            VALUES (${p.id}, ${p.title}, ${p.date}, ${p.category}, ${p.excerpt}, ${p.content})
-            ON CONFLICT (id) DO NOTHING
-          `;
+      
+      const initialPosts = [
+        {
+          id: "founder-overload-map",
+          title: "THE FOUNDER OVERLOAD MAP",
+          date: "18-Feb-2026",
+          category: "Operations",
+          excerpt: "If your company stops moving when you step away, you did not build a business. You built a dependency engine. Learn how to diagnose and fix the structural gaps causing founder overload.",
+          content: "Many leaders assume exhaustion is the price of ambition. It is not. Sustainable companies do not demand constant founder energy. They demand sound operating design.\n\nBurnout is usually diagnosed as a personal issue. In practice, it is structural. When execution depends on one person, growth multiplies pressure instead of results.\n\nHere is the pattern visible across scaling firms.\n\n### SYMPTOMS\n\nWhen founders become the system, certain signals appear:\n\n* Decisions require their validation\n* Teams escalate small issues upward\n* Calendars fill with alignment meetings\n* Work slows during their absence\n\nThese symptoms often get misread as growth complexity. They are actually architecture gaps."
+        },
+        {
+          id: "systems-outlast-heroics",
+          title: "WHY SPEED BECOMES DANGEROUS INSIDE GROWING ORGANIZATIONS",
+          date: "19-Feb-2026",
+          category: "Scaling",
+          excerpt: "Heroic execution works until complexity increases. Learn why systems, not stamina, are the key to winning at scale and building a durable organization.",
+          content: "Many early stage companies grow on momentum. A founder pushes hard. A small team stretches capacity. Strong performers step up repeatedly. Results improve.\n\nThis phase creates confidence. It also creates risk.\n\nHeroic execution works because complexity is still manageable. Decisions are fast. Communication is direct. Corrections happen instantly. Intensity compensates for missing structure."
+        },
+        {
+          id: "hiring-trap-growing-companies",
+          title: "THE HIRING TRAP MOST GROWING COMPANIES FALL INTO",
+          date: "21-Feb-2026",
+          category: "Scaling",
+          excerpt: "Hiring increases capacity, but it doesn't improve design. Discover why adding headcount to a broken process only multiplies your problems.",
+          content: "Growth creates pressure. Pressure creates friction. Many leaders respond by adding people.\n\nAt first, this works. Output increases. Deadlines are met. Stress drops.\n\nBut over time, something strange happens. Hiring keeps increasing while efficiency stays flat.\n\nThis pattern reveals a structural issue.\n\n**Hiring increases capacity. It does not improve design.**"
         }
+      ];
+
+      for (const p of initialPosts) {
+        await sql`
+          INSERT INTO posts (id, title, date, category, excerpt, content)
+          VALUES (${p.id}, ${p.title}, ${p.date}, ${p.category}, ${p.excerpt}, ${p.content})
+          ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title
+        `;
+      }
+
+      if (rowCount === 0) {
+        console.log("Seeding initial posts to Postgres complete.");
       }
     } catch (err) {
       console.error("Postgres Init Error:", err);
@@ -160,12 +198,9 @@ async function sendNotification(subject: string, message: string) {
   console.log(`[NOTIFICATION] To: ${recipient} | Subject: ${subject}`);
   console.log(`Message: ${message}`);
   
-  // In a real app, you would use a service like Resend or SendGrid here.
-  // Example with Resend:
-  /*
   if (process.env.RESEND_API_KEY) {
     try {
-      await fetch('https://api.resend.com/emails', {
+      const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -178,12 +213,79 @@ async function sendNotification(subject: string, message: string) {
           text: message
         })
       });
+      if (response.ok) {
+        console.log("Email notification sent successfully via Resend.");
+      } else {
+        const errData = await response.json();
+        console.error("Failed to send email via Resend:", response.status, errData);
+      }
     } catch (err) {
       console.error("Failed to send email via Resend:", err);
     }
+  } else {
+    console.log("RESEND_API_KEY not found. Email notification skipped (logged to console only).");
   }
-  */
 }
+
+// Optimization Logic (SEO & Content)
+async function runOptimization() {
+  console.log(`[${new Date().toISOString()}] Running scheduled SEO optimization...`);
+  try {
+    let posts: any[] = [];
+    if (isPostgres) {
+      const { rows } = await sql`SELECT * FROM posts`;
+      posts = rows;
+    } else {
+      posts = sqliteDb.prepare("SELECT * FROM posts").all();
+    }
+
+    for (const post of posts) {
+      let content = post.content;
+      let changed = false;
+
+      // 1. Ensure structure (H2, H3)
+      if (!content.includes("##")) {
+        content = content.replace(/###/g, "##");
+        changed = true;
+      }
+
+      // 2. Add Summary Block if missing
+      if (!content.includes("## Summary")) {
+        content += `\n\n## Summary\nThis article explores the critical transition from founder-led heroics to system-driven execution. By designing robust operating models, businesses can scale without compounding pressure on leadership.`;
+        changed = true;
+      }
+
+      // 3. Add Decision Checklist if missing
+      if (!content.includes("Decision Checklist")) {
+        content += `\n\n## Decision Checklist\n- [ ] Identify current bottlenecks in decision-making\n- [ ] Map decision ownership to specific roles\n- [ ] Document the 'Operating Spine' of your core processes\n- [ ] Test system resilience by removing founder involvement from a single workflow`;
+        changed = true;
+      }
+
+      // 4. Reinforce conceptual language
+      if (!content.includes("Operating Spine")) {
+        content = content.replace(/operating design/gi, "Operating Spine (operating design)");
+        changed = true;
+      }
+
+      if (changed) {
+        if (isPostgres) {
+          await sql`UPDATE posts SET content = ${content} WHERE id = ${post.id}`;
+        } else {
+          sqliteDb.prepare("UPDATE posts SET content = ? WHERE id = ?").run(content, post.id);
+        }
+        console.log(`Optimized post: ${post.id}`);
+      }
+    }
+    console.log("Optimization cycle complete.");
+  } catch (err) {
+    console.error("Optimization error:", err);
+  }
+}
+
+// Run optimization every 24 hours
+setInterval(runOptimization, 24 * 60 * 60 * 1000);
+// Also run once on startup after a short delay
+setTimeout(runOptimization, 10000);
 
 // API Routes
 router.get("/api/health", async (req, res) => {
