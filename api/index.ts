@@ -409,7 +409,7 @@ router.get("/api/health", async (req, res) => {
       seedSqlite();
     }
     
-    const resendKey = process.env.RESEND_API_KEY;
+    const resendKey = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
     const isResendConfigured = !!resendKey && resendKey.startsWith('re_');
 
     res.json({ 
@@ -421,7 +421,8 @@ router.get("/api/health", async (req, res) => {
       envCheck: {
         hasResendKey: !!resendKey,
         resendKeyLength: resendKey ? resendKey.length : 0,
-        fromEmail: process.env.RESEND_FROM_EMAIL || 'default'
+        fromEmail: process.env.RESEND_FROM_EMAIL || process.env.VITE_RESEND_FROM_EMAIL || 'default',
+        allKeys: Object.keys(process.env).filter(k => k.includes('RESEND') || k.includes('ADMIN'))
       }
     });
   } catch (err: any) {

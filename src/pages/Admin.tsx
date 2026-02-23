@@ -102,6 +102,12 @@ export default function Admin() {
               <div class="flex justify-between"><span>FROM_EMAIL:</span> <span>${data.envCheck.fromEmail}</span></div>
               <div class="flex justify-between"><span>DB_TYPE:</span> <span>${data.dbType}</span></div>
               <div class="flex justify-between"><span>LAST_SYNC:</span> <span>${new Date(data.initializedAt).toLocaleTimeString()}</span></div>
+              <div class="mt-2 pt-2 border-t border-black/10">
+                <div class="mb-1 opacity-50">Detected Keys:</div>
+                <div class="flex flex-wrap gap-1">
+                  ${data.envCheck.allKeys.map((k: string) => `<span class="bg-black/10 px-1 rounded">${k}</span>`).join('')}
+                </div>
+              </div>
             </div>
           `;
         }
