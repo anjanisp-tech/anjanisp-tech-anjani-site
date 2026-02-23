@@ -1,6 +1,6 @@
 // Deployment Sync Test: 2026-02-21
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Linkedin, Facebook, Instagram, Globe, BookOpen } from 'lucide-react';
+import { Menu, X, Linkedin, Facebook, Instagram, Globe, BookOpen, ArrowLeft } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function Layout({ children }: { children: React.ReactNode }) {

@@ -76,7 +76,7 @@ If your company stops moving when you step away, you did not build a business. Y
   },
   {
     id: "systems-outlast-heroics",
-    title: "SYSTEMS OUTLAST HEROICS",
+    title: "WHY SPEED BECOMES DANGEROUS INSIDE GROWING ORGANIZATIONS",
     date: "19-Feb-2026",
     category: "Scaling",
     excerpt: "Heroic execution works until complexity increases. Learn why systems, not stamina, are the key to winning at scale and building a durable organization.",

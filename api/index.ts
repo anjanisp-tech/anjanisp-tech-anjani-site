@@ -3,8 +3,8 @@ import { sql } from "@vercel/postgres";
 import Database from "better-sqlite3";
 import path from "path";
 
-const app = express();
-app.use(express.json());
+const router = express.Router();
+router.use(express.json());
 
 const dbInitializedAt = new Date().toISOString();
 const isPostgres = !!(process.env.POSTGRES_URL || process.env.DATABASE_URL);
@@ -136,7 +136,7 @@ async function initDb() {
 }
 
 // Ensure DB is initialized on every request in production
-app.use(async (req, res, next) => {
+router.use(async (req, res, next) => {
   if (isPostgres) {
     await initDb();
   }
@@ -186,7 +186,7 @@ async function sendNotification(subject: string, message: string) {
 }
 
 // API Routes
-app.get("/api/health", async (req, res) => {
+router.get("/api/health", async (req, res) => {
   await initDb();
   res.json({ 
     status: "ok", 
@@ -195,7 +195,7 @@ app.get("/api/health", async (req, res) => {
   });
 });
 
-app.get("/api/debug", async (req, res) => {
+router.get("/api/debug", async (req, res) => {
   try {
     let postCount, commentCount;
     if (isPostgres) {
@@ -217,7 +217,7 @@ app.get("/api/debug", async (req, res) => {
   }
 });
 
-app.get("/api/posts", async (req, res) => {
+router.get("/api/posts", async (req, res) => {
   try {
     if (isPostgres) {
       const { rows } = await sql`SELECT * FROM posts ORDER BY created_at DESC`;
@@ -231,7 +231,7 @@ app.get("/api/posts", async (req, res) => {
   }
 });
 
-app.get("/api/posts/:id", async (req, res) => {
+router.get("/api/posts/:id", async (req, res) => {
   try {
     if (isPostgres) {
       const { rows } = await sql`SELECT * FROM posts WHERE id = ${req.params.id}`;
@@ -247,7 +247,7 @@ app.get("/api/posts/:id", async (req, res) => {
   }
 });
 
-app.post("/api/admin/posts", adminAuth, async (req, res) => {
+router.post("/api/admin/posts", adminAuth, async (req, res) => {
   const { title, date, category, excerpt, content } = req.body;
   const id = title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
   try {
@@ -271,7 +271,7 @@ app.post("/api/admin/posts", adminAuth, async (req, res) => {
   }
 });
 
-app.get("/api/blog/:id/comments", async (req, res) => {
+router.get("/api/blog/:id/comments", async (req, res) => {
   try {
     if (isPostgres) {
       const { rows } = await sql`SELECT * FROM comments WHERE post_id = ${req.params.id} ORDER BY created_at ASC`;
@@ -285,7 +285,7 @@ app.get("/api/blog/:id/comments", async (req, res) => {
   }
 });
 
-app.post("/api/blog/:id/comments", async (req, res) => {
+router.post("/api/blog/:id/comments", async (req, res) => {
   const { id } = req.params;
   const { name, email, website, phone, comment, parent_id, is_admin } = req.body;
   try {
@@ -312,7 +312,7 @@ app.post("/api/blog/:id/comments", async (req, res) => {
   }
 });
 
-app.get("/api/admin/comments", adminAuth, async (req, res) => {
+router.get("/api/admin/comments", adminAuth, async (req, res) => {
   try {
     if (isPostgres) {
       const { rows } = await sql`
@@ -336,7 +336,7 @@ app.get("/api/admin/comments", adminAuth, async (req, res) => {
   }
 });
 
-app.delete("/api/admin/comments/:id", adminAuth, async (req, res) => {
+router.delete("/api/admin/comments/:id", adminAuth, async (req, res) => {
   try {
     if (isPostgres) {
       await sql`DELETE FROM comments WHERE id = ${req.params.id} OR parent_id = ${req.params.id}`;
@@ -350,7 +350,7 @@ app.delete("/api/admin/comments/:id", adminAuth, async (req, res) => {
   }
 });
 
-app.post("/api/subscribe", async (req, res) => {
+router.post("/api/subscribe", async (req, res) => {
   const { email } = req.body;
   console.log("Subscription request received for:", email);
   if (!email) return res.status(400).json({ error: "Email is required" });
@@ -374,7 +374,7 @@ app.post("/api/subscribe", async (req, res) => {
   }
 });
 
-app.get("/api/admin/subscriptions", adminAuth, async (req, res) => {
+router.get("/api/admin/subscriptions", adminAuth, async (req, res) => {
   try {
     if (isPostgres) {
       const { rows } = await sql`SELECT * FROM subscriptions ORDER BY created_at DESC`;
@@ -393,9 +393,12 @@ app.get("/api/admin/subscriptions", adminAuth, async (req, res) => {
 const isMain = import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('api/index.ts');
 if (isMain && process.env.NODE_ENV !== "production") {
   const PORT = 3000;
+  const app = express();
+  app.use(express.json());
+  app.use(router);
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`API-only server running on http://localhost:${PORT}`);
   });
 }
 
-export default app;
+export default router;
