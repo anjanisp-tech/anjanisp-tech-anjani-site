@@ -102,6 +102,7 @@ export default function Admin() {
               <div class="flex justify-between"><span>FROM_EMAIL:</span> <span>${data.envCheck.fromEmail}</span></div>
               <div class="flex justify-between"><span>DB_TYPE:</span> <span>${data.dbType}</span></div>
               <div class="flex justify-between"><span>LAST_SYNC:</span> <span>${new Date(data.initializedAt).toLocaleTimeString()}</span></div>
+              <div class="flex justify-between"><span>OVERRIDE:</span> <span class="${data.envCheck.usingOverrideFile ? 'text-emerald-500 font-bold' : ''}">${data.envCheck.usingOverrideFile ? 'ACTIVE' : 'NONE'}</span></div>
               <div class="mt-2 pt-2 border-t border-black/10">
                 <div class="mb-1 opacity-50">Detected Keys:</div>
                 <div class="flex flex-wrap gap-1">
@@ -557,6 +558,50 @@ export default function Admin() {
                       Verify your Resend configuration by sending a test email to <strong>contact@anjanipandey.com</strong>.
                     </p>
                     <div id="env-debug"></div>
+                    
+                    <div className="mt-6 p-4 bg-muted/50 rounded-xl border border-border/50">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-accent/40 block mb-2">Manual Key Override</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="password" 
+                          id="manual-resend-key"
+                          placeholder="re_..."
+                          className="flex-1 px-3 py-2 text-xs rounded border border-border outline-none focus:border-accent"
+                        />
+                        <button 
+                          onClick={async (e) => {
+                            const input = document.getElementById('manual-resend-key') as HTMLInputElement;
+                            const key = input.value.trim();
+                            if (!key) return alert("Please enter a key");
+                            const secret = password || localStorage.getItem('admin_pwd') || '';
+                            try {
+                              const res = await fetch('/api/admin/save-resend-key', {
+                                method: 'POST',
+                                headers: { 
+                                  'Content-Type': 'application/json',
+                                  'x-admin-password': secret
+                                },
+                                body: JSON.stringify({ key })
+                              });
+                              const data = await res.json();
+                              if (res.ok) {
+                                alert(data.message);
+                                window.location.reload();
+                              } else {
+                                alert(data.error);
+                              }
+                            } catch (err) {
+                              alert("Failed to save key");
+                            }
+                          }}
+                          className="px-3 py-2 bg-accent text-white text-[10px] font-bold rounded hover:bg-accent-light transition-colors"
+                        >
+                          Save
+                        </button>
+                      </div>
+                      <p className="text-[9px] text-accent/40 mt-2 italic">Use this if AI Studio Secrets are not being detected.</p>
+                    </div>
+
                     <div className="flex flex-col gap-3 mt-6">
                       <button 
                         id="test-email-btn"

@@ -2,6 +2,32 @@ import express from "express";
 import { sql } from "@vercel/postgres";
 import Database from "better-sqlite3";
 import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const KEY_FILE = path.join(__dirname, "../../.resend_key");
+
+// Helper to get Resend Key with multiple fallbacks
+function getResendKey() {
+  // 1. Check local override file
+  if (fs.existsSync(KEY_FILE)) {
+    try {
+      return fs.readFileSync(KEY_FILE, 'utf8').trim();
+    } catch (e) {}
+  }
+
+  // 2. Check standard environment variables
+  const envKey = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
+  if (envKey && envKey.startsWith('re_')) return envKey;
+
+  // 3. Smart Search: Look for any env var that looks like a Resend key
+  const smartKey = Object.values(process.env).find(v => typeof v === 'string' && v.startsWith('re_'));
+  if (smartKey) return smartKey;
+
+  return null;
+}
 
 const router = express.Router();
 router.use(express.json());
@@ -219,13 +245,12 @@ const adminAuth = (req: any, res: any, next: any) => {
 // Notification Helper
 async function sendNotification(subject: string, message: string) {
   const recipient = "contact@anjanipandey.com";
-  // Check both standard and VITE_ prefixed keys
-  const apiKey = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
+  const apiKey = getResendKey();
   
   console.log(`[NOTIFICATION ATTEMPT] Subject: ${subject}`);
   
   if (!apiKey) {
-    const errorMsg = "RESEND_API_KEY is missing from environment variables. Please ensure it is set in the Secrets tab of AI Studio.";
+    const errorMsg = "RESEND_API_KEY is missing. Please set it in AI Studio Secrets OR use the Manual Override in the Admin panel.";
     console.error(`[NOTIFICATION ERROR] ${errorMsg}`);
     throw new Error(errorMsg);
   }
@@ -398,6 +423,20 @@ router.post("/api/admin/test-email", adminAuth, async (req, res) => {
   }
 });
 
+router.post("/api/admin/save-resend-key", adminAuth, (req, res) => {
+  const { key } = req.body;
+  if (!key || !key.startsWith('re_')) {
+    return res.status(400).json({ error: "Invalid key format. Must start with 're_'" });
+  }
+  try {
+    fs.writeFileSync(KEY_FILE, key, 'utf8');
+    console.log("[ADMIN] Resend key saved to local override file.");
+    res.json({ success: true, message: "Key saved successfully to server storage." });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to save key to disk", details: err.message });
+  }
+});
+
 router.post("/api/admin/restart-server", adminAuth, (req, res) => {
   console.log("[ADMIN] Manual server restart requested.");
   res.json({ success: true, message: "Server process exiting. The platform should restart it automatically." });
@@ -418,7 +457,7 @@ router.get("/api/health", async (req, res) => {
       seedSqlite();
     }
     
-    const resendKey = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
+    const resendKey = getResendKey();
     const isResendConfigured = !!resendKey && resendKey.startsWith('re_');
 
     res.json({ 
@@ -436,7 +475,8 @@ router.get("/api/health", async (req, res) => {
           k.toUpperCase().includes('ADMIN') ||
           k.toUpperCase().includes('POSTGRES') ||
           k.toUpperCase().includes('VITE_')
-        )
+        ),
+        usingOverrideFile: fs.existsSync(KEY_FILE)
       }
     });
   } catch (err: any) {
