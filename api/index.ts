@@ -164,12 +164,19 @@ async function initDb() {
         }
       ];
 
+      console.log(`Syncing ${initialPosts.length} posts to Postgres...`);
       for (const p of initialPosts) {
         await sql`
           INSERT INTO posts (id, title, date, category, excerpt, content)
           VALUES (${p.id}, ${p.title}, ${p.date}, ${p.category}, ${p.excerpt}, ${p.content})
-          ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title
+          ON CONFLICT (id) DO UPDATE SET 
+            title = EXCLUDED.title,
+            date = EXCLUDED.date,
+            category = EXCLUDED.category,
+            excerpt = EXCLUDED.excerpt,
+            content = EXCLUDED.content
         `;
+        console.log(`Synced post: ${p.id} - ${p.title}`);
       }
 
       if (rowCount === 0) {
@@ -205,12 +212,20 @@ const adminAuth = (req: any, res: any, next: any) => {
 // Notification Helper
 async function sendNotification(subject: string, message: string) {
   const recipient = "contact@anjanipandey.com";
+  const apiKey = process.env.RESEND_API_KEY;
+  
   console.log(`[NOTIFICATION ATTEMPT] Subject: ${subject}`);
   
-  if (!process.env.RESEND_API_KEY) {
-    console.log("[NOTIFICATION] RESEND_API_KEY missing. Logging to console only:");
-    console.log(`Subject: ${subject}\nMessage: ${message}`);
-    throw new Error("RESEND_API_KEY is not configured on the server.");
+  if (!apiKey) {
+    const errorMsg = "RESEND_API_KEY is missing from environment variables.";
+    console.error(`[NOTIFICATION ERROR] ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+
+  if (!apiKey.startsWith('re_')) {
+    const errorMsg = "RESEND_API_KEY appears invalid (should start with 're_').";
+    console.error(`[NOTIFICATION ERROR] ${errorMsg}`);
+    throw new Error(errorMsg);
   }
 
   try {
@@ -221,7 +236,7 @@ async function sendNotification(subject: string, message: string) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
         from: `Anjani Pandey Site <${fromEmail}>`,
@@ -237,7 +252,13 @@ async function sendNotification(subject: string, message: string) {
       return resData;
     } else {
       console.error("[RESEND] Error Response:", response.status, resData);
-      throw new Error(`Resend API error (${response.status}): ${JSON.stringify(resData)}`);
+      // Provide more helpful error messages for common Resend issues
+      let friendlyError = `Resend API error (${response.status})`;
+      if (resData.message) friendlyError += `: ${resData.message}`;
+      if (response.status === 403 && fromEmail === 'onboarding@resend.dev') {
+        friendlyError += ". Note: onboarding@resend.dev can only send to your own registered email address until you verify a domain.";
+      }
+      throw new Error(friendlyError);
     }
   } catch (err: any) {
     console.error("[RESEND] Fetch Error:", err);

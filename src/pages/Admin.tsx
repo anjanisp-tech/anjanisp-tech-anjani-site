@@ -565,7 +565,11 @@ export default function Admin() {
                           });
                           const data = await res.json();
                           if (res.ok) alert("Success: " + data.message);
-                          else alert("Error: " + (data.error || "Unknown error"));
+                          else {
+                            let msg = data.error || "Unknown error";
+                            if (data.details) msg += "\n\nDetails: " + data.details;
+                            alert("Error: " + msg);
+                          }
                         } catch (err) {
                           alert("Network error sending test email.");
                         } finally {
