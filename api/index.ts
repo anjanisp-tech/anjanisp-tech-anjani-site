@@ -93,10 +93,10 @@ if (!isPostgres) {
   seedSqlite();
 }
 
-async function initDb() {
+async function initDb(force = false) {
   if (isPostgres) {
     try {
-      console.log("Initializing Postgres tables...");
+      console.log(`Initializing Postgres tables (force=${force})...`);
       await sql`
         CREATE TABLE IF NOT EXISTS posts (
           id TEXT PRIMARY KEY,
@@ -164,23 +164,30 @@ async function initDb() {
         }
       ];
 
-      console.log(`Syncing ${initialPosts.length} posts to Postgres...`);
-      for (const p of initialPosts) {
-        await sql`
-          INSERT INTO posts (id, title, date, category, excerpt, content)
-          VALUES (${p.id}, ${p.title}, ${p.date}, ${p.category}, ${p.excerpt}, ${p.content})
-          ON CONFLICT (id) DO UPDATE SET 
-            title = EXCLUDED.title,
-            date = EXCLUDED.date,
-            category = EXCLUDED.category,
-            excerpt = EXCLUDED.excerpt,
-            content = EXCLUDED.content
-        `;
-        console.log(`Synced post: ${p.id} - ${p.title}`);
-      }
-
-      if (rowCount === 0) {
-        console.log("Seeding initial posts to Postgres complete.");
+      if (rowCount === 0 || force) {
+        console.log(`Aggressive Sync: Deleting and re-inserting ${initialPosts.length} posts...`);
+        // Clear existing to ensure fresh start with new titles/content
+        if (force) await sql`DELETE FROM posts`;
+        
+        for (const p of initialPosts) {
+          await sql`
+            INSERT INTO posts (id, title, date, category, excerpt, content)
+            VALUES (${p.id}, ${p.title}, ${p.date}, ${p.category}, ${p.excerpt}, ${p.content})
+            ON CONFLICT (id) DO UPDATE SET 
+              title = EXCLUDED.title,
+              date = EXCLUDED.date,
+              category = EXCLUDED.category,
+              excerpt = EXCLUDED.excerpt,
+              content = EXCLUDED.content
+          `;
+          console.log(`Synced post: ${p.id} - ${p.title}`);
+        }
+        
+        if (rowCount === 0) {
+          console.log("Seeding initial posts to Postgres complete.");
+        } else {
+          console.log("Force sync of posts to Postgres complete.");
+        }
       }
     } catch (err) {
       console.error("Postgres Init Error:", err);
@@ -393,9 +400,11 @@ router.post("/api/admin/test-email", adminAuth, async (req, res) => {
 // API Routes
 router.get("/api/health", async (req, res) => {
   try {
-    // Force re-initialization to ensure titles are updated
+    // Force re-initialization if requested
+    const force = req.query.force === 'true';
+    
     if (isPostgres) {
-      await initDb();
+      await initDb(force);
     } else {
       seedSqlite();
     }

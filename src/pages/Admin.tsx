@@ -602,7 +602,7 @@ export default function Admin() {
                         btn.innerText = "Syncing...";
                         const secret = password || localStorage.getItem('admin_pwd') || '';
                         try {
-                          const res = await fetch('/api/health', {
+                          const res = await fetch('/api/health?force=true', {
                             headers: { 'x-admin-password': secret }
                           });
                           const data = await res.json();
