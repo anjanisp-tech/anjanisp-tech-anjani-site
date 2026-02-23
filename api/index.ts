@@ -45,6 +45,14 @@ function getResendKey() {
 const router = express.Router();
 router.use(express.json());
 
+// Sanitize Postgres URLs (sometimes users copy the prefix by mistake)
+if (process.env.POSTGRES_URL?.includes('POSTGRES_URL=')) {
+  process.env.POSTGRES_URL = process.env.POSTGRES_URL.split('POSTGRES_URL=')[1];
+}
+if (process.env.DATABASE_URL?.includes('DATABASE_URL=')) {
+  process.env.DATABASE_URL = process.env.DATABASE_URL.split('DATABASE_URL=')[1];
+}
+
 const dbInitializedAt = new Date().toISOString();
 const isPostgres = !!(process.env.POSTGRES_URL || process.env.DATABASE_URL);
 console.log("Database configuration detected:", isPostgres ? "Postgres" : "SQLite");
