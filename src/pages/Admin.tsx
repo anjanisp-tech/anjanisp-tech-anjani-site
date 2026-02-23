@@ -85,13 +85,25 @@ export default function Admin() {
       fetch('/api/health').then(res => res.json()).then(data => {
         const resendEl = document.getElementById('resend-status');
         const dbEl = document.getElementById('db-status');
+        const envEl = document.getElementById('env-debug');
+        
         if (resendEl) {
-          resendEl.innerText = data.resendConfigured ? 'Configured' : 'Missing API Key';
+          resendEl.innerText = data.resendConfigured ? 'Configured' : 'Missing or Invalid API Key';
           resendEl.className = `px-2 py-0.5 rounded ${data.resendConfigured ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`;
         }
         if (dbEl) {
           dbEl.innerText = data.dbType + (data.postgresConfigured ? ' (Postgres)' : ' (Local SQLite)');
           dbEl.className = `px-2 py-0.5 rounded ${data.postgresConfigured ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`;
+        }
+        if (envEl && data.envCheck) {
+          envEl.innerHTML = `
+            <div class="mt-4 p-3 bg-black/5 rounded text-[10px] font-mono space-y-1">
+              <div class="flex justify-between"><span>RESEND_KEY:</span> <span>${data.envCheck.hasResendKey ? 'PRESENT (' + data.envCheck.resendKeyLength + ' chars)' : 'MISSING'}</span></div>
+              <div class="flex justify-between"><span>FROM_EMAIL:</span> <span>${data.envCheck.fromEmail}</span></div>
+              <div class="flex justify-between"><span>DB_TYPE:</span> <span>${data.dbType}</span></div>
+              <div class="flex justify-between"><span>LAST_SYNC:</span> <span>${new Date(data.initializedAt).toLocaleTimeString()}</span></div>
+            </div>
+          `;
         }
       }).catch(() => {});
     }
@@ -538,6 +550,7 @@ export default function Admin() {
                     <p className="text-sm text-accent-light">
                       Verify your Resend configuration by sending a test email to <strong>contact@anjanipandey.com</strong>.
                     </p>
+                    <div id="env-debug"></div>
                     <button 
                       id="test-email-btn"
                       onClick={async (e) => {

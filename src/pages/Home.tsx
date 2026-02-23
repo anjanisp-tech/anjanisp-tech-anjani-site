@@ -1,8 +1,21 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, Search, Layers, Rocket } from 'lucide-react';
-import { blogPosts } from '../data/blogData';
 
 export default function Home() {
+  const [posts, setPosts] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/posts')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setPosts(data.slice(0, 2));
+        }
+      })
+      .catch(err => console.error('Error fetching posts:', err));
+  }, []);
+
   return (
     <>
       {/* SECTION 1 – Hero */}
@@ -198,7 +211,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
-            {blogPosts.slice(0, 2).map((post) => (
+            {posts.length > 0 ? posts.map((post) => (
               <Link key={post.id} to={`/blog/${post.id}`} className="bg-white p-10 rounded-2xl border border-border hover:border-accent transition-all group">
                 <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">{post.date} • {post.category}</div>
                 <h3 className="text-2xl font-bold mb-6 group-hover:text-accent-light transition-colors">{post.title}</h3>
@@ -206,7 +219,11 @@ export default function Home() {
                   Read More <ArrowRight size={16} />
                 </span>
               </Link>
-            ))}
+            )) : (
+              <div className="col-span-2 text-center py-12 text-accent-light/50 font-medium">
+                Loading latest insights...
+              </div>
+            )}
           </div>
         </div>
       </section>

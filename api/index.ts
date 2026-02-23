@@ -207,37 +207,41 @@ async function sendNotification(subject: string, message: string) {
   const recipient = "contact@anjanipandey.com";
   console.log(`[NOTIFICATION ATTEMPT] Subject: ${subject}`);
   
-  if (process.env.RESEND_API_KEY) {
-    try {
-      const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
-      console.log(`[RESEND] Sending from: ${fromEmail} to: ${recipient}`);
-      
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
-        },
-        body: JSON.stringify({
-          from: `Anjani Pandey Site <${fromEmail}>`,
-          to: [recipient],
-          subject: subject,
-          text: message
-        })
-      });
-      
-      const resData = await response.json().catch(() => ({}));
-      if (response.ok) {
-        console.log("[RESEND] Success:", resData);
-      } else {
-        console.error("[RESEND] Error Response:", response.status, resData);
-      }
-    } catch (err) {
-      console.error("[RESEND] Fetch Error:", err);
-    }
-  } else {
+  if (!process.env.RESEND_API_KEY) {
     console.log("[NOTIFICATION] RESEND_API_KEY missing. Logging to console only:");
     console.log(`Subject: ${subject}\nMessage: ${message}`);
+    throw new Error("RESEND_API_KEY is not configured on the server.");
+  }
+
+  try {
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+    console.log(`[RESEND] Sending from: ${fromEmail} to: ${recipient}`);
+    
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
+      },
+      body: JSON.stringify({
+        from: `Anjani Pandey Site <${fromEmail}>`,
+        to: [recipient],
+        subject: subject,
+        text: message
+      })
+    });
+    
+    const resData = await response.json().catch(() => ({}));
+    if (response.ok) {
+      console.log("[RESEND] Success:", resData);
+      return resData;
+    } else {
+      console.error("[RESEND] Error Response:", response.status, resData);
+      throw new Error(`Resend API error (${response.status}): ${JSON.stringify(resData)}`);
+    }
+  } catch (err: any) {
+    console.error("[RESEND] Fetch Error:", err);
+    throw err;
   }
 }
 
@@ -368,19 +372,30 @@ router.post("/api/admin/test-email", adminAuth, async (req, res) => {
 // API Routes
 router.get("/api/health", async (req, res) => {
   try {
+    // Force re-initialization to ensure titles are updated
     if (isPostgres) {
       await initDb();
     } else {
       seedSqlite();
     }
+    
+    const resendKey = process.env.RESEND_API_KEY;
+    const isResendConfigured = !!resendKey && resendKey.startsWith('re_');
+
     res.json({ 
       status: "ok", 
       dbType: isPostgres ? "Postgres" : "SQLite",
-      initializedAt: dbInitializedAt,
-      resendConfigured: !!process.env.RESEND_API_KEY,
-      postgresConfigured: !!process.env.POSTGRES_URL
+      initializedAt: new Date().toISOString(),
+      resendConfigured: isResendConfigured,
+      postgresConfigured: !!process.env.POSTGRES_URL,
+      envCheck: {
+        hasResendKey: !!resendKey,
+        resendKeyLength: resendKey ? resendKey.length : 0,
+        fromEmail: process.env.RESEND_FROM_EMAIL || 'default'
+      }
     });
   } catch (err: any) {
+    console.error("Health Check Error:", err);
     res.status(500).json({ error: err.message });
   }
 });
