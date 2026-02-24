@@ -37,7 +37,7 @@
 }
 
 section {
-  @apply py-24 md:py-40;
+  @apply py-16 md:py-24;
 }
 
 h1 { @apply text-4xl md:text-6xl font-bold mb-8 leading-tight; }

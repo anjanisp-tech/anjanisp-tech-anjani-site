@@ -1,25 +1,37 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Search, Layers, Rocket } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Search, Layers, Rocket, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function Home() {
   const [posts, setPosts] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    fetch('/api/posts')
+    fetch('/api/posts?limit=10')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          setPosts(data.slice(0, 2));
+          setPosts(data);
         }
       })
       .catch(err => console.error('Error fetching posts:', err));
   }, []);
 
+  const nextSlide = () => {
+    if (posts.length === 0) return;
+    setCurrentIndex((prev) => (prev + 1) % posts.length);
+  };
+
+  const prevSlide = () => {
+    if (posts.length === 0) return;
+    setCurrentIndex((prev) => (prev - 1 + posts.length) % posts.length);
+  };
+
   return (
     <>
       {/* SECTION 1 – Hero */}
-      <section className="bg-white pt-48 pb-32 md:pt-60 md:pb-48">
+      <section className="bg-white pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="container-custom">
           <div className="max-w-3xl">
             <h1 className="text-5xl md:text-7xl mb-6">
@@ -195,41 +207,101 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Blog Preview Section */}
+      {/* Blog Preview Section - Carousel */}
       <section className="bg-muted border-y border-border/50">
         <div className="container-custom">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div className="max-w-2xl">
               <h2 className="mb-4">Latest Insights</h2>
               <p className="text-lg text-accent-light">
                 Frameworks and observations on operations, scaling, and leadership.
               </p>
             </div>
-            <Link to="/blog" className="btn-outline gap-2">
-              View All Articles
-              <ArrowRight size={18} />
-            </Link>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            {posts.length > 0 ? posts.map((post) => (
-              <Link key={post.id} to={`/blog/${post.id}`} className="bg-white p-10 rounded-2xl border border-border hover:border-accent transition-all group">
-                <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">{post.date} • {post.category}</div>
-                <h3 className="text-2xl font-bold mb-6 group-hover:text-accent-light transition-colors">{post.title}</h3>
-                <span className="text-sm font-bold flex items-center gap-2">
-                  Read More <ArrowRight size={16} />
-                </span>
-              </Link>
-            )) : (
-              <div className="col-span-2 text-center py-12 text-accent-light/50 font-medium">
-                Loading latest insights...
+            <div className="flex items-center gap-4">
+              <div className="flex gap-2">
+                <button 
+                  onClick={prevSlide}
+                  className="p-3 rounded-full border border-border bg-white hover:bg-accent hover:text-white transition-all shadow-sm"
+                  aria-label="Previous post"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button 
+                  onClick={nextSlide}
+                  className="p-3 rounded-full border border-border bg-white hover:bg-accent hover:text-white transition-all shadow-sm"
+                  aria-label="Next post"
+                >
+                  <ChevronRight size={20} />
+                </button>
               </div>
-            )}
+              <Link to="/blog" className="btn-outline py-3 px-6 text-sm gap-2">
+                View All
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden min-h-[320px]">
+            <AnimatePresence mode="wait">
+              {posts.length > 0 ? (
+                <motion.div 
+                  key={currentIndex}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="grid md:grid-cols-2 gap-8"
+                >
+                  {/* Current Post */}
+                  <Link 
+                    to={`/blog/${posts[currentIndex].id}`} 
+                    className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm"
+                  >
+                    <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">
+                      {posts[currentIndex].date} • {posts[currentIndex].category}
+                    </div>
+                    <h3 className="text-2xl font-bold mb-6 group-hover:text-accent-light transition-colors line-clamp-2">
+                      {posts[currentIndex].title}
+                    </h3>
+                    <p className="text-accent-light line-clamp-3 mb-8 text-sm leading-relaxed">
+                      {posts[currentIndex].excerpt}
+                    </p>
+                    <span className="text-sm font-bold flex items-center gap-2 text-accent">
+                      Read Framework <ArrowRight size={16} />
+                    </span>
+                  </Link>
+
+                  {/* Next Post (Preview) */}
+                  <Link 
+                    to={`/blog/${posts[(currentIndex + 1) % posts.length].id}`} 
+                    className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm hidden md:block opacity-60 hover:opacity-100"
+                  >
+                    <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">
+                      {posts[(currentIndex + 1) % posts.length].date} • {posts[(currentIndex + 1) % posts.length].category}
+                    </div>
+                    <h3 className="text-2xl font-bold mb-6 group-hover:text-accent-light transition-colors line-clamp-2">
+                      {posts[(currentIndex + 1) % posts.length].title}
+                    </h3>
+                    <p className="text-accent-light line-clamp-3 mb-8 text-sm leading-relaxed">
+                      {posts[(currentIndex + 1) % posts.length].excerpt}
+                    </p>
+                    <span className="text-sm font-bold flex items-center gap-2 text-accent">
+                      Read Framework <ArrowRight size={16} />
+                    </span>
+                  </Link>
+                </motion.div>
+              ) : (
+                <div className="text-center py-20 text-accent-light/50 font-medium">
+                  Loading latest insights...
+                </div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </section>
 
       {/* SECTION 5 – Final CTA */}
-      <section className="bg-accent text-white py-40">
+      <section className="bg-accent text-white py-24">
         <div className="container-custom text-center">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-4xl md:text-6xl mb-10 text-white">

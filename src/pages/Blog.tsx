@@ -14,6 +14,11 @@ interface BlogPost {
 export default function Blog() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [offset, setOffset] = useState(0);
+  const LIMIT = 6;
+
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null); // Format: "YYYY-MM"
@@ -45,24 +50,41 @@ export default function Blog() {
   };
 
   useEffect(() => {
-    fetch('/api/posts')
-      .then(async res => {
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || `Server error: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        setBlogPosts(data);
-        setIsLoading(false);
-      })
-      .catch(err => {
-        console.error("Failed to fetch posts", err);
-        setError(err.message);
-        setIsLoading(false);
-      });
+    fetchPosts(0, true);
   }, []);
+
+  const fetchPosts = async (currentOffset: number, isInitial: boolean = false) => {
+    if (isInitial) setIsLoading(true);
+    else setIsFetchingMore(true);
+
+    try {
+      const res = await fetch(`/api/posts?limit=${LIMIT}&offset=${currentOffset}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Server error: ${res.status}`);
+      }
+      const data = await res.json();
+      
+      if (isInitial) {
+        setBlogPosts(data);
+      } else {
+        setBlogPosts(prev => [...prev, ...data]);
+      }
+      
+      setHasMore(data.length === LIMIT);
+      setOffset(currentOffset + data.length);
+    } catch (err: any) {
+      console.error("Failed to fetch posts", err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+      setIsFetchingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    fetchPosts(offset);
+  };
 
   // Extract unique categories
   const categories = useMemo(() => {
@@ -131,7 +153,7 @@ export default function Blog() {
 
   return (
     <div className="bg-white min-h-screen">
-      <section className="pt-48 pb-12 md:pt-60 md:pb-20">
+      <section className="pt-32 pb-12 md:pt-40 md:pb-20">
         <div className="container-custom">
           <div className="max-w-3xl">
             <h1 className="mb-6">Personal Blog</h1>
@@ -226,6 +248,29 @@ export default function Blog() {
               </div>
             )}
           </div>
+
+          {/* Load More */}
+          {hasMore && !selectedCategory && !selectedMonth && (
+            <div className="mt-20 text-center">
+              <button 
+                onClick={handleLoadMore}
+                disabled={isFetchingMore}
+                className="btn-outline min-w-[200px] gap-3"
+              >
+                {isFetchingMore ? (
+                  <>
+                    <Loader2 className="animate-spin" size={18} />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    Load More Articles
+                    <ArrowRight size={18} />
+                  </>
+                )}
+              </button>
+            </div>
+          )}
 
           <div className="mt-32 bg-muted p-12 rounded-3xl text-center">
             <h3 className="text-2xl font-bold mb-4">Want these insights in your inbox?</h3>

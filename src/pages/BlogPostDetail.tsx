@@ -143,7 +143,7 @@ export default function BlogPostDetail() {
 
   return (
     <div className="bg-white min-h-screen">
-      <article className="pt-48 pb-32 md:pt-60 md:pb-48">
+      <article className="pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto">
             {/* Back Link */}
