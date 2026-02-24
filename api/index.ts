@@ -7,8 +7,8 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// Use process.cwd() to ensure we are in the project root, or fallback to /tmp
-const KEY_FILE = path.join(process.cwd(), ".resend_key");
+// Use a more reliable path for the key file
+const KEY_FILE = path.join(__dirname, "../.resend_key");
 const TMP_KEY_FILE = "/tmp/.resend_key";
 
 let memoryKey: string | null = null;
@@ -45,13 +45,18 @@ function getResendKey() {
 const router = express.Router();
 router.use(express.json());
 
-// Sanitize Postgres URLs (sometimes users copy the prefix by mistake)
-if (process.env.POSTGRES_URL?.includes('POSTGRES_URL=')) {
-  process.env.POSTGRES_URL = process.env.POSTGRES_URL.split('POSTGRES_URL=')[1];
-}
-if (process.env.DATABASE_URL?.includes('DATABASE_URL=')) {
-  process.env.DATABASE_URL = process.env.DATABASE_URL.split('DATABASE_URL=')[1];
-}
+// Sanitize Postgres URLs (sometimes users copy the prefix or quotes by mistake)
+const sanitizeUrl = (url: string | undefined) => {
+  if (!url) return url;
+  let clean = url.trim();
+  if (clean.includes('=')) clean = clean.split('=')[1];
+  // Remove surrounding quotes if present
+  clean = clean.replace(/^["']|["']$/g, '');
+  return clean;
+};
+
+if (process.env.POSTGRES_URL) process.env.POSTGRES_URL = sanitizeUrl(process.env.POSTGRES_URL);
+if (process.env.DATABASE_URL) process.env.DATABASE_URL = sanitizeUrl(process.env.DATABASE_URL);
 
 const dbInitializedAt = new Date().toISOString();
 const isPostgres = !!(process.env.POSTGRES_URL || process.env.DATABASE_URL);
@@ -306,6 +311,8 @@ async function sendNotification(subject: string, message: string) {
       if (response.status === 403 && fromEmail === 'onboarding@resend.dev') {
         friendlyError += ". Note: onboarding@resend.dev can only send to your own registered email address (anjanisp@gmail.com) until you verify a domain.";
       }
+      // Log but don't necessarily throw if we want to be resilient in some contexts
+      // However, for test-email we want it to throw.
       throw new Error(friendlyError);
     }
   } catch (err: any) {
@@ -616,27 +623,34 @@ router.get("/api/blog/:id/comments", async (req, res) => {
 router.post("/api/blog/:id/comments", async (req, res) => {
   const { id } = req.params;
   const { name, email, website, phone, comment, parent_id, is_admin } = req.body;
+  
+  console.log(`[COMMENT] New comment attempt on post: ${id} from: ${name}`);
+  
   try {
+    let commentObj;
     if (isPostgres) {
       const { rows } = await sql`
         INSERT INTO comments (post_id, name, email, website, phone, comment, parent_id, is_admin)
-        VALUES (${id}, ${name}, ${email}, ${website}, ${phone}, ${comment}, ${parent_id || null}, ${is_admin ? 1 : 0})
+        VALUES (${id}, ${name}, ${email}, ${website || null}, ${phone || null}, ${comment}, ${parent_id || null}, ${is_admin ? 1 : 0})
         RETURNING *
       `;
-      const commentObj = rows[0];
-      const type = is_admin ? "Admin Reply" : "New User Comment";
-      await sendNotification(`${type} on ${id}`, `From: ${name} (${email})\nComment: ${comment}`);
-      res.status(201).json(commentObj);
+      commentObj = rows[0];
     } else {
       const info = sqliteDb.prepare("INSERT INTO comments (post_id, name, email, website, phone, comment, parent_id, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-        .run(id, name, email, website, phone, comment, parent_id || null, is_admin ? 1 : 0);
-      const newComment = sqliteDb.prepare("SELECT * FROM comments WHERE id = ?").get(info.lastInsertRowid);
-      const type = is_admin ? "Admin Reply" : "New User Comment";
-      await sendNotification(`${type} on ${id}`, `From: ${name} (${email})\nComment: ${comment}`);
-      res.status(201).json(newComment);
+        .run(id, name, email, website || null, phone || null, comment, parent_id || null, is_admin ? 1 : 0);
+      commentObj = sqliteDb.prepare("SELECT * FROM comments WHERE id = ?").get(info.lastInsertRowid);
     }
-  } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+
+    // Send notification in background - don't block the response
+    const type = is_admin ? "Admin Reply" : "New User Comment";
+    sendNotification(`${type} on ${id}`, `From: ${name} (${email})\nComment: ${comment}`)
+      .then(() => console.log(`[COMMENT] Notification sent for comment ${commentObj.id}`))
+      .catch(err => console.error(`[COMMENT] Notification failed for comment ${commentObj.id}:`, err.message));
+
+    res.status(201).json(commentObj);
+  } catch (err: any) {
+    console.error("[COMMENT] Error saving comment:", err);
+    res.status(500).json({ error: "Internal server error", details: err.message });
   }
 });
 

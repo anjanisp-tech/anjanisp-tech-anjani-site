@@ -602,7 +602,9 @@ export default function Admin() {
                           Save
                         </button>
                       </div>
-                      <p className="text-[9px] text-accent/40 mt-2 italic">Use this if AI Studio Secrets are not being detected.</p>
+                      <p className="text-[9px] text-accent/40 mt-2 italic">
+                        Use this if AI Studio Secrets are not being detected. Note: Overrides may reset on server restart. For permanent setup, use AI Studio Secrets.
+                      </p>
                     </div>
 
                     <div className="flex flex-col gap-3 mt-6">
