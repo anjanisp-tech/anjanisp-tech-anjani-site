@@ -143,6 +143,8 @@ if (!isPostgres) {
       is_admin INTEGER DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+    CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
+    CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id);
     CREATE TABLE IF NOT EXISTS subscriptions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT UNIQUE NOT NULL,
@@ -182,6 +184,10 @@ async function initDb(force = false) {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `.catch(e => console.error("Error creating comments table:", e));
+
+      // Add indexes for performance
+      await sql`CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id)`.catch(() => {});
+      await sql`CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id)`.catch(() => {});
       
       await sql`
         CREATE TABLE IF NOT EXISTS subscriptions (
@@ -561,11 +567,14 @@ router.get("/api/debug", async (req, res) => {
 
 router.get("/api/posts", async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit as string) || 100;
+    const offset = parseInt(req.query.offset as string) || 0;
+
     if (isPostgres) {
-      const { rows } = await sql`SELECT * FROM posts ORDER BY created_at DESC`;
+      const { rows } = await sql`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
       res.json(rows);
     } else {
-      const posts = sqliteDb.prepare("SELECT * FROM posts ORDER BY created_at DESC").all();
+      const posts = sqliteDb.prepare("SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?").all(limit, offset);
       res.json(posts);
     }
   } catch (err) {
@@ -689,12 +698,14 @@ router.post("/api/blog/:id/comments", async (req, res) => {
 
 router.get("/api/admin/comments", adminAuth, async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit as string) || 500;
     if (isPostgres) {
       const { rows } = await sql`
         SELECT c.*, p.title as post_title 
         FROM comments c 
         JOIN posts p ON c.post_id = p.id 
         ORDER BY c.created_at DESC
+        LIMIT ${limit}
       `;
       res.json(rows);
     } else {
@@ -703,7 +714,8 @@ router.get("/api/admin/comments", adminAuth, async (req, res) => {
         FROM comments c 
         JOIN posts p ON c.post_id = p.id 
         ORDER BY c.created_at DESC
-      `).all();
+        LIMIT ?
+      `).all(limit);
       res.json(comments);
     }
   } catch (err) {
@@ -741,7 +753,7 @@ router.post("/api/subscribe", async (req, res) => {
       sqliteDb.prepare("INSERT OR IGNORE INTO subscriptions (email) VALUES (?)").run(email);
     }
     console.log("Subscription successful for:", email);
-    await sendNotification("New Newsletter Subscriber", `Email: ${email}`);
+    sendNotification("New Newsletter Subscriber", `Email: ${email}`).catch(e => console.error("Notification failed:", e));
     res.json({ success: true, message: "Subscribed successfully!" });
   } catch (err: any) {
     console.error("Subscription error:", err);
