@@ -420,7 +420,7 @@ export default function BlogPostDetail() {
                     <div className="text-sm text-accent-light">Fractional COO & Scaling Specialist</div>
                   </div>
                 </div>
-                <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="btn-primary">
+                <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-primary">
                   Book a Diagnostic Call
                 </a>
               </div>

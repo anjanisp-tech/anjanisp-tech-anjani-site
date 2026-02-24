@@ -48,7 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link to="/" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Home</Link>
             <Link to="/services" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Services</Link>
             <Link to="/blog" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Blog</Link>
-            <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="btn-primary py-2.5 px-6 text-sm">Book Call</a>
+            <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-primary py-2.5 px-6 text-sm">Book Call</a>
           </nav>
 
           {/* Mobile Toggle */}
@@ -66,7 +66,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link to="/" className="text-lg font-medium py-2">Home</Link>
             <Link to="/services" className="text-lg font-medium py-2">Services</Link>
             <Link to="/blog" className="text-lg font-medium py-2">Blog</Link>
-            <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="btn-primary w-full">Book Call</a>
+            <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-primary w-full">Book Call</a>
           </div>
         )}
       </header>
@@ -107,7 +107,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <Link to="/" className="hover:text-accent transition-colors">Home</Link>
                   <Link to="/services" className="hover:text-accent transition-colors">Services</Link>
                   <Link to="/blog" className="hover:text-accent transition-colors">Blog</Link>
-                  <a href="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Book Call</a>
+                  <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Book Call</a>
                 </nav>
               </div>
               <div className="space-y-4">

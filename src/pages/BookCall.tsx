@@ -49,7 +49,7 @@ export default function BookCall() {
                 </div>
                 <div className="bg-white rounded-2xl border border-border overflow-hidden shadow-sm">
                   <iframe 
-                    src="https://calendly.com/metmovllp/30-minute-meeting-metmov-clone?hide_landing_page_details=1&hide_gdpr_banner=1" 
+                    src="https://calendly.com/metmovllp/30min?hide_landing_page_details=1&hide_gdpr_banner=1" 
                     width="100%" 
                     height="700" 
                     frameBorder="0"
