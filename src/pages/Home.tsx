@@ -1,11 +1,51 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Search, Layers, Rocket, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Search, Layers, Rocket, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Home() {
   const [posts, setPosts] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
+
+  const testimonials = [
+    {
+      quote: "He thinks in systems. Anjani quickly identifies the real constraints in a situation and focuses effort where it compounds. He brings structure without bureaucracy and momentum without noise.",
+      author: "Harsha Athkuri",
+      role: "Senior Product Manager, Microsoft",
+      initials: "HA"
+    },
+    {
+      quote: "Anjani played a pivotal role in driving large-scale improvement programs and operational rollouts. He brought clarity to complex problems and set up scalable processes.",
+      author: "Mrigank Mishra",
+      role: "JioHotstar (Ex-Udaan)",
+      initials: "MM"
+    },
+    {
+      quote: "Anjani is someone people naturally seek out when decisions are complex and stakes are real. He brings structure to ambiguity, aligns people without friction, and focuses on durable outcomes.",
+      author: "Nandu Somaraj",
+      role: "Sr. Contract Performance Manager, Baker Hughes",
+      initials: "NS"
+    },
+    {
+      quote: "One of the finest management professionals I have worked with. Anjani is a strong taskmaster who works on building processes and capabilities for the good of the organization.",
+      author: "Ayush Agarwal",
+      role: "ONDC (Ex-Airtel, OYO)",
+      initials: "AA"
+    },
+    {
+      quote: "Anjani operates with a level of clarity and judgment that is rare. He has a strong systems mindset and an ability to simplify complex, cross-functional problems.",
+      author: "Rahul Kulshrestha",
+      role: "Indo-Swiss Innovation",
+      initials: "RK"
+    },
+    {
+      quote: "I found him to be a sharp thinker who thought on his feet. He showcased his ability to lead his team by example and keep them motivated at all times.",
+      author: "Harindran W S",
+      role: "FKCCI Secretariat",
+      initials: "HW"
+    }
+  ];
 
   useEffect(() => {
     fetch('/api/posts?limit=10')
@@ -26,6 +66,14 @@ export default function Home() {
   const prevSlide = () => {
     if (posts.length === 0) return;
     setCurrentIndex((prev) => (prev - 1 + posts.length) % posts.length);
+  };
+
+  const nextTestimonial = () => {
+    setTestimonialIndex((prev) => (prev + 1) % testimonials.length);
+  };
+
+  const prevTestimonial = () => {
+    setTestimonialIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
 
   return (
@@ -164,6 +212,83 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="bg-white overflow-hidden">
+        <div className="container-custom">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div className="max-w-2xl">
+              <h2 className="mb-4">Trusted by Leaders</h2>
+              <p className="text-lg text-accent-light">
+                What colleagues and partners say about my approach to systems, strategy, and execution.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button 
+                onClick={prevTestimonial}
+                className="p-3 rounded-full border border-border bg-white hover:bg-accent hover:text-white transition-all shadow-sm"
+                aria-label="Previous testimonial"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button 
+                onClick={nextTestimonial}
+                className="p-3 rounded-full border border-border bg-white hover:bg-accent hover:text-white transition-all shadow-sm"
+                aria-label="Next testimonial"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </div>
+
+          <div className="relative min-h-[400px]">
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={testimonialIndex}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+                className="grid md:grid-cols-2 gap-8"
+              >
+                {/* Current Testimonial */}
+                <div className="bg-muted p-10 rounded-3xl border border-border/50 flex flex-col h-full relative">
+                  <Quote className="absolute top-8 right-8 text-accent/5" size={48} />
+                  <p className="text-xl text-accent-light mb-8 italic leading-relaxed flex-grow relative z-10">
+                    "{testimonials[testimonialIndex].quote}"
+                  </p>
+                  <div className="flex items-center gap-4 pt-6 border-t border-border/50">
+                    <div className="w-12 h-12 bg-accent text-white flex items-center justify-center rounded-full font-bold text-sm">
+                      {testimonials[testimonialIndex].initials}
+                    </div>
+                    <div>
+                      <div className="font-bold text-accent">{testimonials[testimonialIndex].author}</div>
+                      <div className="text-xs font-bold uppercase tracking-widest text-accent/40">{testimonials[testimonialIndex].role}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Next Testimonial (Preview) */}
+                <div className="bg-muted p-10 rounded-3xl border border-border/50 flex flex-col h-full relative hidden md:flex opacity-40">
+                  <Quote className="absolute top-8 right-8 text-accent/5" size={48} />
+                  <p className="text-xl text-accent-light mb-8 italic leading-relaxed flex-grow relative z-10">
+                    "{testimonials[(testimonialIndex + 1) % testimonials.length].quote}"
+                  </p>
+                  <div className="flex items-center gap-4 pt-6 border-t border-border/50">
+                    <div className="w-12 h-12 bg-accent text-white flex items-center justify-center rounded-full font-bold text-sm">
+                      {testimonials[(testimonialIndex + 1) % testimonials.length].initials}
+                    </div>
+                    <div>
+                      <div className="font-bold text-accent">{testimonials[(testimonialIndex + 1) % testimonials.length].author}</div>
+                      <div className="text-xs font-bold uppercase tracking-widest text-accent/40">{testimonials[(testimonialIndex + 1) % testimonials.length].role}</div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </section>
