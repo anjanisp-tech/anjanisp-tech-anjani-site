@@ -18,6 +18,7 @@ function Analytics() {
     if (typeof window.gtag === 'function') {
       window.gtag('config', 'G-W4J7JK9YDM', {
         page_path: location.pathname + location.search,
+        debug_mode: true
       });
     }
   }, [location]);
