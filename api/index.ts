@@ -49,7 +49,14 @@ router.use(express.json());
 const sanitizeUrl = (url: string | undefined) => {
   if (!url) return url;
   let clean = url.trim();
-  if (clean.includes('=')) clean = clean.split('=')[1];
+  
+  // Only split if it starts with the variable name followed by =
+  if (clean.startsWith('POSTGRES_URL=')) {
+    clean = clean.substring('POSTGRES_URL='.length);
+  } else if (clean.startsWith('DATABASE_URL=')) {
+    clean = clean.substring('DATABASE_URL='.length);
+  }
+  
   // Remove surrounding quotes if present
   clean = clean.replace(/^["']|["']$/g, '');
   return clean;
