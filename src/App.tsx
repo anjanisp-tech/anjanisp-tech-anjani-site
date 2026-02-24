@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Services from './pages/Services';
@@ -10,9 +11,24 @@ import TermsOfService from './pages/TermsOfService';
 import Admin from './pages/Admin';
 import Sitemap from './pages/Sitemap';
 
+function Analytics() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (typeof window.gtag === 'function') {
+      window.gtag('config', 'G-W4J7JK9YDM', {
+        page_path: location.pathname + location.search,
+      });
+    }
+  }, [location]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <Router>
+      <Analytics />
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
