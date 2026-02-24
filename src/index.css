@@ -43,3 +43,60 @@ section {
 h1 { @apply text-4xl md:text-6xl font-bold mb-8 leading-tight; }
 h2 { @apply text-3xl md:text-4xl font-bold mb-10 leading-tight; }
 h3 { @apply text-xl md:text-2xl font-semibold mb-4 leading-snug; }
+
+/* Markdown Content Styling */
+.markdown-body {
+  @apply text-accent-light leading-relaxed;
+}
+
+.markdown-body p {
+  @apply mb-6;
+}
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 {
+  @apply mt-12 mb-6 font-bold text-accent;
+}
+
+.markdown-body h1 { @apply text-3xl md:text-4xl; }
+.markdown-body h2 { @apply text-2xl md:text-3xl border-b border-border pb-2; }
+.markdown-body h3 { @apply text-xl md:text-2xl; }
+
+.markdown-body ul, .markdown-body ol {
+  @apply mb-8 ml-6 space-y-2;
+}
+
+.markdown-body ul {
+  @apply list-disc;
+}
+
+.markdown-body ol {
+  @apply list-decimal;
+}
+
+.markdown-body li {
+  @apply pl-2;
+}
+
+.markdown-body blockquote {
+  @apply border-l-4 border-accent/20 pl-6 italic my-8 text-accent/70;
+}
+
+.markdown-body code {
+  @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-accent;
+}
+
+.markdown-body pre {
+  @apply bg-accent text-white p-6 rounded-2xl overflow-x-auto my-8 font-mono text-sm;
+}
+
+.markdown-body img {
+  @apply rounded-3xl my-12 shadow-lg;
+}
+
+.markdown-body a {
+  @apply text-accent font-bold underline decoration-accent/20 underline-offset-4 hover:decoration-accent transition-all;
+}
+
+.markdown-body hr {
+  @apply my-12 border-border;
+}

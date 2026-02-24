@@ -19,8 +19,9 @@ export default function Admin() {
     return typeof window !== 'undefined' && localStorage.getItem('admin_auth') === 'true';
   });
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers' | 'system'>('comments');
+  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers' | 'system' | 'manage'>('comments');
   const [comments, setComments] = useState<Comment[]>([]);
+  const [blogs, setBlogs] = useState<any[]>([]);
   const [subscribers, setSubscribers] = useState<{ id: number, email: string, created_at: string }[]>([]);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
@@ -79,6 +80,10 @@ export default function Admin() {
     }
     if (activeTab === 'subscribers' && isAuthenticated) {
       fetchSubscribers();
+    }
+    
+    if (activeTab === 'manage' && isAuthenticated) {
+      fetchBlogs();
     }
     
     if (activeTab === 'system' && isAuthenticated) {
@@ -156,6 +161,50 @@ export default function Admin() {
       console.error("Failed to fetch comments", err);
       setComments([]);
     }
+  };
+
+  const fetchBlogs = async () => {
+    try {
+      const res = await fetch('/api/posts');
+      if (res.ok) {
+        const data = await res.json();
+        setBlogs(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch blogs", err);
+    }
+  };
+
+  const handleDeleteBlog = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this blog post? This will also delete all associated comments.")) return;
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    try {
+      const res = await fetch(`/api/admin/posts/${id}`, { 
+        method: 'DELETE',
+        headers: { 'x-admin-password': secret }
+      });
+      if (res.ok) {
+        setBlogs(blogs.filter(b => b.id !== id));
+        alert("Blog post deleted.");
+      } else {
+        const data = await res.json();
+        alert("Error: " + (data.error || "Failed to delete blog"));
+      }
+    } catch (err) {
+      console.error("Failed to delete blog", err);
+    }
+  };
+
+  const handleEditBlog = (post: any) => {
+    setBlogForm({
+      title: post.title,
+      date: post.date,
+      category: post.category,
+      excerpt: post.excerpt,
+      content: post.content
+    });
+    setActiveTab('upload');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const fetchSubscribers = async () => {
@@ -299,6 +348,12 @@ export default function Admin() {
                 className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'upload' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
               >
                 <PlusCircle size={18} /> Upload Blog
+              </button>
+              <button 
+                onClick={() => setActiveTab('manage')}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'manage' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
+              >
+                <FileText size={18} /> Manage Blogs
               </button>
               <button 
                 onClick={() => setActiveTab('subscribers')}
@@ -489,11 +544,65 @@ export default function Admin() {
                   type="submit"
                   className="w-full btn-primary py-4 flex items-center justify-center gap-3"
                 >
-                  <FileText size={20} /> Publish Blog Post
+                  <FileText size={20} /> {blogs.some(b => b.title === blogForm.title) ? 'Update Blog Post' : 'Publish Blog Post'}
                 </button>
               </form>
             </div>
-          ) : (
+          ) : activeTab === 'manage' ? (
+            <div className="space-y-6">
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-8">Manage Blog Posts</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="py-4 text-xs font-bold uppercase tracking-widest text-accent/40">Title</th>
+                        <th className="py-4 text-xs font-bold uppercase tracking-widest text-accent/40">Category</th>
+                        <th className="py-4 text-xs font-bold uppercase tracking-widest text-accent/40">Date</th>
+                        <th className="py-4 text-xs font-bold uppercase tracking-widest text-accent/40 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {blogs.map((post) => (
+                        <tr key={post.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                          <td className="py-4 font-bold">{post.title}</td>
+                          <td className="py-4 text-sm">
+                            <span className="px-2 py-1 bg-accent/5 text-accent rounded text-[10px] font-bold uppercase tracking-wider">
+                              {post.category}
+                            </span>
+                          </td>
+                          <td className="py-4 text-sm text-accent-light">{post.date}</td>
+                          <td className="py-4 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button 
+                                onClick={() => handleEditBlog(post)}
+                                className="p-2 text-accent/40 hover:text-accent hover:bg-accent/5 rounded-lg transition-all"
+                                title="Edit"
+                              >
+                                <Reply className="rotate-180" size={18} />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteBlog(post.id)}
+                                className="p-2 text-accent/40 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                title="Delete"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {blogs.length === 0 && (
+                        <tr>
+                          <td colSpan={4} className="py-12 text-center text-accent/40">No blog posts found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          ) : activeTab === 'subscribers' ? (
             <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-2xl font-bold">Newsletter Subscribers</h2>
@@ -539,7 +648,7 @@ export default function Admin() {
                 </table>
               </div>
             </div>
-          )}
+          ) : null}
           
           {activeTab === 'system' && (
             <div className="space-y-8 max-w-4xl mx-auto">

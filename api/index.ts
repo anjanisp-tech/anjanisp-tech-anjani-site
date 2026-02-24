@@ -594,22 +594,48 @@ router.post("/api/admin/posts", adminAuth, async (req, res) => {
   const id = title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
   try {
     if (isPostgres) {
+      // Use UPSERT logic for Postgres
       await sql`
         INSERT INTO posts (id, title, date, category, excerpt, content)
         VALUES (${id}, ${title}, ${date}, ${category}, ${excerpt}, ${content})
+        ON CONFLICT (id) DO UPDATE SET
+          title = EXCLUDED.title,
+          date = EXCLUDED.date,
+          category = EXCLUDED.category,
+          excerpt = EXCLUDED.excerpt,
+          content = EXCLUDED.content
       `;
       const { rows } = await sql`SELECT * FROM posts WHERE id = ${id}`;
-      await sendNotification("New Blog Post Published", `Title: ${title}\nCategory: ${category}\nExcerpt: ${excerpt}`);
+      await sendNotification("Blog Post Updated/Published", `Title: ${title}\nCategory: ${category}`);
       res.status(201).json(rows[0]);
     } else {
-      sqliteDb.prepare("INSERT INTO posts (id, title, date, category, excerpt, content) VALUES (?, ?, ?, ?, ?, ?)")
+      // For SQLite, we can use INSERT OR REPLACE
+      sqliteDb.prepare("INSERT OR REPLACE INTO posts (id, title, date, category, excerpt, content) VALUES (?, ?, ?, ?, ?, ?)")
         .run(id, title, date, category, excerpt, content);
       const newPost = sqliteDb.prepare("SELECT * FROM posts WHERE id = ?").get(id);
-      await sendNotification("New Blog Post Published", `Title: ${title}\nCategory: ${category}\nExcerpt: ${excerpt}`);
+      await sendNotification("Blog Post Updated/Published", `Title: ${title}\nCategory: ${category}`);
       res.status(201).json(newPost);
     }
-  } catch (err) {
-    res.status(500).json({ error: "Failed to create post" });
+  } catch (err: any) {
+    console.error("Error creating/updating post:", err);
+    res.status(500).json({ error: "Failed to save post", details: err.message });
+  }
+});
+
+router.delete("/api/admin/posts/:id", adminAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (isPostgres) {
+      await sql`DELETE FROM posts WHERE id = ${id}`;
+      // Also delete associated comments
+      await sql`DELETE FROM comments WHERE post_id = ${id}`;
+    } else {
+      sqliteDb.prepare("DELETE FROM posts WHERE id = ?").run(id);
+      sqliteDb.prepare("DELETE FROM comments WHERE post_id = ?").run(id);
+    }
+    res.json({ success: true, message: "Post and associated comments deleted" });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to delete post", details: err.message });
   }
 });
 
