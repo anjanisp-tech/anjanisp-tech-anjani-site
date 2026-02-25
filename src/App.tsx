@@ -16,8 +16,11 @@ function Analytics() {
 
   useEffect(() => {
     if (typeof window.gtag === 'function') {
-      window.gtag('config', 'G-W4J7JK9YDM', {
+      // Use 'event' 'page_view' for manual SPA tracking to ensure it's captured
+      window.gtag('event', 'page_view', {
         page_path: location.pathname + location.search,
+        page_location: window.location.href,
+        page_title: document.title,
         debug_mode: true
       });
     }
