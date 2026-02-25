@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, Tag, MessageSquare, User, Mail, Globe, Send, Phone } from 'lucide-react';
 import Markdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 import { useState, useEffect } from 'react';
 import { blogPosts } from '../data/blogData';
 
@@ -173,7 +174,7 @@ export default function BlogPostDetail() {
 
             {/* Content */}
             <div className="markdown-body prose prose-lg max-w-none prose-accent mb-24">
-              <Markdown>{post.content}</Markdown>
+              <Markdown remarkPlugins={[remarkBreaks]}>{post.content}</Markdown>
             </div>
 
             {/* Newsletter Section */}

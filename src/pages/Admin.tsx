@@ -534,9 +534,14 @@ export default function Admin() {
                     required
                     value={blogForm.content}
                     onChange={(e) => setBlogForm({...blogForm, content: e.target.value})}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.stopPropagation();
+                      }
+                    }}
                     placeholder="Write your article content here..."
                     rows={15}
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all font-mono text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none font-mono text-sm whitespace-pre-wrap"
                   />
                 </div>
 
