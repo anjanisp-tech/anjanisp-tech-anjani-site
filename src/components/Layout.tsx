@@ -93,7 +93,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 Fractional COO & Operating Model Specialist. CEO at <a href="https://metmov.com/" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov LLP</a>.
               </p>
               <div className="flex gap-4">
-                <a href="https://linkedin.com/in/anjani-pandey" target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="LinkedIn"><Linkedin size={18} /></a>
+                <a href="https://www.linkedin.com/in/anjanispandey/" target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="LinkedIn"><Linkedin size={18} /></a>
                 <a href="https://wa.me/919666480007" target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="WhatsApp"><MessageCircle size={18} /></a>
                 <a href="https://metmov.com/" target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="MetMov Website"><Globe size={18} /></a>
                 <Link to="/blog" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="Personal Blog"><BookOpen size={18} /></Link>
