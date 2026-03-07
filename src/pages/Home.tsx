@@ -83,18 +83,24 @@ export default function Home() {
         <div className="container-custom">
           <div className="max-w-3xl">
             <h1 className="text-5xl md:text-7xl mb-6">
-              Scale Your Founder-Led Business
+              The Founder Trap is the Ceiling of Your Scale
             </h1>
-            <p className="text-xl md:text-2xl text-accent-light mb-4 leading-relaxed">
-              We help growing companies move from founder-driven heroics to structured, scalable operating models.
+            <p className="text-xl md:text-2xl text-accent-light mb-8 leading-relaxed">
+              If you stepped away for 72 hours, what would stall? <br />
+              We diagnose structural diseases and install the <strong>Operating Spine</strong> that lets your business run itself.
             </p>
             <p className="text-sm md:text-base font-bold uppercase tracking-widest text-accent/40 mb-12">
-              Structured systems. Clear ownership. Scalable execution.
+              Diagnostic Sprints. Operating Spine Installs. Fractional COO.
             </p>
-            <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-12 py-5 gap-3 shadow-xl shadow-accent/10">
-              Book a Diagnostic Call
-              <ArrowRight size={22} />
-            </a>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a href="https://tally.so/r/metmov-diagnostic" target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-12 py-5 gap-3 shadow-xl shadow-accent/10">
+                Take the Mini Diagnostic
+                <ArrowRight size={22} />
+              </a>
+              <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-outline text-lg px-12 py-5 gap-3">
+                Talk to Us
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -104,20 +110,22 @@ export default function Home() {
         <div className="container-custom">
           <div className="max-w-4xl">
             <h2 className="mb-16">Does This Sound Familiar?</h2>
-            <div className="grid md:grid-cols-2 gap-x-16 gap-y-8">
+            <div className="grid md:grid-cols-1 gap-y-8">
               {[
-                'Everything depends on the founder',
-                'Growth feels chaotic',
-                'Teams lack clear ownership',
-                'Firefighting is constant',
-                'Revenue is growing but margins are unstable',
-                'Decision-making is a bottleneck'
+                { symptom: "You are the escalation layer. Every decision routes back to you.", disease: "The Founder Trap" },
+                { symptom: "Roles exist on paper. Accountability doesn't.", disease: "Structure Without Spine" },
+                { symptom: "Targets are set. Rhythms to hit them aren't.", disease: "Execution Breakdown" },
+                { symptom: "Revenue is growing but you can't see where margin is leaking.", disease: "Visibility Collapse" },
+                { symptom: "Each new market or product line adds chaos faster than capacity.", disease: "Growth Induced Fragility" }
               ].map((point, i) => (
                 <div key={i} className="flex items-start gap-4">
                   <div className="mt-1.5 text-accent/20">
                     <CheckCircle2 size={20} />
                   </div>
-                  <span className="text-lg text-accent-light font-medium">{point}</span>
+                  <div className="space-y-1">
+                    <p className="text-lg text-accent-light font-medium">If {point.symptom.toLowerCase().replace('.', '')},</p>
+                    <p className="text-sm font-bold uppercase tracking-widest text-accent">You may be experiencing: {point.disease}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -134,17 +142,17 @@ export default function Home() {
               {
                 title: 'Diagnose',
                 icon: Search,
-                desc: 'We identify the specific bottlenecks and dependencies that are stalling your growth.'
+                desc: 'We run a structured diagnostic using our 25-disease taxonomy. No assumptions. No copy-paste. We identify exactly which structural diseases are present and how severe they are.'
               },
               {
-                title: 'Design',
+                title: 'Install',
                 icon: Layers,
-                desc: 'We build the custom operating systems and frameworks your unique business needs.'
+                desc: 'We design and install the Operating Spine — cadence, accountability, decision rights, KPIs, escalation protocols. Not a report. A working system.'
               },
               {
-                title: 'Deploy',
+                title: 'Embed',
                 icon: Rocket,
-                desc: 'We work with your team to embed new habits and ensure execution discipline.'
+                desc: 'We stay until the system runs without us. Execution rhythms. Review cadence. Structural habits that compound.'
               }
             ].map((pillar, i) => (
               <div key={i} className="space-y-6">
@@ -164,7 +172,10 @@ export default function Home() {
       {/* SECTION 4 – Proof & Metrics */}
       <section className="bg-muted border-y border-border/50">
         <div className="container-custom">
-          <h2 className="mb-20">Proven Impact</h2>
+          <h2 className="mb-8">Practitioner Credibility</h2>
+          <p className="text-xl text-accent-light mb-16 max-w-2xl">
+            Before MetMov, we built these systems inside companies. Here's what that looks like at scale.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
             {[
               { label: 'Annual Savings Delivered', value: '$15M+' },
@@ -177,20 +188,21 @@ export default function Home() {
               </div>
             ))}
           </div>
+          <p className="text-center text-lg font-bold text-accent mb-20">Now we install these systems in yours.</p>
           
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
-              <h3 className="text-2xl font-bold">Expertise Across Scales</h3>
+              <h3 className="text-2xl font-bold">Three Partners. 45+ Years of Operating Experience.</h3>
               <p className="text-lg text-accent-light leading-relaxed">
-                From leading global supply chain operations at <strong>Y-Not</strong> to scaling <strong>Udaan.com</strong> into 28 markets and managing 20 concurrent industrial power projects at <strong>BHEL</strong>, I've built the systems that enable rapid growth and operational excellence.
+                We've scaled logistics networks, built financial control systems, and designed execution architecture inside high-growth companies. We didn't learn this from textbooks. We built it under pressure.
               </p>
               <ul className="grid grid-cols-2 gap-4">
                 {[
-                  'Operating Model Design',
+                  'Operating Spine Install',
+                  'Diagnostic Sprints',
                   'Execution Architecture',
                   'Supply Chain Transformation',
                   'Governance Frameworks',
-                  'Performance Systems',
                   'Scale Readiness'
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm font-semibold text-accent/70">
@@ -202,13 +214,13 @@ export default function Home() {
             </div>
             <div className="bg-white p-8 rounded-2xl border border-border shadow-sm">
               <p className="text-lg text-accent-light italic mb-6">
-                "Anjani specializes in designing operating infrastructure that enables organizations to scale execution without increasing complexity."
+                "I diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale without the founder being the system."
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-white font-bold">AP</div>
                 <div>
                   <div className="font-bold">Anjani Pandey</div>
-                  <div className="text-sm text-accent-light">Fractional COO | ISB Alumnus</div>
+                  <div className="text-sm text-accent-light">CEO, MetMov LLP | ISB Alumnus</div>
                 </div>
               </div>
             </div>
@@ -313,18 +325,18 @@ export default function Home() {
             </div>
             <div className="space-y-8">
               <div className="p-8 bg-accent text-white rounded-3xl shadow-2xl">
-                <h3 className="text-white mb-4">Lead Magnet: The Scale Readiness Checklist</h3>
+                <h3 className="text-white mb-4">MetMov Mini Diagnostic</h3>
                 <p className="text-white/70 mb-8">
-                  Download the exact diagnostic framework I use to identify structural bottlenecks in founder-led businesses.
+                  15 questions. 5 minutes. Find out which structural diseases may be slowing your business.
                 </p>
-                <button className="w-full bg-white text-accent py-4 rounded-xl font-bold hover:bg-muted transition-colors">
-                  Download Free Framework
-                </button>
+                <a href="https://tally.so/r/metmov-diagnostic" target="_blank" rel="noopener noreferrer" className="block w-full bg-white text-accent py-4 rounded-xl font-bold hover:bg-muted transition-colors text-center">
+                  Start Your Diagnostic
+                </a>
               </div>
               <div className="p-8 border border-border rounded-3xl">
                 <h3 className="mb-4">Core Philosophy</h3>
                 <p className="text-accent-light">
-                  "Complexity is the enemy of scale. My goal is to reduce founder dependency by creating clear ownership and structured operating models that run themselves."
+                  "Businesses don't fail from lack of vision. They fail from absence of internal structural support. We diagnose before we prescribe. We install, we don't advise. We build genuine value, not billable hours."
                 </p>
               </div>
             </div>
@@ -430,14 +442,19 @@ export default function Home() {
         <div className="container-custom text-center">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-4xl md:text-6xl mb-10 text-white">
-              Ready to Build a Scalable Operating System?
+              Ready to Install Your Operating Spine?
             </h2>
             <p className="text-xl text-white/70 mb-12">
               Stop being the bottleneck. Start leading a high-performance organization.
             </p>
-            <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="bg-white text-accent hover:bg-muted px-14 py-5 rounded-md font-bold text-lg transition-all inline-block shadow-2xl shadow-black/20">
-              Book Your Diagnostic Call
-            </a>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a href="https://tally.so/r/metmov-diagnostic" target="_blank" rel="noopener noreferrer" className="bg-white text-accent hover:bg-muted px-14 py-5 rounded-md font-bold text-lg transition-all inline-block shadow-2xl shadow-black/20">
+                Start Your Diagnostic
+              </a>
+              <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="bg-transparent border border-white/30 text-white hover:bg-white/10 px-14 py-5 rounded-md font-bold text-lg transition-all inline-block">
+                Talk to Us
+              </a>
+            </div>
           </div>
         </div>
       </section>

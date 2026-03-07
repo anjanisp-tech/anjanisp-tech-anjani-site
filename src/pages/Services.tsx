@@ -3,52 +3,60 @@ import { ArrowRight, Target, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const services = [
   {
-    title: 'Founder Dependency Diagnostic',
-    problem: 'Your business is growing, but it still requires your constant intervention to function. You are the primary bottleneck for every major decision and daily operation.',
+    title: 'Diagnostic Sprint',
+    price: '₹3-5L',
+    problem: 'You sense something is structurally wrong but can\'t name it precisely. Growth has created friction that you can\'t pinpoint.',
     whatWeDo: [
-      'Workflow and decision-making audit',
-      'Identification of single points of failure',
-      'Mapping of founder-centric bottlenecks',
-      'Operational risk assessment'
+      'Deep structural diagnosis using our 25-disease taxonomy',
+      'Mapping of disease presence and severity',
+      'Identification of structural bottlenecks',
+      'Prioritization of intervention roadmap'
     ],
     outcomes: [
-      'A prioritized roadmap for founder exit from daily ops',
-      'Identified "Freedom Milestones" for the next 12 months',
-      'Clarity on which roles to hire next to reduce dependency'
+      'Diagnostic Report with disease map',
+      'Severity scores for each disease cluster',
+      'A prioritized intervention roadmap',
+      'Clarity on structural risks to scale'
     ],
     expertiseSignal: 'Built diagnostic frameworks for MetMov LLP to identify accountability gaps and performance constraints.',
     cta: 'Start with a Diagnostic'
   },
   {
-    title: 'Operating Model Design',
-    problem: 'Growth has created chaos. Roles are fuzzy, communication is fragmented, and your team lacks a clear "source of truth" for how the business actually runs.',
+    title: 'Operating Spine Install',
+    price: '₹8-20L',
+    problem: 'You\'ve diagnosed the issues. Now you need the structural backbone installed. You need a system that runs without your constant intervention.',
     whatWeDo: [
-      'Custom organizational architecture design',
+      'Custom design and installation of your Operating Spine',
+      'Cadence architecture and review rhythms',
       'Definition of clear decision rights (RACI)',
-      'Establishment of core communication rhythms',
-      'Documentation of critical operating procedures'
+      'KPI systems and escalation protocols',
+      'Accountability model design'
     ],
     outcomes: [
-      'A repeatable, documented operating system',
-      'Drastic reduction in internal friction and "re-work"',
+      'A functioning operating system embedded in your business',
+      'Not a document—a working rhythm',
+      'Drastic reduction in internal friction',
       'A business that runs predictably without founder heroics'
     ],
     expertiseSignal: 'Designed operating structures for growth-stage brands like Nori Next and Y-Not Design & Manufacturing.',
     cta: 'Start with a Diagnostic'
   },
   {
-    title: 'Execution Discipline Program',
-    problem: 'Your team is talented but reactive. You spend more time firefighting than hitting strategic targets, and accountability feels like a moving target.',
+    title: 'Fractional COO',
+    price: '₹4-6L/month',
+    problem: 'You need embedded operating leadership but aren\'t ready for a full-time COO hire. You need someone to run the rhythm while you build internal capability.',
     whatWeDo: [
-      'Implementation of goal-tracking frameworks (OKRs/KPIs)',
-      'Leadership training on execution habits',
-      'Design of high-impact weekly/monthly review cycles',
-      'Performance management system integration'
+      'One of our partners sits inside your business',
+      'Running the operating rhythm and cadence',
+      'Building internal capability and leadership habits',
+      'Managing performance systems and escalations',
+      'Systematic exit once capability is built'
     ],
     outcomes: [
-      'A high-performance culture of ownership',
-      'Consistent hitting of quarterly strategic targets',
-      'Proactive management instead of reactive firefighting'
+      'Operating independence',
+      'A business that runs without the founder being the system',
+      'High-performance culture of ownership',
+      'Consistent hitting of strategic targets'
     ],
     expertiseSignal: 'Built central PMO architectures at Udaan enabling expansion into 28 markets in 15 months.',
     cta: 'Start with a Diagnostic'
@@ -62,9 +70,9 @@ export default function Services() {
       <section className="pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="container-custom">
           <div className="max-w-3xl">
-            <h1 className="mb-6">Consulting Services</h1>
+            <h1 className="mb-6">Consulting Interventions</h1>
             <p className="text-xl md:text-2xl text-accent-light leading-relaxed">
-              We design and deploy the operating systems that allow founder-led businesses to scale with discipline and clarity.
+              We diagnose structural diseases and install the <strong>Operating Spine</strong> that lets founder-led businesses scale with discipline.
             </p>
           </div>
         </div>
@@ -81,11 +89,14 @@ export default function Services() {
               <div className="grid lg:grid-cols-12 gap-12 lg:gap-24">
                 {/* Left Column: Title & Problem */}
                 <div className="lg:col-span-5">
-                  <h2 className="text-3xl md:text-4xl mb-8">{service.title}</h2>
+                  <div className="flex justify-between items-start mb-4">
+                    <h2 className="text-3xl md:text-4xl mb-0">{service.title}</h2>
+                    <span className="text-lg font-bold text-accent">{service.price}</span>
+                  </div>
                   <div className="bg-muted p-8 rounded-2xl border border-border/50 mb-8">
                     <div className="flex items-start gap-3 text-accent/60 mb-4">
                       <AlertCircle size={20} className="mt-1 flex-shrink-0" />
-                      <span className="text-xs font-bold uppercase tracking-widest">The Problem</span>
+                      <span className="text-xs font-bold uppercase tracking-widest">The Symptom</span>
                     </div>
                     <p className="text-lg text-accent-light leading-relaxed italic">
                       "{service.problem}"
@@ -104,7 +115,7 @@ export default function Services() {
                     <div>
                       <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-accent/40 mb-6">
                         <Target size={16} />
-                        What We Do
+                        The Intervention
                       </h3>
                       <ul className="space-y-4">
                         {service.whatWeDo.map((item, idx) => (
@@ -134,7 +145,7 @@ export default function Services() {
                   </div>
 
                   <div className="pt-6">
-                    <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-primary gap-3 px-10">
+                    <a href="https://tally.so/r/metmov-diagnostic" target="_blank" rel="noopener noreferrer" className="btn-primary gap-3 px-10">
                       {service.cta}
                       <ArrowRight size={20} />
                     </a>
@@ -149,13 +160,18 @@ export default function Services() {
       {/* Final CTA */}
       <section className="bg-muted border-t border-border/50">
         <div className="container-custom text-center">
-          <h2 className="mb-8">Not sure which program is right for you?</h2>
+          <h2 className="mb-8">Not sure which intervention is right for you?</h2>
           <p className="text-xl text-accent-light mb-12 max-w-2xl mx-auto leading-relaxed">
-            Every engagement begins with a diagnostic call to understand your specific bottlenecks and scaling goals.
+            Every engagement begins with a diagnostic call to understand your specific structural diseases and scaling goals.
           </p>
-          <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-12 py-5">
-            Book a Diagnostic Call
-          </a>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="https://tally.so/r/metmov-diagnostic" target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-12 py-5">
+              Start Your Diagnostic
+            </a>
+            <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-outline text-lg px-12 py-5">
+              Talk to Us
+            </a>
+          </div>
         </div>
       </section>
     </div>

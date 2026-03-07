@@ -90,7 +90,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div>
               <div className="text-xl font-bold tracking-tighter mb-4">ANJANI PANDEY</div>
               <p className="text-sm text-accent-light/70 max-w-xs mb-8">
-                Fractional COO & Operating Model Specialist. CEO at <a href="https://metmov.com/" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov LLP</a>.
+                CEO, MetMov LLP. We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale.
               </p>
               <div className="flex gap-4">
                 {/* PERMANENT SOCIAL LINKS - DO NOT CHANGE WITHOUT MANUAL PROMPT */}
