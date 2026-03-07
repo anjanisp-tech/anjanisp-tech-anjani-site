@@ -1,7 +1,8 @@
 // Deployment Sync Test: 2026-02-21
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Linkedin, Globe, BookOpen, ArrowLeft, MessageCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, LINKEDIN_URL, WHATSAPP_URL, METMOV_URL } from '../constants';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -48,7 +49,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link to="/" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Home</Link>
             <Link to="/services" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Services</Link>
             <Link to="/blog" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Blog</Link>
-            <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-primary py-2.5 px-6 text-sm">Book Call</a>
+            <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary py-2.5 px-6 text-sm">Take the Diagnostic</a>
           </nav>
 
           {/* Mobile Toggle */}
@@ -66,7 +67,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link to="/" className="text-lg font-medium py-2">Home</Link>
             <Link to="/services" className="text-lg font-medium py-2">Services</Link>
             <Link to="/blog" className="text-lg font-medium py-2">Blog</Link>
-            <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-primary w-full">Book Call</a>
+            <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary w-full">Take the Diagnostic</a>
           </div>
         )}
       </header>
@@ -92,11 +93,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <p className="text-sm text-accent-light/70 max-w-xs mb-8">
                 CEO, MetMov LLP. We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale.
               </p>
+              <div className="mb-8">
+                <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary py-3 px-8 text-sm inline-block">
+                  Take the Mini Diagnostic
+                </a>
+              </div>
               <div className="flex gap-4">
                 {/* PERMANENT SOCIAL LINKS - DO NOT CHANGE WITHOUT MANUAL PROMPT */}
-                <a href="https://www.linkedin.com/in/anjanispandey/" target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="LinkedIn"><Linkedin size={18} /></a>
-                <a href="https://wa.me/919666480007" target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="WhatsApp"><MessageCircle size={18} /></a>
-                <a href="https://metmov.com/" target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="MetMov Website"><Globe size={18} /></a>
+                <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="LinkedIn"><Linkedin size={18} /></a>
+                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="WhatsApp"><MessageCircle size={18} /></a>
+                <a href={METMOV_URL} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="MetMov Website"><Globe size={18} /></a>
                 <Link to="/blog" className="p-2 bg-white rounded-lg border border-border hover:text-accent transition-colors" title="Personal Blog"><BookOpen size={18} /></Link>
               </div>
             </div>
@@ -107,7 +113,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <Link to="/" className="hover:text-accent transition-colors">Home</Link>
                   <Link to="/services" className="hover:text-accent transition-colors">Services</Link>
                   <Link to="/blog" className="hover:text-accent transition-colors">Blog</Link>
-                  <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Book Call</a>
+                  <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Book a Fit Call</a>
                 </nav>
               </div>
               <div className="space-y-4">

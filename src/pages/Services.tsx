@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Target, CheckCircle2, AlertCircle } from 'lucide-react';
+import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 
 const services = [
   {
@@ -19,7 +20,8 @@ const services = [
       'Clarity on structural risks to scale'
     ],
     expertiseSignal: 'Built diagnostic frameworks for MetMov LLP to identify accountability gaps and performance constraints.',
-    cta: 'Start with a Diagnostic'
+    cta: 'Start with a Fit Call',
+    subtext: 'We\'ll assess if a Diagnostic Sprint is the right entry point.'
   },
   {
     title: 'Operating Spine Install',
@@ -39,7 +41,8 @@ const services = [
       'A business that runs predictably without founder heroics'
     ],
     expertiseSignal: 'Designed operating structures for growth-stage brands like Nori Next and Y-Not Design & Manufacturing.',
-    cta: 'Start with a Diagnostic'
+    cta: 'Talk to Us',
+    subtext: 'This typically follows a Diagnostic Sprint. Let\'s see where you are.'
   },
   {
     title: 'Fractional COO',
@@ -59,7 +62,8 @@ const services = [
       'Consistent hitting of strategic targets'
     ],
     expertiseSignal: 'Built central PMO architectures at Udaan enabling expansion into 28 markets in 15 months.',
-    cta: 'Start with a Diagnostic'
+    cta: 'Talk to Us',
+    subtext: 'For businesses that need embedded operating leadership.'
   }
 ];
 
@@ -145,10 +149,13 @@ export default function Services() {
                   </div>
 
                   <div className="pt-6">
-                    <a href="https://tally.so/r/metmov-diagnostic" target="_blank" rel="noopener noreferrer" className="btn-primary gap-3 px-10">
+                    <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary gap-3 px-10">
                       {service.cta}
                       <ArrowRight size={20} />
                     </a>
+                    <p className="text-xs text-accent-light/50 mt-3 font-medium">
+                      {service.subtext}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -165,10 +172,10 @@ export default function Services() {
             Every engagement begins with a diagnostic call to understand your specific structural diseases and scaling goals.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="https://tally.so/r/metmov-diagnostic" target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-12 py-5">
+            <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-12 py-5">
               Start Your Diagnostic
             </a>
-            <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-outline text-lg px-12 py-5">
+            <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-outline text-lg px-12 py-5">
               Talk to Us
             </a>
           </div>

@@ -1,9 +1,10 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Tag, MessageSquare, User, Mail, Globe, Send, Phone } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, MessageSquare, User, Mail, Globe, Send, Phone, ArrowRight } from 'lucide-react';
 import Markdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import { useState, useEffect } from 'react';
 import { blogPosts } from '../data/blogData';
+import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 
 interface Comment {
   id: number;
@@ -173,8 +174,20 @@ export default function BlogPostDetail() {
             </header>
 
             {/* Content */}
-            <div className="markdown-body prose prose-lg max-w-none prose-accent mb-24">
+            <div className="markdown-body prose prose-lg max-w-none prose-accent mb-16">
               <Markdown remarkPlugins={[remarkBreaks]}>{post.content}</Markdown>
+            </div>
+
+            {/* Content-to-Funnel Bridge */}
+            <div className="py-12 border-y border-border/50 mb-24">
+              <h3 className="text-2xl font-bold mb-4">Wondering if this applies to your business?</h3>
+              <p className="text-accent-light mb-8">
+                Identify the structural diseases slowing your growth with our 5-minute diagnostic.
+              </p>
+              <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary inline-flex items-center gap-2 px-8">
+                Take the 5-Minute Diagnostic
+                <ArrowRight size={18} />
+              </a>
             </div>
 
             {/* Newsletter Section */}
@@ -421,8 +434,8 @@ export default function BlogPostDetail() {
                     <div className="text-sm text-accent-light">Fractional COO & Scaling Specialist</div>
                   </div>
                 </div>
-                <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-primary">
-                  Book a Diagnostic Call
+                <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary">
+                  Book a Fit Call
                 </a>
               </div>
             </footer>

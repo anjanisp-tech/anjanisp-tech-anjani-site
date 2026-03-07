@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, Search, Layers, Rocket, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 
 export default function Home() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -93,12 +94,12 @@ export default function Home() {
               Diagnostic Sprints. Operating Spine Installs. Fractional COO.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <a href="https://tally.so/r/metmov-diagnostic" target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-12 py-5 gap-3 shadow-xl shadow-accent/10">
-                Take the Mini Diagnostic
+              <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-12 py-5 gap-3 shadow-xl shadow-accent/10">
+                Take the Free Diagnostic
                 <ArrowRight size={22} />
               </a>
-              <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="btn-outline text-lg px-12 py-5 gap-3">
-                Talk to Us
+              <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-outline text-lg px-12 py-5 gap-3">
+                Or talk to us directly
               </a>
             </div>
           </div>
@@ -317,6 +318,11 @@ export default function Home() {
               <p className="text-lg text-accent-light mb-8 leading-relaxed">
                 An MBA from the <strong>Indian School of Business (ISB)</strong> and a Manufacturing Engineer by training, he combines strategic design capability with hands-on implementation discipline. He is the CEO of <strong><a href="https://metmov.com/" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov LLP</a></strong>, an operations advisory firm dedicated to helping founder-led companies transition from reactive execution to system-driven performance.
               </p>
+              <div className="mb-8">
+                <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="text-accent font-bold hover:underline flex items-center gap-2">
+                  Want to talk? Book a Fit Call <ArrowRight size={16} />
+                </a>
+              </div>
               <div className="flex flex-wrap gap-4">
                 <div className="px-4 py-2 bg-muted rounded-lg text-sm font-bold text-accent/60 border border-border/50">Y-NOT</div>
                 <div className="px-4 py-2 bg-muted rounded-lg text-sm font-bold text-accent/60 border border-border/50">UDAAN</div>
@@ -326,12 +332,17 @@ export default function Home() {
             <div className="space-y-8">
               <div className="p-8 bg-accent text-white rounded-3xl shadow-2xl">
                 <h3 className="text-white mb-4">MetMov Mini Diagnostic</h3>
-                <p className="text-white/70 mb-8">
-                  15 questions. 5 minutes. Find out which structural diseases may be slowing your business.
+                <p className="text-white/70 mb-6">
+                  15 questions. 5 minutes. Find out which of the 25 structural diseases may be present in your business. Get a score, a severity snapshot, and clarity on what to fix first.
                 </p>
-                <a href="https://tally.so/r/metmov-diagnostic" target="_blank" rel="noopener noreferrer" className="block w-full bg-white text-accent py-4 rounded-xl font-bold hover:bg-muted transition-colors text-center">
-                  Start Your Diagnostic
-                </a>
+                <div className="mb-8">
+                  <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="block w-full bg-white text-accent py-4 rounded-xl font-bold hover:bg-muted transition-colors text-center">
+                    Start Your Diagnostic
+                  </a>
+                  <p className="text-white/50 text-[10px] mt-2 text-center uppercase tracking-widest font-bold">
+                    Free through March 2026. No email required to start.
+                  </p>
+                </div>
               </div>
               <div className="p-8 border border-border rounded-3xl">
                 <h3 className="mb-4">Core Philosophy</h3>
@@ -448,10 +459,10 @@ export default function Home() {
               Stop being the bottleneck. Start leading a high-performance organization.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="https://tally.so/r/metmov-diagnostic" target="_blank" rel="noopener noreferrer" className="bg-white text-accent hover:bg-muted px-14 py-5 rounded-md font-bold text-lg transition-all inline-block shadow-2xl shadow-black/20">
+              <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="bg-white text-accent hover:bg-muted px-14 py-5 rounded-md font-bold text-lg transition-all inline-block shadow-2xl shadow-black/20">
                 Start Your Diagnostic
               </a>
-              <a href="https://calendly.com/metmovllp/30min" target="_blank" rel="noopener noreferrer" className="bg-transparent border border-white/30 text-white hover:bg-white/10 px-14 py-5 rounded-md font-bold text-lg transition-all inline-block">
+              <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="bg-transparent border border-white/30 text-white hover:bg-white/10 px-14 py-5 rounded-md font-bold text-lg transition-all inline-block">
                 Talk to Us
               </a>
             </div>

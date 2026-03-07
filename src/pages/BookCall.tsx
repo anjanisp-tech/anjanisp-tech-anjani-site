@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Calendar, Mail, Building, User, MessageSquare, Send, ShieldCheck, Zap, Coffee } from 'lucide-react';
+import { FIT_CALL_URL } from '../constants';
 
 export default function BookCall() {
   const [submitted, setSubmitted] = useState(false);
@@ -14,9 +15,9 @@ export default function BookCall() {
       <section className="pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="mb-8">Book a Diagnostic Call</h1>
+            <h1 className="mb-8">Book a Fit Call</h1>
             <p className="text-xl md:text-2xl text-accent-light mb-12 leading-relaxed">
-              This 30-minute call is designed to clarify your current operating challenges, identify structural bottlenecks, and outline possible next steps for your organization. There is no obligation to move forward.
+              This 20-30 minute conversation is designed to qualify your current operating challenges against our ICP and identify if MetMov is the right fit for your scaling journey.
             </p>
 
             {/* Reassurance Block */}
@@ -49,11 +50,11 @@ export default function BookCall() {
                 </div>
                 <div className="bg-white rounded-2xl border border-border overflow-hidden shadow-sm">
                   <iframe 
-                    src="https://calendly.com/metmovllp/30min?hide_landing_page_details=1&hide_gdpr_banner=1" 
+                    src={`${FIT_CALL_URL}?hide_landing_page_details=1&hide_gdpr_banner=1`} 
                     width="100%" 
                     height="700" 
                     frameBorder="0"
-                    title="Schedule a Call"
+                    title="Schedule a Fit Call"
                   ></iframe>
                 </div>
               </div>
