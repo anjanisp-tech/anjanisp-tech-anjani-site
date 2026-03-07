@@ -431,7 +431,7 @@ export default function BlogPostDetail() {
                   <div className="w-12 h-12 bg-accent text-white rounded-full flex items-center justify-center font-bold">AP</div>
                   <div>
                     <div className="font-bold text-lg">Anjani Pandey</div>
-                    <div className="text-sm text-accent-light">Fractional COO & Scaling Specialist</div>
+                    <div className="text-sm text-accent-light">CEO & Co-founder, MetMov LLP</div>
                   </div>
                 </div>
                 <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary">
