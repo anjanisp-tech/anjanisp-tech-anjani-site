@@ -86,6 +86,9 @@ export default function Home() {
             <h1 className="text-5xl md:text-7xl mb-6">
               The Founder Trap is the Ceiling of Your Scale
             </h1>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent/40 mb-4">
+              MetMov LLP — Structural Diagnostics for Founder-Led Businesses
+            </p>
             <p className="text-xl md:text-2xl text-accent-light mb-8 leading-relaxed">
               If you stepped away for 72 hours, what would stall? <br />
               We diagnose structural diseases and install the <strong>Operating Spine</strong> that lets your business run itself.
@@ -215,7 +218,7 @@ export default function Home() {
             </div>
             <div className="bg-white p-8 rounded-2xl border border-border shadow-sm">
               <p className="text-lg text-accent-light italic mb-6">
-                "I diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale without the founder being the system."
+                "We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale without the founder being the system."
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-white font-bold">AP</div>
@@ -313,10 +316,13 @@ export default function Home() {
             <div>
               <h2 className="mb-8">Meet Anjani</h2>
               <p className="text-lg text-accent-light mb-6 leading-relaxed">
-                With 14+ years of experience, Anjani is an operations and transformation leader who has designed execution systems for global supply chains, manufacturing giants, and high-growth platforms.
+                I am an operations and transformation leader with 14+ years of experience designing execution systems for global supply chains, manufacturing giants, and high-growth platforms.
               </p>
               <p className="text-lg text-accent-light mb-8 leading-relaxed">
-                An MBA from the <strong>Indian School of Business (ISB)</strong> and a Manufacturing Engineer by training, he combines strategic design capability with hands-on implementation discipline. He is the CEO of <strong><a href="https://metmov.com/" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov LLP</a></strong>, an operations advisory firm dedicated to helping founder-led companies transition from reactive execution to system-driven performance.
+                With an MBA from the <strong>Indian School of Business (ISB)</strong> and a background in Manufacturing Engineering, I combine strategic design with hands-on implementation discipline. I co-founded <strong><a href="https://metmov.com/" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov LLP</a></strong> with Chaitanya Eswarapragada and Antriksh Kumar to help founder-led companies transition from reactive execution to system-driven performance.
+              </p>
+              <p className="text-lg text-accent-light mb-8 leading-relaxed font-medium italic border-l-4 border-accent pl-6">
+                That experience taught me one thing: businesses don't fail from lack of vision. They fail from absence of structural support. That conviction is why I built MetMov.
               </p>
               <div className="mb-8">
                 <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="text-accent font-bold hover:underline flex items-center gap-2">
@@ -347,7 +353,7 @@ export default function Home() {
               <div className="p-8 border border-border rounded-3xl">
                 <h3 className="mb-4">Core Philosophy</h3>
                 <p className="text-accent-light">
-                  "Businesses don't fail from lack of vision. They fail from absence of internal structural support. We diagnose before we prescribe. We install, we don't advise. We build genuine value, not billable hours."
+                  "Businesses don't fail from lack of vision. They fail from absence of internal structural support. Diagnose before prescribing. Install, don't advise. Build genuine value, not billable hours."
                 </p>
               </div>
             </div>

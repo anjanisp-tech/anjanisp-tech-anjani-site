@@ -131,7 +131,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <p>© 2026 Anjani Pandey. All rights reserved.</p>
               <p className="opacity-30 font-mono">v1.1.4-db-url-fix</p>
             </div>
-            <p>CEO at MetMov LLP</p>
+            <p>CEO & Co-founder, MetMov LLP</p>
           </div>
         </div>
       </footer>
