@@ -94,11 +94,11 @@ export default function Admin() {
         
         if (resendEl) {
           resendEl.innerText = data.resendConfigured ? 'Configured' : 'Missing or Invalid API Key';
-          resendEl.className = `px-2 py-0.5 rounded ${data.resendConfigured ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`;
+          resendEl.className = `px-2 py-0.5 rounded ${data.resendConfigured ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`;
         }
         if (dbEl) {
           dbEl.innerText = data.dbType + (data.postgresConfigured ? ' (Postgres)' : ' (Local SQLite)');
-          dbEl.className = `px-2 py-0.5 rounded ${data.postgresConfigured ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`;
+          dbEl.className = `px-2 py-0.5 rounded ${data.postgresConfigured ? 'bg-blue-100 text-blue-700' : 'bg-blue-100 text-blue-700'}`;
         }
         if (envEl && data.envCheck) {
           envEl.innerHTML = `
@@ -108,7 +108,7 @@ export default function Admin() {
               <div class="flex justify-between"><span>TO_EMAIL:</span> <span>${data.envCheck.toEmail}</span></div>
               <div class="flex justify-between"><span>DB_TYPE:</span> <span>${data.dbType}</span></div>
               <div class="flex justify-between"><span>LAST_SYNC:</span> <span>${new Date(data.initializedAt).toLocaleTimeString()}</span></div>
-              <div class="flex justify-between"><span>OVERRIDE:</span> <span class="${data.envCheck.usingOverrideFile ? 'text-emerald-500 font-bold' : ''}">${data.envCheck.usingOverrideFile ? 'ACTIVE' : 'NONE'}</span></div>
+              <div class="flex justify-between"><span>OVERRIDE:</span> <span class="${data.envCheck.usingOverrideFile ? 'text-blue-500 font-bold' : ''}">${data.envCheck.usingOverrideFile ? 'ACTIVE' : 'NONE'}</span></div>
               <div class="mt-2 pt-2 border-t border-black/10">
                 <div class="mb-1 opacity-50">Detected Keys:</div>
                 <div class="flex flex-wrap gap-1">
@@ -470,7 +470,7 @@ export default function Admin() {
             <div className="max-w-4xl mx-auto">
               <form onSubmit={handleBlogSubmit} className="bg-white border border-border rounded-3xl p-8 md:p-12 shadow-sm space-y-8">
                 {status.type !== 'idle' && (
-                  <div className={`p-4 rounded-xl flex items-center gap-3 ${status.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                  <div className={`p-4 rounded-xl flex items-center gap-3 ${status.type === 'success' ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-700'}`}>
                     {status.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
                     <span className="font-bold text-sm">{status.message}</span>
                   </div>

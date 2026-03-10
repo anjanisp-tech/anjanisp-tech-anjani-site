@@ -295,7 +295,7 @@ export default function Blog() {
               </button>
             </form>
             {newsletterStatus === 'success' && (
-              <p className="mt-4 text-sm font-bold text-emerald-600 animate-in fade-in slide-in-from-top-2">
+              <p className="mt-4 text-sm font-bold text-blue-600 animate-in fade-in slide-in-from-top-2">
                 Welcome! You're now on the list.
               </p>
             )}
