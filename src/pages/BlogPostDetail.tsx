@@ -331,7 +331,7 @@ export default function BlogPostDetail() {
                     </button>
                     
                     {submitStatus === 'success' && (
-                      <span className="text-sm font-bold text-blue-600 animate-in fade-in slide-in-from-right-4">
+                      <span className="text-sm font-bold text-slate-900 animate-in fade-in slide-in-from-right-4">
                         Comment posted successfully!
                       </span>
                     )}

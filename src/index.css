@@ -3,11 +3,11 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   
-  --color-accent: #1e40af; /* Deep Blue for trust and professionalism */
-  --color-accent-light: #3b82f6;
+  --color-accent: #0f172a; /* Assertive Navy Blue for authority */
+  --color-accent-light: #1e3a8a; /* Deep Royal Blue */
   --color-surface: #ffffff;
-  --color-muted: #eff6ff;
-  --color-border: #dbeafe;
+  --color-muted: #f8fafc;
+  --color-border: #e2e8f0;
 }
 
 @layer base {
