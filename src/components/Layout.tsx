@@ -49,7 +49,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link to="/" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Home</Link>
             <Link to="/services" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Services</Link>
             <Link to="/blog" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Blog</Link>
-            <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary py-2.5 px-6 text-sm">Take the Diagnostic</a>
+            <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary py-2.5 px-6 text-sm">Take the Free Diagnostic</a>
           </nav>
 
           {/* Mobile Toggle */}
@@ -67,7 +67,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link to="/" className="text-lg font-medium py-2">Home</Link>
             <Link to="/services" className="text-lg font-medium py-2">Services</Link>
             <Link to="/blog" className="text-lg font-medium py-2">Blog</Link>
-            <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary w-full">Take the Diagnostic</a>
+            <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary w-full">Take the Free Diagnostic</a>
           </div>
         )}
       </header>
@@ -95,7 +95,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </p>
               <div className="mb-8">
                 <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary py-3 px-8 text-sm inline-block">
-                  Take the Mini Diagnostic
+                  Take the Free Diagnostic
                 </a>
               </div>
               <div className="flex gap-4">

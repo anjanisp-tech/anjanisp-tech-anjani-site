@@ -185,7 +185,7 @@ export default function BlogPostDetail() {
                 Identify the structural diseases slowing your growth with our 5-minute diagnostic.
               </p>
               <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary inline-flex items-center gap-2 px-8">
-                Take the 5-Minute Diagnostic
+                Take the Free Diagnostic
                 <ArrowRight size={18} />
               </a>
             </div>

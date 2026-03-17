@@ -343,7 +343,7 @@ export default function Home() {
                 </p>
                 <div className="mb-8">
                   <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="block w-full bg-white text-accent py-4 rounded-xl font-bold hover:bg-muted transition-colors text-center">
-                    Start Your Diagnostic
+                    Take the Free Diagnostic
                   </a>
                   <p className="text-white/50 text-[10px] mt-2 text-center uppercase tracking-widest font-bold">
                     Free through March 2026. No email required to start.
@@ -466,7 +466,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="bg-white text-accent hover:bg-muted px-14 py-5 rounded-md font-bold text-lg transition-all inline-block shadow-2xl shadow-black/20">
-                Start Your Diagnostic
+                Take the Free Diagnostic
               </a>
               <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="bg-transparent border border-white/30 text-white hover:bg-white/10 px-14 py-5 rounded-md font-bold text-lg transition-all inline-block">
                 Talk to Us

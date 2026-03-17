@@ -379,9 +379,9 @@ export default function Admin() {
           {activeTab === 'comments' ? (
             <div className="space-y-6">
               {/* System Status Info */}
-              <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex flex-wrap gap-6 text-xs text-blue-700">
+              <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex flex-wrap gap-6 text-xs text-slate-700">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                  <span className="w-2 h-2 bg-slate-400 rounded-full animate-pulse"></span>
                   <span className="font-bold uppercase tracking-wider">Storage:</span>
                   <span id="db-type">Loading...</span>
                 </div>
@@ -397,7 +397,7 @@ export default function Admin() {
                   <span className="font-bold uppercase tracking-wider">Comments:</span>
                   <span id="db-comment-count">...</span>
                 </div>
-                <div className="w-full mt-2 pt-2 border-t border-blue-100 italic opacity-80">
+                <div className="w-full mt-2 pt-2 border-t border-slate-100 italic opacity-80">
                   Note: If Storage shows "SQLite", data is ephemeral. Connect Vercel Postgres for permanent storage.
                 </div>
               </div>
@@ -823,9 +823,9 @@ export default function Admin() {
                   </div>
                 </div>
 
-                <div className="mt-8 p-6 bg-blue-50 border border-blue-100 rounded-2xl">
-                  <h3 className="text-blue-800 font-bold mb-2">SEO & Sitemap</h3>
-                  <p className="text-sm text-blue-700 mb-4">
+                <div className="mt-8 p-6 bg-slate-50 border border-slate-100 rounded-2xl">
+                  <h3 className="text-slate-800 font-bold mb-2">SEO & Sitemap</h3>
+                  <p className="text-sm text-slate-700 mb-4">
                     Your sitemap is automatically generated and updated. You can view it here:
                   </p>
                   <div className="flex items-center gap-4">
