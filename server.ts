@@ -15,7 +15,7 @@ async function startServer() {
   app.use(express.json());
 
   // Use the API app for /api routes
-  app.use(apiApp);
+  app.use("/api", apiApp);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

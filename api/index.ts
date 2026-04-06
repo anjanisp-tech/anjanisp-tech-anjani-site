@@ -47,12 +47,12 @@ function getResendKey() {
 const router = express.Router();
 
 // 1. Simple Ping Route for testing
-router.get("/api/ping", (req, res) => {
+router.get("/ping", (req, res) => {
   res.json({ status: "ok", message: "API is reachable" });
 });
 
 // 2. AI Chat Assistant Route (Moved to top to avoid DB middleware)
-router.post("/api/chat", async (req, res) => {
+router.post("/chat", async (req, res) => {
   try {
     const { message, history } = req.body || {};
     
@@ -528,7 +528,7 @@ router.get("/sitemap.xml", async (req, res) => {
   }
 });
 
-router.post("/api/admin/test-email", adminAuth, async (req, res) => {
+router.post("/admin/test-email", adminAuth, async (req, res) => {
   try {
     await sendNotification("Test Email", "This is a test email to verify your Resend configuration.");
     res.json({ success: true, message: "Test email sent. Check your inbox (and spam folder)." });
@@ -537,7 +537,7 @@ router.post("/api/admin/test-email", adminAuth, async (req, res) => {
   }
 });
 
-router.post("/api/admin/save-resend-key", adminAuth, (req, res) => {
+router.post("/admin/save-resend-key", adminAuth, (req, res) => {
   const { key } = req.body;
   if (!key || !key.startsWith('re_')) {
     return res.status(400).json({ error: "Invalid key format. Must start with 're_'" });
@@ -573,7 +573,7 @@ router.post("/api/admin/save-resend-key", adminAuth, (req, res) => {
   }
 });
 
-router.post("/api/admin/restart-server", adminAuth, (req, res) => {
+router.post("/admin/restart-server", adminAuth, (req, res) => {
   console.log("[ADMIN] Manual server restart requested.");
   res.json({ success: true, message: "Server process exiting. The platform should restart it automatically." });
   setTimeout(() => {
@@ -582,7 +582,7 @@ router.post("/api/admin/restart-server", adminAuth, (req, res) => {
 });
 
 // API Routes
-router.get("/api/health", async (req, res) => {
+router.get("/health", async (req, res) => {
   try {
     // Force re-initialization if requested
     const force = req.query.force === 'true';
@@ -622,7 +622,7 @@ router.get("/api/health", async (req, res) => {
   }
 });
 
-router.get("/api/debug", async (req, res) => {
+router.get("/debug", async (req, res) => {
   try {
     let postCount, commentCount;
     if (isPostgres) {
@@ -644,7 +644,7 @@ router.get("/api/debug", async (req, res) => {
   }
 });
 
-router.get("/api/posts", async (req, res) => {
+router.get("/posts", async (req, res) => {
   try {
     const limit = parseInt(req.query.limit as string) || 100;
     const offset = parseInt(req.query.offset as string) || 0;
@@ -661,7 +661,7 @@ router.get("/api/posts", async (req, res) => {
   }
 });
 
-router.get("/api/posts/:id", async (req, res) => {
+router.get("/posts/:id", async (req, res) => {
   try {
     if (isPostgres) {
       const { rows } = await sql`SELECT * FROM posts WHERE id = ${req.params.id}`;
@@ -677,7 +677,7 @@ router.get("/api/posts/:id", async (req, res) => {
   }
 });
 
-router.post("/api/admin/posts", adminAuth, async (req, res) => {
+router.post("/admin/posts", adminAuth, async (req, res) => {
   const { title, date, category, excerpt, content } = req.body;
   const id = title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
   try {
@@ -710,7 +710,7 @@ router.post("/api/admin/posts", adminAuth, async (req, res) => {
   }
 });
 
-router.delete("/api/admin/posts/:id", adminAuth, async (req, res) => {
+router.delete("/admin/posts/:id", adminAuth, async (req, res) => {
   const { id } = req.params;
   try {
     if (isPostgres) {
@@ -727,7 +727,7 @@ router.delete("/api/admin/posts/:id", adminAuth, async (req, res) => {
   }
 });
 
-router.get("/api/blog/:id/comments", async (req, res) => {
+router.get("/blog/:id/comments", async (req, res) => {
   try {
     if (isPostgres) {
       const { rows } = await sql`SELECT * FROM comments WHERE post_id = ${req.params.id} ORDER BY created_at ASC`;
@@ -741,7 +741,7 @@ router.get("/api/blog/:id/comments", async (req, res) => {
   }
 });
 
-router.post("/api/blog/:id/comments", async (req, res) => {
+router.post("/blog/:id/comments", async (req, res) => {
   const { id } = req.params;
   const { name, email, website, phone, comment, parent_id, is_admin } = req.body;
   
@@ -775,7 +775,7 @@ router.post("/api/blog/:id/comments", async (req, res) => {
   }
 });
 
-router.get("/api/admin/comments", adminAuth, async (req, res) => {
+router.get("/admin/comments", adminAuth, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit as string) || 500;
     if (isPostgres) {
@@ -802,7 +802,7 @@ router.get("/api/admin/comments", adminAuth, async (req, res) => {
   }
 });
 
-router.delete("/api/admin/comments/:id", adminAuth, async (req, res) => {
+router.delete("/admin/comments/:id", adminAuth, async (req, res) => {
   try {
     if (isPostgres) {
       await sql`DELETE FROM comments WHERE id = ${req.params.id} OR parent_id = ${req.params.id}`;
@@ -816,7 +816,7 @@ router.delete("/api/admin/comments/:id", adminAuth, async (req, res) => {
   }
 });
 
-router.post("/api/subscribe", async (req, res) => {
+router.post("/subscribe", async (req, res) => {
   const { email } = req.body;
   console.log("Subscription request received for:", email);
   if (!email) return res.status(400).json({ error: "Email is required" });
@@ -840,7 +840,7 @@ router.post("/api/subscribe", async (req, res) => {
   }
 });
 
-router.get("/api/admin/subscriptions", adminAuth, async (req, res) => {
+router.get("/admin/subscriptions", adminAuth, async (req, res) => {
   try {
     if (isPostgres) {
       const { rows } = await sql`SELECT * FROM subscriptions ORDER BY created_at DESC`;
