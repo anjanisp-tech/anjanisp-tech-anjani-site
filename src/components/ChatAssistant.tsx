@@ -41,7 +41,12 @@ export default function ChatAssistant() {
       try {
         const pingResponse = await fetch('/api/ping');
         if (!pingResponse.ok) {
-          throw new Error(`HTTP ${pingResponse.status}: ${pingResponse.statusText}`);
+          let errorDetail = '';
+          try {
+            const data = await pingResponse.json();
+            errorDetail = data.details || data.error || '';
+          } catch (e) {}
+          throw new Error(`HTTP ${pingResponse.status}${errorDetail ? ': ' + errorDetail : ''}`);
         }
       } catch (pingErr: any) {
         console.error("API unreachable:", pingErr);

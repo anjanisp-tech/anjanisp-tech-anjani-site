@@ -56,6 +56,21 @@ router.get("/ping", (req, res) => {
   res.json({ status: "ok", message: "API is reachable" });
 });
 
+// Diagnostic route
+router.get("/diagnostic", (req, res) => {
+  res.json({
+    status: "ok",
+    isPostgres,
+    sqliteInitialized: !!sqliteDb,
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      HAS_POSTGRES: !!process.env.POSTGRES_URL,
+      HAS_GEMINI: !!process.env.GEMINI_API_KEY,
+      HAS_RESEND: !!getResendKey()
+    }
+  });
+});
+
 // 2. AI Chat Assistant Route (Moved to top to avoid DB middleware)
 router.post("/chat", async (req, res) => {
   try {
@@ -676,11 +691,14 @@ router.get("/posts", async (req, res) => {
       const { rows } = await sql`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
       res.json(rows);
     } else {
-      const posts = sqliteDb.prepare("SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?").all(limit, offset);
+      const db = getSqliteDb();
+      if (!db) throw new Error("SQLite database not initialized");
+      const posts = db.prepare("SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?").all(limit, offset);
       res.json(posts);
     }
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch posts" });
+  } catch (err: any) {
+    console.error("Error fetching posts:", err);
+    res.status(500).json({ error: "Failed to fetch posts", details: err.message });
   }
 });
 
@@ -691,12 +709,15 @@ router.get("/posts/:id", async (req, res) => {
       if (rows.length === 0) return res.status(404).json({ error: "Post not found" });
       res.json(rows[0]);
     } else {
-      const post = sqliteDb.prepare("SELECT * FROM posts WHERE id = ?").get(req.params.id);
+      const db = getSqliteDb();
+      if (!db) throw new Error("SQLite database not initialized");
+      const post = db.prepare("SELECT * FROM posts WHERE id = ?").get(req.params.id);
       if (!post) return res.status(404).json({ error: "Post not found" });
       res.json(post);
     }
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch post" });
+  } catch (err: any) {
+    console.error("Error fetching post:", err);
+    res.status(500).json({ error: "Failed to fetch post", details: err.message });
   }
 });
 

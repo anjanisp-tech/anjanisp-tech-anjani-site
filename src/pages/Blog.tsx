@@ -75,7 +75,7 @@ export default function Blog() {
       setOffset(currentOffset + data.length);
     } catch (err: any) {
       console.error("Failed to fetch posts", err);
-      setError(err.message);
+      setError(err.details || err.message);
     } finally {
       setIsLoading(false);
       setIsFetchingMore(false);
