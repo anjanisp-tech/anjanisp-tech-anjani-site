@@ -25,12 +25,14 @@ export default function ChatAssistant() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const handleSend = async (e?: React.FormEvent, overrideMessage?: string) => {
+    if (e) e.preventDefault();
+    const messageToSend = overrideMessage || input;
+    if (!messageToSend.trim() || isLoading) return;
 
-    const userMessage = input.trim();
-    setInput('');
+    const userMessage = messageToSend.trim();
+    if (!overrideMessage) setInput('');
+    
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
@@ -44,13 +46,13 @@ export default function ChatAssistant() {
         })
       });
 
-      if (!response.ok) throw new Error('Failed to get response');
-
       const data = await response.json();
+      if (!response.ok) throw new Error(data.details || data.error || 'Failed to get response');
+
       setMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Chat error:', error);
-      setMessages(prev => [...prev, { role: 'assistant', content: "I'm sorry, I encountered an error. Please try again or book a Fit Call if you need immediate assistance." }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${error.message}. Please try again or book a Fit Call.` }]);
     } finally {
       setIsLoading(false);
     }
@@ -119,19 +121,19 @@ export default function ChatAssistant() {
             {/* Quick Actions */}
             <div className="px-6 py-3 border-t border-border bg-white flex gap-2 overflow-x-auto no-scrollbar">
               <button 
-                onClick={() => { setInput("What is the Operating Spine?"); }}
+                onClick={() => handleSend(undefined, "What is the Operating Spine?")}
                 className="whitespace-nowrap px-3 py-1.5 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all"
               >
                 What is the Operating Spine?
               </button>
               <button 
-                onClick={() => { setInput("Can you diagnose my business bottlenecks?"); }}
+                onClick={() => handleSend(undefined, "Can you diagnose my business bottlenecks?")}
                 className="whitespace-nowrap px-3 py-1.5 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all"
               >
                 Diagnose Bottlenecks
               </button>
               <button 
-                onClick={() => { setInput("How do I fix Founder Overload?"); }}
+                onClick={() => handleSend(undefined, "How do I fix Founder Overload?")}
                 className="whitespace-nowrap px-3 py-1.5 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all"
               >
                 Fix Founder Overload

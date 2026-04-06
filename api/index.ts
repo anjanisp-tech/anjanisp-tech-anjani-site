@@ -821,7 +821,6 @@ router.post("/api/chat", async (req, res) => {
     const response = await ai.models.generateContent({
       model: "gemini-3.1-pro-preview",
       contents: [
-        { role: "user", parts: [{ text: `System Instruction: ${systemInstruction}` }] },
         ...(history || []).map((h: any) => ({
           role: h.role === "user" ? "user" : "model",
           parts: [{ text: h.content }]
@@ -829,6 +828,7 @@ router.post("/api/chat", async (req, res) => {
         { role: "user", parts: [{ text: message }] }
       ],
       config: {
+        systemInstruction,
         temperature: 0.7,
         topP: 0.95,
         topK: 40,
