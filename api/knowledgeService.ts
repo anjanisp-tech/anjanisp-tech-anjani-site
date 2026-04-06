@@ -61,8 +61,20 @@ export async function getKnowledgeBase(): Promise<string> {
       buffer = Buffer.from(response.data as ArrayBuffer);
     }
 
-    const result = await mammoth.extractRawText({ buffer });
+    console.log(`[KNOWLEDGE] Extracting text from buffer...`);
+    let result;
+    try {
+      result = await mammoth.extractRawText({ buffer });
+    } catch (mammothErr: any) {
+      console.error("[KNOWLEDGE] Mammoth extraction failed:", mammothErr.message);
+      throw new Error(`Failed to extract text from document: ${mammothErr.message}`);
+    }
     
+    if (!result || !result.value) {
+      console.warn("[KNOWLEDGE] Mammoth returned empty text.");
+      return cachedKnowledge || "";
+    }
+
     cachedKnowledge = result.value;
     lastSync = now;
     

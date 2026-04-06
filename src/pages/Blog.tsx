@@ -68,7 +68,8 @@ export default function Blog() {
       const data = await res.json();
       
       if (data.status === 'error') {
-        throw new Error(data.details || data.error || "Failed to fetch posts");
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || "Failed to fetch posts");
+        throw new Error(errorMsg);
       }
       
       if (isInitial) {

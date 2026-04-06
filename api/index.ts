@@ -52,6 +52,16 @@ const apiApp = express();
 apiApp.use(express.json());
 apiApp.use(router);
 
+// Error handler for apiApp itself
+apiApp.use((err: any, req: any, res: any, next: any) => {
+  console.error("[API APP ERROR]", err);
+  res.status(200).json({ 
+    status: "error",
+    error: "API Application Error", 
+    details: err.message || "An unknown error occurred in the API application"
+  });
+});
+
 // 1. Simple Ping Route for testing
 router.get("/ping", (req, res) => {
   console.log("[API PING HIT]");
@@ -135,12 +145,20 @@ function getSqliteDb() {
   if (useMockDb) return null;
 
   try {
+    const isVercel = !!process.env.VERCEL || !!process.env.VERCEL_URL;
+    
+    // CRITICAL: better-sqlite3 often fails on Vercel due to native binary issues.
+    // If we are on Vercel and don't have Postgres, we MUST use Mock DB to avoid 500 crashes.
+    if (isVercel && !isPostgres) {
+      console.warn("[DB INIT] Vercel detected without Postgres. Using Mock DB for stability.");
+      useMockDb = true;
+      return null;
+    }
+
     console.log("[DB INIT] Initializing SQLite database...");
     // Lazy load better-sqlite3 to prevent module load crashes
     const Database = requireInEsm("better-sqlite3");
     
-    // Use /tmp on Vercel for writable DB
-    const isVercel = !!process.env.VERCEL;
     const dbPath = isVercel ? "/tmp/blog.db" : path.join(process.cwd(), "blog.db");
     
     console.log(`[DB INIT] SQLite Path: ${dbPath}`);
@@ -175,7 +193,17 @@ function getSqliteDb() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    seedSqlite();
+    
+    // Seed SQLite if empty
+    try {
+      const countResult = sqliteDb.prepare("SELECT count(*) as count FROM posts").get();
+      if (!countResult || countResult.count === 0) {
+        seedSqlite();
+      }
+    } catch (e) {
+      seedSqlite();
+    }
+    
     return sqliteDb;
   } catch (err: any) {
     console.error("CRITICAL: Failed to initialize SQLite:", err.message);
@@ -186,21 +214,30 @@ function getSqliteDb() {
 
 // 3. AI Chat Assistant Route (Backend Proxy)
 router.post("/chat", async (req, res) => {
+  console.log("[CHAT] Received request");
   try {
     const { message, history } = req.body || {};
     
-    if (!message) return res.status(400).json({ error: "Message is required" });
+    if (!message) {
+      console.warn("[CHAT] Missing message");
+      return res.status(400).json({ error: "Message is required" });
+    }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
+      console.warn("[CHAT] GEMINI_API_KEY missing");
       return res.status(200).json({ 
         status: "error",
         error: "GEMINI_API_KEY is missing in the backend environment. Please add it to your deployment secrets." 
       });
     }
 
+    console.log("[CHAT] Fetching knowledge base...");
     const knowledge = await getKnowledgeBase();
+    console.log("[CHAT] Knowledge base fetched, length:", knowledge.length);
+    
     const ai = new GoogleGenAI({ apiKey });
+    console.log("[CHAT] AI initialized, generating content...");
 
     const systemInstruction = `
       You are "The Scaling Architect," a digital proxy for Anjani Pandey, a world-class operations and scaling consultant.
@@ -242,13 +279,17 @@ router.post("/chat", async (req, res) => {
       }
     });
 
+    if (!response || !response.text) {
+      throw new Error("Empty response from Gemini API");
+    }
+
     res.json({ text: response.text });
   } catch (err: any) {
     console.error("[CHAT ERROR]", err);
     res.status(200).json({ 
       status: "error",
       error: "Failed to process chat", 
-      details: err.message || "Unknown error"
+      details: err.message || "An unexpected error occurred during AI processing."
     });
   }
 });

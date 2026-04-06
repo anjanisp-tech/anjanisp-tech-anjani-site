@@ -25,8 +25,17 @@ async function startServer() {
 
   // Use the API app for /api routes
   app.use("/api", (req, res, next) => {
-    console.log(`[API REQUEST] ${req.method} ${req.url}`);
-    next();
+    try {
+      console.log(`[API REQUEST] ${req.method} ${req.url}`);
+      next();
+    } catch (err: any) {
+      console.error("[API MOUNT ERROR]", err);
+      res.status(200).json({ 
+        status: "error",
+        error: "API Mount Error", 
+        details: err.message || "An unknown error occurred during API routing"
+      });
+    }
   }, apiApp);
 
   // Vite middleware for development

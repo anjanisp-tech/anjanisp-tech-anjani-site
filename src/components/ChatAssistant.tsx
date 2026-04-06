@@ -50,7 +50,8 @@ export default function ChatAssistant() {
       const data = await response.json();
       
       if (data.status === 'error') {
-        throw new Error(data.error || data.details || "Failed to get response from AI");
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || "Failed to get response from AI");
+        throw new Error(errorMsg);
       }
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.text || "I'm sorry, I couldn't generate a response." }]);
