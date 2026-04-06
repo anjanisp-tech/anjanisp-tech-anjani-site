@@ -37,6 +37,23 @@ export default function ChatAssistant() {
     setIsLoading(true);
 
     try {
+      // 1. Check if API is reachable (Ping)
+      try {
+        const pingResponse = await fetch('/api/ping');
+        if (!pingResponse.ok) {
+          throw new Error(`API Ping failed: ${pingResponse.status}`);
+        }
+      } catch (pingErr) {
+        console.error("API unreachable:", pingErr);
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: "I'm having trouble connecting to my brain (the server). Please check your internet connection or try again in a moment." 
+        }]);
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Send the actual chat message
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,13 +63,30 @@ export default function ChatAssistant() {
         })
       });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.details || data.error || 'Failed to get response');
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = "Something went wrong on my end.";
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.details || errorData.error || errorMessage;
+        } catch (e) {
+          // If not JSON, it might be the "A server error occurred" HTML
+          if (errorText.includes("A server error occurred")) {
+            errorMessage = "The server is currently overloaded or crashed. I've logged this for Anjani to fix.";
+          }
+        }
+        throw new Error(errorMessage);
+      }
 
+      const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
     } catch (error: any) {
       console.error('Chat error:', error);
-      setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${error.message}. Please try again or book a Fit Call.` }]);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: `Error: ${error.message || "I encountered an unexpected issue. Please try again."}` 
+      }]);
     } finally {
       setIsLoading(false);
     }
