@@ -155,6 +155,12 @@ const sanitizeUrl = (url: string | undefined) => {
   
   // Remove surrounding quotes if present
   clean = clean.replace(/^["']|["']$/g, '');
+  
+  // Check for placeholder values
+  if (clean.includes('YOUR_') || clean.includes('<') || clean.length < 10) {
+    return undefined;
+  }
+  
   return clean;
 };
 
@@ -162,7 +168,7 @@ if (process.env.POSTGRES_URL) process.env.POSTGRES_URL = sanitizeUrl(process.env
 if (process.env.DATABASE_URL) process.env.DATABASE_URL = sanitizeUrl(process.env.DATABASE_URL);
 
 const dbInitializedAt = new Date().toISOString();
-const isPostgres = !!(process.env.POSTGRES_URL || process.env.DATABASE_URL);
+const isPostgres = !!(process.env.POSTGRES_URL && process.env.POSTGRES_URL.length > 20 && process.env.POSTGRES_URL.includes('://'));
 console.log("Database configuration detected:", isPostgres ? "Postgres" : "SQLite");
 if (isPostgres) {
   console.log("Postgres URL present:", !!process.env.POSTGRES_URL);
@@ -226,7 +232,13 @@ function getSqliteDb() {
 }
 
 function seedSqlite() {
-  if (isPostgres || !sqliteDb) return;
+  if (isPostgres) return;
+  
+  const db = getSqliteDb();
+  if (!db) {
+    console.error("[DB SEED] Failed to initialize SQLite for seeding");
+    return;
+  }
   
   console.log("Seeding SQLite database...");
   const initialPosts = [
@@ -279,6 +291,13 @@ async function initDb(force = false) {
   if (isDbInitialized && !force) return;
 
   try {
+    console.log(`[DB INIT] Testing Postgres connection...`);
+    // Simple test query to verify connection before running migrations
+    await sql`SELECT 1`.catch(err => {
+      console.error("[DB INIT] Postgres Connection Test Failed:", err.message);
+      throw new Error(`Postgres Connection Failed: ${err.message}`);
+    });
+
     console.log(`[DB INIT] Initializing Postgres tables (force=${force})...`);
     // Use a transaction or sequential awaits to ensure tables exist
     await sql`
@@ -324,7 +343,13 @@ async function initDb(force = false) {
     console.log("[DB INIT] Postgres tables check complete.");
     
     // Check if seed data is needed
-    const { rowCount } = await sql`SELECT id FROM posts LIMIT 1`;
+    let rowCount = 0;
+    try {
+      const result = await sql`SELECT id FROM posts LIMIT 1`;
+      rowCount = result.rowCount;
+    } catch (e) {
+      console.warn("[DB INIT] Could not check row count, assuming 0");
+    }
     
     const initialPosts = [
       {
@@ -642,7 +667,9 @@ router.get("/health", async (req, res) => {
     const force = req.query.force === 'true';
     
     if (isPostgres) {
-      await initDb(force);
+      await initDb(force).catch(err => {
+        throw new Error(`Postgres Init Failed: ${err.message}`);
+      });
     } else {
       seedSqlite();
     }
