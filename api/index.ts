@@ -1,14 +1,18 @@
 import express from "express";
 import { sql } from "@vercel/postgres";
-import Database from "better-sqlite3";
+// import Database from "better-sqlite3"; // Lazy load this below
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import { createRequire } from "module";
 import { getKnowledgeBase } from "./knowledgeService.ts";
 import { GoogleGenAI } from "@google/genai";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const require = createRequire(import.meta.url);
+
+console.log("[API MODULE LOAD] Starting...");
 // Use a more reliable path for the key file
 const KEY_FILE = path.join(__dirname, "../.resend_key");
 const TMP_KEY_FILE = "/tmp/.resend_key";
@@ -155,6 +159,8 @@ function getSqliteDb() {
   if (sqliteDb) return sqliteDb;
   try {
     console.log("Initializing SQLite database...");
+    // Lazy load better-sqlite3 to prevent module load crashes
+    const Database = require("better-sqlite3");
     const dbPath = path.join(process.cwd(), "blog.db");
     sqliteDb = new Database(dbPath);
     sqliteDb.exec(`
@@ -883,5 +889,14 @@ if (isMain && process.env.NODE_ENV !== "production") {
     console.log(`API-only server running on http://localhost:${PORT}`);
   });
 }
+
+// Error handler for API routes
+router.use((err: any, req: any, res: any, next: any) => {
+  console.error("[API ROUTE ERROR]", err);
+  res.status(500).json({ 
+    error: "API Error", 
+    details: err.message || "An unknown error occurred in the API"
+  });
+});
 
 export default router;
