@@ -794,7 +794,7 @@ router.post("/api/chat", async (req, res) => {
     const ai = new GoogleGenAI({ apiKey });
 
     const systemInstruction = `
-      You are the FounderScale AI Strategy Assistant, a digital proxy for Anjani Pandey, a world-class operations and scaling consultant.
+      You are "The Scaling Architect," a digital proxy for Anjani Pandey, a world-class operations and scaling consultant.
       
       CORE MISSION:
       Your goal is to help founder-led businesses identify structural gaps (the 25-disease taxonomy) and implement the "Operating Spine" methodology.

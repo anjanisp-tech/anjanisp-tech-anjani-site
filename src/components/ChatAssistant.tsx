@@ -11,7 +11,7 @@ interface Message {
 export default function ChatAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: "Hello! I'm the FounderScale AI Strategy Assistant. I'm here to help you identify scaling bottlenecks and apply the 'Operating Spine' methodology to your business. How can I help you today?" }
+    { role: 'assistant', content: "Hello! I'm The Scaling Architect. I'm here to help you identify structural gaps in your business and install the 'Operating Spine' methodology. How can I assist you today?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -81,8 +81,8 @@ export default function ChatAssistant() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center font-bold">FS</div>
                 <div>
-                  <h3 className="font-bold text-lg leading-none mb-1">Strategy Assistant</h3>
-                  <p className="text-xs text-white/60">FounderScale AI Proxy</p>
+                  <h3 className="font-bold text-lg leading-none mb-1">The Scaling Architect</h3>
+                  <p className="text-xs text-white/60">FounderScale Intelligence</p>
                 </div>
               </div>
             </div>
@@ -118,10 +118,28 @@ export default function ChatAssistant() {
 
             {/* Quick Actions */}
             <div className="px-6 py-3 border-t border-border bg-white flex gap-2 overflow-x-auto no-scrollbar">
-              <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="whitespace-nowrap px-3 py-1.5 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all flex items-center gap-1">
+              <button 
+                onClick={() => { setInput("What is the Operating Spine?"); }}
+                className="whitespace-nowrap px-3 py-1.5 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all"
+              >
+                What is the Operating Spine?
+              </button>
+              <button 
+                onClick={() => { setInput("Can you diagnose my business bottlenecks?"); }}
+                className="whitespace-nowrap px-3 py-1.5 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all"
+              >
+                Diagnose Bottlenecks
+              </button>
+              <button 
+                onClick={() => { setInput("How do I fix Founder Overload?"); }}
+                className="whitespace-nowrap px-3 py-1.5 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all"
+              >
+                Fix Founder Overload
+              </button>
+              <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="whitespace-nowrap px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-bold uppercase tracking-widest text-accent hover:bg-accent hover:text-white transition-all flex items-center gap-1">
                 Free Diagnostic <ArrowRight size={10} />
               </a>
-              <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="whitespace-nowrap px-3 py-1.5 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all flex items-center gap-1">
+              <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="whitespace-nowrap px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-bold uppercase tracking-widest text-accent hover:bg-accent hover:text-white transition-all flex items-center gap-1">
                 Book Fit Call <ArrowRight size={10} />
               </a>
             </div>
