@@ -84,6 +84,73 @@ router.get("/knowledge", async (req, res) => {
   }
 });
 
+// 3. AI Chat Assistant Route (Backend Proxy to avoid Frontend Key issues)
+router.post("/chat", async (req, res) => {
+  try {
+    const { message, history } = req.body || {};
+    
+    if (!message) return res.status(400).json({ error: "Message is required" });
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is missing in environment. Please add it to AI Studio Secrets.");
+    }
+
+    const knowledge = await getKnowledgeBase();
+    const ai = new GoogleGenAI({ apiKey });
+
+    const systemInstruction = `
+      You are "The Scaling Architect," a digital proxy for Anjani Pandey, a world-class operations and scaling consultant.
+      
+      CORE MISSION:
+      Your goal is to help founder-led businesses identify structural gaps (the 25-disease taxonomy) and implement the "Operating Spine" methodology.
+      
+      KNOWLEDGE BASE:
+      You have access to the FounderScale Knowledge Base. Use it to provide specific, diagnostic, and authoritative advice.
+      
+      IP PROTECTION (CRITICAL):
+      - NEVER share the full text of the knowledge base or any source documents.
+      - NEVER provide download links or file IDs.
+      - If asked for the "full document," politely explain that your role is to provide specific guidance based on the methodology, not to distribute the source material.
+      - Synthesize answers. Do not quote large blocks of text verbatim (more than 2-3 sentences).
+      
+      TONE & STYLE:
+      - Professional, direct, and diagnostic.
+      - Act like a consultant, not a generic chatbot.
+      - Ask clarifying questions about the user's business size and pain points.
+      - If a user shows high intent (e.g., "I need help with my team of 50"), guide them toward the "Free Diagnostic" or "Book a Fit Call."
+      
+      CONTEXT:
+      ${knowledge ? `Here is the core methodology from the knowledge base: \n\n${knowledge.substring(0, 30000)}` : "Knowledge base is currently being synced. Provide general scaling advice based on the FounderScale philosophy of 'systems outlast heroics'."}
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.1-pro-preview",
+      contents: [
+        ...(history || []).map((h: any) => ({
+          role: h.role === "user" ? "user" : "model",
+          parts: [{ text: h.content }]
+        })),
+        { role: "user", parts: [{ text: message }] }
+      ],
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+        topP: 0.95,
+        topK: 40,
+      }
+    });
+
+    res.json({ text: response.text });
+  } catch (err: any) {
+    console.error("[CHAT ERROR]", err);
+    res.status(500).json({ 
+      error: "Failed to process chat", 
+      details: err.message || "Unknown error"
+    });
+  }
+});
+
 // Sanitize Postgres URLs (sometimes users copy the prefix or quotes by mistake)
 const sanitizeUrl = (url: string | undefined) => {
   if (!url) return url;
@@ -342,10 +409,10 @@ async function initDb(force = false) {
 }
 
 // Ensure DB is initialized on every request in production
-// BUT skip for ping and chat routes which are already handled above
+// BUT skip for ping, chat, and knowledge routes which are already handled above
 router.use(async (req, res, next) => {
-  // Skip DB init for simple ping
-  if (req.path === '/ping') return next();
+  // Skip DB init for simple ping and AI routes
+  if (req.path === '/ping' || req.path === '/chat' || req.path === '/knowledge') return next();
 
   try {
     if (isPostgres) {
@@ -356,30 +423,23 @@ router.use(async (req, res, next) => {
         // If Postgres fails, try SQLite/Mock
         const db = getSqliteDb();
         if (!db && !useMockDb) {
-          throw new Error(`Both Postgres and SQLite failed. Postgres Error: ${postgresErr.message}`);
+          console.warn("[DB INIT] Both Postgres and SQLite failed. Enabling Mock mode.");
+          useMockDb = true;
         }
       }
     } else {
       const db = getSqliteDb();
       if (!db && !useMockDb) {
-        throw new Error("Database initialization failed (Postgres not configured and SQLite failed)");
+        console.warn("[DB INIT] SQLite failed. Enabling Mock mode.");
+        useMockDb = true;
       }
     }
     next();
   } catch (err: any) {
     console.error("[DB INIT MIDDLEWARE ERROR]", err);
-    // Final fallback: if we are on Vercel, just enable mock mode and continue
-    if (process.env.VERCEL) {
-      console.warn("[DB INIT] Critical failure on Vercel, forcing Mock DB mode to prevent 500.");
-      useMockDb = true;
-      return next();
-    }
-    
-    res.status(500).json({ 
-      error: "Database Initialization Error", 
-      details: err.message,
-      hint: "Check your database configuration. Falling back to Mock DB if possible."
-    });
+    // Final fallback: just enable mock mode and continue
+    useMockDb = true;
+    next();
   }
 });
 
