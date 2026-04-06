@@ -37,12 +37,30 @@ export async function getKnowledgeBase(): Promise<string> {
 
     console.log(`[KNOWLEDGE] Syncing knowledge base from Google Drive (File ID: ${fileId})...`);
 
-    const response = await drive.files.get(
-      { fileId, alt: 'media' },
-      { responseType: 'arraybuffer' }
-    );
+    // First, check the file metadata to see if it's a Google Doc or a binary file
+    const metadata = await drive.files.get({ fileId, fields: 'mimeType' });
+    const mimeType = metadata.data.mimeType;
+    
+    let buffer: Buffer;
+    
+    if (mimeType === 'application/vnd.google-apps.document') {
+      // It's a native Google Doc, we must export it to docx first
+      console.log(`[KNOWLEDGE] Detected Google Doc. Exporting to docx...`);
+      const exportResponse = await drive.files.export(
+        { fileId, mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+        { responseType: 'arraybuffer' }
+      );
+      buffer = Buffer.from(exportResponse.data as ArrayBuffer);
+    } else {
+      // It's a binary file (like a .docx uploaded to Drive)
+      console.log(`[KNOWLEDGE] Detected binary file (${mimeType}). Downloading...`);
+      const response = await drive.files.get(
+        { fileId, alt: 'media' },
+        { responseType: 'arraybuffer' }
+      );
+      buffer = Buffer.from(response.data as ArrayBuffer);
+    }
 
-    const buffer = Buffer.from(response.data as ArrayBuffer);
     const result = await mammoth.extractRawText({ buffer });
     
     cachedKnowledge = result.value;

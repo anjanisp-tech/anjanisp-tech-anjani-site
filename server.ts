@@ -12,8 +12,16 @@ async function startServer() {
   const PORT = 3000;
 
   // Use the API app for /api routes
-  // The apiApp already has its routes defined starting with /api
   app.use(apiApp);
+
+  // Global Error Handler to ensure JSON responses
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error("[SERVER ERROR]", err);
+    res.status(500).json({ 
+      error: "Internal Server Error", 
+      details: err.message || "An unknown error occurred"
+    });
+  });
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
