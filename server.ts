@@ -15,7 +15,15 @@ async function startServer() {
   app.use(express.json());
 
   // Use the API app for /api routes
-  app.use("/api", apiApp);
+  app.use("/api", (req, res, next) => {
+    console.log(`[API REQUEST] ${req.method} ${req.url}`);
+    next();
+  }, apiApp);
+
+  // Direct test route to bypass apiApp router entirely
+  app.get("/api-test-ping", (req, res) => {
+    res.json({ status: "ok", source: "server.ts direct" });
+  });
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

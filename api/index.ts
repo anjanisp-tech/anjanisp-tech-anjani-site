@@ -48,6 +48,7 @@ const router = express.Router();
 
 // 1. Simple Ping Route for testing
 router.get("/ping", (req, res) => {
+  console.log("[API PING HIT]");
   res.json({ status: "ok", message: "API is reachable" });
 });
 
@@ -335,17 +336,20 @@ async function initDb(force = false) {
 }
 
 // Ensure DB is initialized on every request in production
+// BUT skip for ping and chat routes which are already handled above
 router.use(async (req, res, next) => {
   try {
     if (isPostgres) {
       await initDb();
-    } else {
-      seedSqlite();
+    } else if (sqliteDb) {
+      // SQLite is already initialized at module load, but we can check if it's healthy
     }
     next();
   } catch (err) {
-    console.error("[DB INIT ERROR]", err);
-    next(err);
+    console.error("[DB INIT MIDDLEWARE ERROR]", err);
+    // Don't call next(err) to avoid 500ing the whole app if DB is just slow/down
+    // Let the individual routes handle missing tables if they must
+    next();
   }
 });
 
