@@ -179,13 +179,79 @@ function getSqliteDb() {
     return sqliteDb;
   } catch (err: any) {
     console.error("CRITICAL: Failed to initialize SQLite:", err.message);
-    if (process.env.VERCEL) {
-      console.warn("[DB INIT] SQLite failed on Vercel (likely missing native binary). Enabling Mock DB fallback.");
-      useMockDb = true;
-    }
+    useMockDb = true;
     return null;
   }
 }
+
+// 3. AI Chat Assistant Route (Backend Proxy)
+router.post("/chat", async (req, res) => {
+  try {
+    const { message, history } = req.body || {};
+    
+    if (!message) return res.status(400).json({ error: "Message is required" });
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({ 
+        status: "error",
+        error: "GEMINI_API_KEY is missing in the backend environment. Please add it to your deployment secrets." 
+      });
+    }
+
+    const knowledge = await getKnowledgeBase();
+    const ai = new GoogleGenAI({ apiKey });
+
+    const systemInstruction = `
+      You are "The Scaling Architect," a digital proxy for Anjani Pandey, a world-class operations and scaling consultant.
+      
+      CORE MISSION:
+      Your goal is to help founder-led businesses identify structural gaps (the 25-disease taxonomy) and implement the "Operating Spine" methodology.
+      
+      KNOWLEDGE BASE:
+      You have access to the FounderScale Knowledge Base. Use it to provide specific, diagnostic, and authoritative advice.
+      
+      IP PROTECTION (CRITICAL):
+      - NEVER share the full text of the knowledge base or any source documents.
+      - NEVER provide download links or file IDs.
+      - If asked for the "full document," politely explain that your role is to provide specific guidance based on the methodology, not to distribute the source material.
+      - Synthesize answers. Do not quote large blocks of text verbatim (more than 2-3 sentences).
+      
+      TONE & STYLE:
+      - Professional, direct, and diagnostic.
+      - Act like a consultant, not a generic chatbot.
+      - Ask clarifying questions about the user's business size and pain points.
+      - If a user shows high intent (e.g., "I need help with my team of 50"), guide them toward the "Free Diagnostic" or "Book a Fit Call."
+      
+      CONTEXT:
+      ${knowledge ? `Here is the core methodology from the knowledge base: \n\n${knowledge.substring(0, 20000)}` : "Knowledge base is currently being synced. Provide general scaling advice based on the FounderScale philosophy of 'systems outlast heroics'."}
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: [
+        ...(history || []).map((h: any) => ({
+          role: h.role === "user" ? "user" : "model",
+          parts: [{ text: h.content }]
+        })),
+        { role: "user", parts: [{ text: message }] }
+      ],
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+      }
+    });
+
+    res.json({ text: response.text });
+  } catch (err: any) {
+    console.error("[CHAT ERROR]", err);
+    res.status(200).json({ 
+      status: "error",
+      error: "Failed to process chat", 
+      details: err.message || "Unknown error"
+    });
+  }
+});
 
 const initialPosts = [
   {
@@ -727,7 +793,11 @@ router.get("/posts", async (req, res) => {
     res.json(initialPosts.slice(offset, offset + limit));
   } catch (err: any) {
     console.error("Error fetching posts:", err);
-    res.status(500).json({ error: "Failed to fetch posts", details: err.message });
+    res.status(200).json({ 
+      status: "error",
+      error: "Failed to fetch posts", 
+      details: err.message 
+    });
   }
 });
 
@@ -980,8 +1050,9 @@ if (isMain && process.env.NODE_ENV !== "production") {
 // Error handler for API routes
 router.use((err: any, req: any, res: any, next: any) => {
   console.error("[API ROUTE ERROR]", err);
-  res.status(500).json({ 
-    error: "API Error", 
+  res.status(200).json({ 
+    status: "error",
+    error: "Internal API Error", 
     details: err.message || "An unknown error occurred in the API"
   });
 });
