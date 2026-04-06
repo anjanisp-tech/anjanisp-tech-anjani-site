@@ -2,7 +2,7 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import apiApp from "./api/index.ts";
+import apiApp from "./api/index";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,6 +23,10 @@ async function startServer() {
   // Direct test route to bypass apiApp router entirely
   app.get("/api-test-ping", (req, res) => {
     res.json({ status: "ok", source: "server.ts direct" });
+  });
+
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", message: "Server is alive", timestamp: new Date().toISOString() });
   });
 
   // Vite middleware for development

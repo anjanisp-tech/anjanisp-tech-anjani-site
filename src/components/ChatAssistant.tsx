@@ -37,6 +37,28 @@ export default function ChatAssistant() {
     setIsLoading(true);
 
     try {
+      // 0. Check if Server is alive (Health)
+      try {
+        const healthResponse = await fetch('/api/health');
+        if (!healthResponse.ok) {
+          throw new Error(`Health Check failed: ${healthResponse.status}`);
+        }
+      } catch (healthErr: any) {
+        console.error("Server Health Check failed:", healthErr);
+        // Try the direct test ping as a last resort
+        try {
+          const testPing = await fetch('/api-test-ping');
+          if (!testPing.ok) throw new Error("Direct test ping failed");
+        } catch (e) {
+          setMessages(prev => [...prev, { 
+            role: 'assistant', 
+            content: `I'm having trouble connecting to my brain (the server). Error: ${healthErr.message}. Please check your internet connection or try again in a moment.` 
+          }]);
+          setIsLoading(false);
+          return;
+        }
+      }
+
       // 1. Check if API is reachable (Ping)
       try {
         const pingResponse = await fetch('/api/ping');

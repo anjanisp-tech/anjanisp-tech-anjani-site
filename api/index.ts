@@ -5,12 +5,11 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
-import { getKnowledgeBase } from "./knowledgeService.ts";
+import { getKnowledgeBase } from "./knowledgeService";
 import { GoogleGenAI } from "@google/genai";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const require = createRequire(import.meta.url);
 
 console.log("[API MODULE LOAD] Starting...");
 // Use a more reliable path for the key file
@@ -170,12 +169,14 @@ if (isPostgres) {
 // SQLite Fallback (for local/preview without Postgres)
 let sqliteDb: any = null;
 
+const requireInEsm = createRequire(import.meta.url);
+
 function getSqliteDb() {
   if (sqliteDb) return sqliteDb;
   try {
     console.log("Initializing SQLite database...");
     // Lazy load better-sqlite3 to prevent module load crashes
-    const Database = require("better-sqlite3");
+    const Database = requireInEsm("better-sqlite3");
     const dbPath = path.join(process.cwd(), "blog.db");
     sqliteDb = new Database(dbPath);
     sqliteDb.exec(`
