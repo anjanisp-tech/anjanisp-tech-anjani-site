@@ -264,12 +264,17 @@ async function initDb(force = false) {
 
 // Ensure DB is initialized on every request in production
 router.use(async (req, res, next) => {
-  if (isPostgres) {
-    await initDb();
-  } else {
-    seedSqlite();
+  try {
+    if (isPostgres) {
+      await initDb();
+    } else {
+      seedSqlite();
+    }
+    next();
+  } catch (err) {
+    console.error("[DB INIT ERROR]", err);
+    next(err);
   }
-  next();
 });
 
 // Middleware for admin routes
@@ -837,9 +842,22 @@ router.post("/api/chat", async (req, res) => {
 
     res.json({ text: response.text });
   } catch (err: any) {
-    console.error("[CHAT ERROR]", err.message);
-    res.status(500).json({ error: "Failed to process chat", details: err.message });
+    console.error("[CHAT ERROR]", err);
+    res.status(500).json({ 
+      error: "Failed to process chat", 
+      details: err.message || "Unknown error",
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
+});
+
+// Router-level Error Handler
+router.use((err: any, req: any, res: any, next: any) => {
+  console.error("[ROUTER ERROR]", err);
+  res.status(500).json({ 
+    error: "Router Error", 
+    details: err.message || "An unknown error occurred"
+  });
 });
 
 // For local development (only if run directly)

@@ -14,15 +14,6 @@ async function startServer() {
   // Use the API app for /api routes
   app.use(apiApp);
 
-  // Global Error Handler to ensure JSON responses
-  app.use((err: any, req: any, res: any, next: any) => {
-    console.error("[SERVER ERROR]", err);
-    res.status(500).json({ 
-      error: "Internal Server Error", 
-      details: err.message || "An unknown error occurred"
-    });
-  });
-
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     console.log("Starting Vite in middleware mode...");
@@ -39,6 +30,15 @@ async function startServer() {
       res.sendFile(path.join(distPath, "index.html"));
     });
   }
+
+  // Global Error Handler (MUST BE LAST)
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error("[GLOBAL SERVER ERROR]", err);
+    res.status(500).json({ 
+      error: "Internal Server Error", 
+      details: err.message || "An unknown error occurred"
+    });
+  });
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Full-stack server running on http://localhost:${PORT}`);
