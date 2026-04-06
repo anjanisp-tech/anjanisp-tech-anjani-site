@@ -41,13 +41,13 @@ export default function ChatAssistant() {
       try {
         const pingResponse = await fetch('/api/ping');
         if (!pingResponse.ok) {
-          throw new Error(`API Ping failed: ${pingResponse.status}`);
+          throw new Error(`HTTP ${pingResponse.status}: ${pingResponse.statusText}`);
         }
-      } catch (pingErr) {
+      } catch (pingErr: any) {
         console.error("API unreachable:", pingErr);
         setMessages(prev => [...prev, { 
           role: 'assistant', 
-          content: "I'm having trouble connecting to my brain (the server). Please check your internet connection or try again in a moment." 
+          content: `I'm having trouble connecting to my brain (the server). Error: ${pingErr.message}. Please check your internet connection or try again in a moment.` 
         }]);
         setIsLoading(false);
         return;

@@ -149,10 +149,54 @@ if (isPostgres) {
 }
 
 // SQLite Fallback (for local/preview without Postgres)
-let sqliteDb: any;
+let sqliteDb: any = null;
+
+function getSqliteDb() {
+  if (sqliteDb) return sqliteDb;
+  try {
+    console.log("Initializing SQLite database...");
+    const dbPath = path.join(process.cwd(), "blog.db");
+    sqliteDb = new Database(dbPath);
+    sqliteDb.exec(`
+      CREATE TABLE IF NOT EXISTS posts (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        date TEXT NOT NULL,
+        category TEXT NOT NULL,
+        excerpt TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS comments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id TEXT NOT NULL,
+        parent_id INTEGER DEFAULT NULL,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        website TEXT,
+        phone TEXT,
+        comment TEXT NOT NULL,
+        is_admin INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
+      CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id);
+      CREATE TABLE IF NOT EXISTS subscriptions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    seedSqlite();
+    return sqliteDb;
+  } catch (err) {
+    console.error("CRITICAL: Failed to initialize SQLite:", err);
+    return null;
+  }
+}
 
 function seedSqlite() {
-  if (isPostgres) return;
+  if (isPostgres || !sqliteDb) return;
   
   console.log("Seeding SQLite database...");
   const initialPosts = [
@@ -182,51 +226,20 @@ function seedSqlite() {
     }
   ];
 
-  for (const p of initialPosts) {
-    sqliteDb.prepare(`
+  try {
+    const insert = sqliteDb.prepare(`
       INSERT INTO posts (id, title, date, category, excerpt, content)
       VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET title = excluded.title
-    `).run(p.id, p.title, p.date, p.category, p.excerpt, p.content);
+    `);
+    
+    for (const p of initialPosts) {
+      insert.run(p.id, p.title, p.date, p.category, p.excerpt, p.content);
+    }
+    console.log("SQLite seeding complete.");
+  } catch (err) {
+    console.error("Error seeding SQLite:", err);
   }
-  console.log("SQLite seeding complete.");
-}
-
-if (!isPostgres) {
-  console.log("Using SQLite fallback");
-  const dbPath = path.join(process.cwd(), "blog.db");
-  sqliteDb = new Database(dbPath);
-  sqliteDb.exec(`
-    CREATE TABLE IF NOT EXISTS posts (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      date TEXT NOT NULL,
-      category TEXT NOT NULL,
-      excerpt TEXT NOT NULL,
-      content TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    CREATE TABLE IF NOT EXISTS comments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      post_id TEXT NOT NULL,
-      parent_id INTEGER DEFAULT NULL,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      website TEXT,
-      phone TEXT,
-      comment TEXT NOT NULL,
-      is_admin INTEGER DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
-    CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id);
-    CREATE TABLE IF NOT EXISTS subscriptions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT UNIQUE NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-  seedSqlite();
 }
 
 async function initDb(force = false) {
@@ -341,8 +354,8 @@ router.use(async (req, res, next) => {
   try {
     if (isPostgres) {
       await initDb();
-    } else if (sqliteDb) {
-      // SQLite is already initialized at module load, but we can check if it's healthy
+    } else {
+      getSqliteDb();
     }
     next();
   } catch (err) {
