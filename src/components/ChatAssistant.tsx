@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, Loader2, User, Bot, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
+import { GoogleGenAI } from "@google/genai";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -37,94 +38,66 @@ export default function ChatAssistant() {
     setIsLoading(true);
 
     try {
-      // 0. Check if Server is alive (Health)
+      // 1. Fetch Knowledge Base from Backend
+      let knowledge = "";
       try {
-        const healthResponse = await fetch('/server-health');
-        if (!healthResponse.ok) {
-          throw new Error(`Server Liveness failed: ${healthResponse.status}`);
+        const kRes = await fetch('/api/knowledge');
+        if (kRes.ok) {
+          const kData = await kRes.json();
+          knowledge = kData.knowledge || "";
         }
-      } catch (healthErr: any) {
-        console.error("Server Liveness Check failed:", healthErr);
-        // Try the direct test ping as a last resort
-        try {
-          const testPing = await fetch('/api-test-ping');
-          if (!testPing.ok) throw new Error("Direct test ping failed");
-        } catch (e) {
-          setMessages(prev => [...prev, { 
-            role: 'assistant', 
-            content: `I'm having trouble connecting to my brain (the server). Error: ${healthErr.message}. Please check your internet connection or try again in a moment.` 
-          }]);
-          setIsLoading(false);
-          return;
-        }
+      } catch (e) {
+        console.warn("Could not fetch knowledge base, proceeding with general advice.");
       }
 
-      // 0.1 Check API Health (DB, etc.)
-      try {
-        const apiHealth = await fetch('/api/health');
-        if (!apiHealth.ok) {
-          const data = await apiHealth.json().catch(() => ({}));
-          throw new Error(data.error || `API Health failed: ${apiHealth.status}`);
-        }
-      } catch (apiErr: any) {
-        console.error("API Health Check failed:", apiErr);
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
-          content: `Server is alive, but the API is having issues: ${apiErr.message}. This is likely a database connection problem.` 
-        }]);
-        setIsLoading(false);
-        return;
+      // 2. Initialize Gemini on Frontend
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("GEMINI_API_KEY is missing. Please add it to AI Studio Secrets.");
       }
 
-      // 1. Check if API is reachable (Ping)
-      try {
-        const pingResponse = await fetch('/api/ping');
-        if (!pingResponse.ok) {
-          let errorDetail = '';
-          try {
-            const data = await pingResponse.json();
-            errorDetail = data.details || data.error || '';
-          } catch (e) {}
-          throw new Error(`HTTP ${pingResponse.status}${errorDetail ? ': ' + errorDetail : ''}`);
-        }
-      } catch (pingErr: any) {
-        console.error("API unreachable:", pingErr);
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
-          content: `I'm having trouble connecting to my brain (the server). Error: ${pingErr.message}. Please check your internet connection or try again in a moment.` 
-        }]);
-        setIsLoading(false);
-        return;
-      }
+      const ai = new GoogleGenAI({ apiKey });
+      const systemInstruction = `
+        You are "The Scaling Architect," a digital proxy for Anjani Pandey, a world-class operations and scaling consultant.
+        
+        CORE MISSION:
+        Your goal is to help founder-led businesses identify structural gaps (the 25-disease taxonomy) and implement the "Operating Spine" methodology.
+        
+        KNOWLEDGE BASE:
+        You have access to the FounderScale Knowledge Base. Use it to provide specific, diagnostic, and authoritative advice.
+        
+        IP PROTECTION (CRITICAL):
+        - NEVER share the full text of the knowledge base or any source documents.
+        - NEVER provide download links or file IDs.
+        - If asked for the "full document," politely explain that your role is to provide specific guidance based on the methodology, not to distribute the source material.
+        - Synthesize answers. Do not quote large blocks of text verbatim (more than 2-3 sentences).
+        
+        TONE & STYLE:
+        - Professional, direct, and diagnostic.
+        - Act like a consultant, not a generic chatbot.
+        - Ask clarifying questions about the user's business size and pain points.
+        - If a user shows high intent (e.g., "I need help with my team of 50"), guide them toward the "Free Diagnostic" or "Book a Fit Call."
+        
+        CONTEXT:
+        ${knowledge ? `Here is the core methodology from the knowledge base: \n\n${knowledge.substring(0, 20000)}` : "Knowledge base is currently being synced. Provide general scaling advice based on the FounderScale philosophy of 'systems outlast heroics'."}
+      `;
 
-      // 2. Send the actual chat message
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          history: messages.map(m => ({ role: m.role, content: m.content }))
-        })
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-pro-preview",
+        contents: [
+          ...messages.map(m => ({
+            role: m.role === "user" ? "user" : "model",
+            parts: [{ text: m.content }]
+          })),
+          { role: "user", parts: [{ text: userMessage }] }
+        ],
+        config: {
+          systemInstruction,
+          temperature: 0.7,
+        }
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = "Something went wrong on my end.";
-        
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.details || errorData.error || errorMessage;
-        } catch (e) {
-          // If not JSON, it might be the "A server error occurred" HTML
-          if (errorText.includes("A server error occurred")) {
-            errorMessage = "The server is currently overloaded or crashed. I've logged this for Anjani to fix.";
-          }
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
-      setMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: response.text || "I'm sorry, I couldn't generate a response." }]);
     } catch (error: any) {
       console.error('Chat error:', error);
       setMessages(prev => [...prev, { 

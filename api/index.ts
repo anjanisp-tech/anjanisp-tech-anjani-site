@@ -73,71 +73,14 @@ router.get("/diagnostic", (req, res) => {
   });
 });
 
-// 2. AI Chat Assistant Route (Moved to top to avoid DB middleware)
-router.post("/chat", async (req, res) => {
+// 2. Knowledge Base Endpoint (for Frontend AI Chat)
+router.get("/knowledge", async (req, res) => {
   try {
-    const { message, history } = req.body || {};
-    
-    if (!message) return res.status(400).json({ error: "Message is required" });
-
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is missing in environment. Please add it to AI Studio Secrets.");
-    }
-
     const knowledge = await getKnowledgeBase();
-    const ai = new GoogleGenAI({ apiKey });
-
-    const systemInstruction = `
-      You are "The Scaling Architect," a digital proxy for Anjani Pandey, a world-class operations and scaling consultant.
-      
-      CORE MISSION:
-      Your goal is to help founder-led businesses identify structural gaps (the 25-disease taxonomy) and implement the "Operating Spine" methodology.
-      
-      KNOWLEDGE BASE:
-      You have access to the FounderScale Knowledge Base. Use it to provide specific, diagnostic, and authoritative advice.
-      
-      IP PROTECTION (CRITICAL):
-      - NEVER share the full text of the knowledge base or any source documents.
-      - NEVER provide download links or file IDs.
-      - If asked for the "full document," politely explain that your role is to provide specific guidance based on the methodology, not to distribute the source material.
-      - Synthesize answers. Do not quote large blocks of text verbatim (more than 2-3 sentences).
-      
-      TONE & STYLE:
-      - Professional, direct, and diagnostic.
-      - Act like a consultant, not a generic chatbot.
-      - Ask clarifying questions about the user's business size and pain points.
-      - If a user shows high intent (e.g., "I need help with my team of 50"), guide them toward the "Free Diagnostic" or "Book a Fit Call."
-      
-      CONTEXT:
-      ${knowledge ? `Here is the core methodology from the knowledge base: \n\n${knowledge.substring(0, 30000)}` : "Knowledge base is currently being synced. Provide general scaling advice based on the FounderScale philosophy of 'systems outlast heroics'."}
-    `;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: [
-        ...(history || []).map((h: any) => ({
-          role: h.role === "user" ? "user" : "model",
-          parts: [{ text: h.content }]
-        })),
-        { role: "user", parts: [{ text: message }] }
-      ],
-      config: {
-        systemInstruction,
-        temperature: 0.7,
-        topP: 0.95,
-        topK: 40,
-      }
-    });
-
-    res.json({ text: response.text });
+    res.json({ knowledge });
   } catch (err: any) {
-    console.error("[CHAT ERROR]", err);
-    res.status(500).json({ 
-      error: "Failed to process chat", 
-      details: err.message || "Unknown error",
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-    });
+    console.error("[KNOWLEDGE ERROR]", err);
+    res.status(500).json({ error: "Failed to fetch knowledge base", details: err.message });
   }
 });
 
@@ -168,7 +111,7 @@ if (process.env.POSTGRES_URL) process.env.POSTGRES_URL = sanitizeUrl(process.env
 if (process.env.DATABASE_URL) process.env.DATABASE_URL = sanitizeUrl(process.env.DATABASE_URL);
 
 const dbInitializedAt = new Date().toISOString();
-const isPostgres = !!(process.env.POSTGRES_URL && process.env.POSTGRES_URL.length > 20 && process.env.POSTGRES_URL.includes('://'));
+const isPostgres = !!(process.env.POSTGRES_URL && process.env.POSTGRES_URL.length > 30 && process.env.POSTGRES_URL.includes('://') && !process.env.POSTGRES_URL.includes('TODO_'));
 console.log("Database configuration detected:", isPostgres ? "Postgres" : "SQLite");
 if (isPostgres) {
   console.log("Postgres URL present:", !!process.env.POSTGRES_URL);
@@ -677,21 +620,38 @@ router.get("/health", async (req, res) => {
   try {
     // Force re-initialization if requested
     const force = req.query.force === 'true';
+    let dbStatus = "Unknown";
+    let dbError = null;
     
-    if (isPostgres) {
-      await initDb(force).catch(err => {
-        throw new Error(`Postgres Init Failed: ${err.message}`);
-      });
-    } else {
-      const db = getSqliteDb();
-      if (!db && !useMockDb) {
-        throw new Error("SQLite initialization failed and no fallback enabled");
+    try {
+      if (isPostgres) {
+        await initDb(force);
+        dbStatus = "Postgres";
+      } else {
+        const db = getSqliteDb();
+        if (db) {
+          dbStatus = "SQLite";
+        } else if (useMockDb) {
+          dbStatus = "Mock (In-Memory)";
+        } else {
+          throw new Error("SQLite initialization failed and no fallback enabled");
+        }
+      }
+    } catch (err: any) {
+      console.error("Database initialization failed during health check:", err.message);
+      dbError = err.message;
+      // If we are on Vercel, we might still be okay with Mock DB
+      if (useMockDb) {
+        dbStatus = "Mock (In-Memory) [Fallback]";
+      } else {
+        dbStatus = "Failed";
       }
     }
     
     res.json({ 
-      status: "ok", 
-      db: isPostgres ? "Postgres" : (useMockDb ? "Mock (In-Memory)" : "SQLite"),
+      status: dbError ? "warning" : "ok", 
+      db: dbStatus,
+      dbError,
       initializedAt: dbInitializedAt,
       vercel: !!process.env.VERCEL,
       config: {
@@ -701,10 +661,10 @@ router.get("/health", async (req, res) => {
       }
     });
   } catch (err: any) {
-    console.error("Health Check Error:", err);
+    console.error("Health Check Critical Error:", err);
     res.status(500).json({ 
       error: err.message, 
-      details: "Database initialization failed. If on Vercel, please connect Postgres storage.",
+      details: "Critical health check failure.",
       isPostgres,
       vercel: !!process.env.VERCEL
     });
@@ -744,13 +704,22 @@ router.get("/posts", async (req, res) => {
     const offset = parseInt(req.query.offset as string) || 0;
 
     if (isPostgres) {
-      const { rows } = await sql`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
-      res.json(rows);
-    } else if (useMockDb) {
+      try {
+        const { rows } = await sql`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+        return res.json(rows);
+      } catch (postgresErr: any) {
+        console.error("[POSTS] Postgres query failed, falling back to Mock:", postgresErr.message);
+      }
+    }
+    
+    if (useMockDb) {
       res.json(initialPosts.slice(offset, offset + limit));
     } else {
       const db = getSqliteDb();
-      if (!db) throw new Error("SQLite database not initialized");
+      if (!db) {
+        // Final fallback to Mock if SQLite also fails
+        return res.json(initialPosts.slice(offset, offset + limit));
+      }
       const posts = db.prepare("SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?").all(limit, offset);
       res.json(posts);
     }
