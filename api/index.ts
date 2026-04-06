@@ -4,6 +4,8 @@ import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import { getKnowledgeBase } from "./knowledgeService.ts";
+import { GoogleGenAI } from "@google/genai";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -773,6 +775,70 @@ router.get("/api/admin/subscriptions", adminAuth, async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch subscriptions" });
+  }
+});
+
+// AI Chat Assistant Route
+router.post("/api/chat", async (req, res) => {
+  const { message, history } = req.body;
+  
+  if (!message) return res.status(400).json({ error: "Message is required" });
+
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is missing in environment.");
+    }
+
+    const knowledge = await getKnowledgeBase();
+    const ai = new GoogleGenAI({ apiKey });
+
+    const systemInstruction = `
+      You are the FounderScale AI Strategy Assistant, a digital proxy for Anjani Pandey, a world-class operations and scaling consultant.
+      
+      CORE MISSION:
+      Your goal is to help founder-led businesses identify structural gaps (the 25-disease taxonomy) and implement the "Operating Spine" methodology.
+      
+      KNOWLEDGE BASE:
+      You have access to the FounderScale Knowledge Base. Use it to provide specific, diagnostic, and authoritative advice.
+      
+      IP PROTECTION (CRITICAL):
+      - NEVER share the full text of the knowledge base or any source documents.
+      - NEVER provide download links or file IDs.
+      - If asked for the "full document," politely explain that your role is to provide specific guidance based on the methodology, not to distribute the source material.
+      - Synthesize answers. Do not quote large blocks of text verbatim (more than 2-3 sentences).
+      
+      TONE & STYLE:
+      - Professional, direct, and diagnostic.
+      - Act like a consultant, not a generic chatbot.
+      - Ask clarifying questions about the user's business size and pain points.
+      - If a user shows high intent (e.g., "I need help with my team of 50"), guide them toward the "Free Diagnostic" or "Book a Fit Call."
+      
+      CONTEXT:
+      ${knowledge ? `Here is the core methodology from the knowledge base: \n\n${knowledge.substring(0, 30000)}` : "Knowledge base is currently being synced. Provide general scaling advice based on the FounderScale philosophy of 'systems outlast heroics'."}
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.1-pro-preview",
+      contents: [
+        { role: "user", parts: [{ text: `System Instruction: ${systemInstruction}` }] },
+        ...(history || []).map((h: any) => ({
+          role: h.role === "user" ? "user" : "model",
+          parts: [{ text: h.content }]
+        })),
+        { role: "user", parts: [{ text: message }] }
+      ],
+      config: {
+        temperature: 0.7,
+        topP: 0.95,
+        topK: 40,
+      }
+    });
+
+    res.json({ text: response.text });
+  } catch (err: any) {
+    console.error("[CHAT ERROR]", err.message);
+    res.status(500).json({ error: "Failed to process chat", details: err.message });
   }
 });
 
