@@ -84,73 +84,6 @@ router.get("/knowledge", async (req, res) => {
   }
 });
 
-// 3. AI Chat Assistant Route (Backend Proxy to avoid Frontend Key issues)
-router.post("/chat", async (req, res) => {
-  try {
-    const { message, history } = req.body || {};
-    
-    if (!message) return res.status(400).json({ error: "Message is required" });
-
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is missing in environment. Please add it to AI Studio Secrets.");
-    }
-
-    const knowledge = await getKnowledgeBase();
-    const ai = new GoogleGenAI({ apiKey });
-
-    const systemInstruction = `
-      You are "The Scaling Architect," a digital proxy for Anjani Pandey, a world-class operations and scaling consultant.
-      
-      CORE MISSION:
-      Your goal is to help founder-led businesses identify structural gaps (the 25-disease taxonomy) and implement the "Operating Spine" methodology.
-      
-      KNOWLEDGE BASE:
-      You have access to the FounderScale Knowledge Base. Use it to provide specific, diagnostic, and authoritative advice.
-      
-      IP PROTECTION (CRITICAL):
-      - NEVER share the full text of the knowledge base or any source documents.
-      - NEVER provide download links or file IDs.
-      - If asked for the "full document," politely explain that your role is to provide specific guidance based on the methodology, not to distribute the source material.
-      - Synthesize answers. Do not quote large blocks of text verbatim (more than 2-3 sentences).
-      
-      TONE & STYLE:
-      - Professional, direct, and diagnostic.
-      - Act like a consultant, not a generic chatbot.
-      - Ask clarifying questions about the user's business size and pain points.
-      - If a user shows high intent (e.g., "I need help with my team of 50"), guide them toward the "Free Diagnostic" or "Book a Fit Call."
-      
-      CONTEXT:
-      ${knowledge ? `Here is the core methodology from the knowledge base: \n\n${knowledge.substring(0, 30000)}` : "Knowledge base is currently being synced. Provide general scaling advice based on the FounderScale philosophy of 'systems outlast heroics'."}
-    `;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: [
-        ...(history || []).map((h: any) => ({
-          role: h.role === "user" ? "user" : "model",
-          parts: [{ text: h.content }]
-        })),
-        { role: "user", parts: [{ text: message }] }
-      ],
-      config: {
-        systemInstruction,
-        temperature: 0.7,
-        topP: 0.95,
-        topK: 40,
-      }
-    });
-
-    res.json({ text: response.text });
-  } catch (err: any) {
-    console.error("[CHAT ERROR]", err);
-    res.status(500).json({ 
-      error: "Failed to process chat", 
-      details: err.message || "Unknown error"
-    });
-  }
-});
-
 // Sanitize Postgres URLs (sometimes users copy the prefix or quotes by mistake)
 const sanitizeUrl = (url: string | undefined) => {
   if (!url) return url;
@@ -178,7 +111,13 @@ if (process.env.POSTGRES_URL) process.env.POSTGRES_URL = sanitizeUrl(process.env
 if (process.env.DATABASE_URL) process.env.DATABASE_URL = sanitizeUrl(process.env.DATABASE_URL);
 
 const dbInitializedAt = new Date().toISOString();
-const isPostgres = !!(process.env.POSTGRES_URL && process.env.POSTGRES_URL.length > 30 && process.env.POSTGRES_URL.includes('://') && !process.env.POSTGRES_URL.includes('TODO_'));
+const isPostgres = !!(
+  process.env.POSTGRES_URL && 
+  process.env.POSTGRES_URL.length > 30 && 
+  process.env.POSTGRES_URL.includes('://') && 
+  !process.env.POSTGRES_URL.includes('TODO_') &&
+  !process.env.POSTGRES_URL.includes('placeholder')
+);
 console.log("Database configuration detected:", isPostgres ? "Postgres" : "SQLite");
 if (isPostgres) {
   console.log("Postgres URL present:", !!process.env.POSTGRES_URL);
@@ -409,10 +348,10 @@ async function initDb(force = false) {
 }
 
 // Ensure DB is initialized on every request in production
-// BUT skip for ping, chat, and knowledge routes which are already handled above
+// BUT skip for ping and knowledge routes which are already handled above
 router.use(async (req, res, next) => {
   // Skip DB init for simple ping and AI routes
-  if (req.path === '/ping' || req.path === '/chat' || req.path === '/knowledge') return next();
+  if (req.path === '/ping' || req.path === '/knowledge') return next();
 
   try {
     if (isPostgres) {
@@ -722,7 +661,8 @@ router.get("/health", async (req, res) => {
     });
   } catch (err: any) {
     console.error("Health Check Critical Error:", err);
-    res.status(500).json({ 
+    res.status(200).json({ 
+      status: "critical_warning",
       error: err.message, 
       details: "Critical health check failure.",
       isPostgres,
@@ -768,21 +708,23 @@ router.get("/posts", async (req, res) => {
         const { rows } = await sql`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
         return res.json(rows);
       } catch (postgresErr: any) {
-        console.error("[POSTS] Postgres query failed, falling back to Mock:", postgresErr.message);
+        console.error("[POSTS] Postgres query failed, falling back to Mock/SQLite:", postgresErr.message);
       }
     }
     
-    if (useMockDb) {
-      res.json(initialPosts.slice(offset, offset + limit));
-    } else {
-      const db = getSqliteDb();
-      if (!db) {
-        // Final fallback to Mock if SQLite also fails
-        return res.json(initialPosts.slice(offset, offset + limit));
+    // Fallback to SQLite if not Postgres or if Postgres failed
+    const db = getSqliteDb();
+    if (db && !useMockDb) {
+      try {
+        const posts = db.prepare("SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?").all(limit, offset);
+        return res.json(posts);
+      } catch (sqliteErr: any) {
+        console.error("[POSTS] SQLite query failed, falling back to Mock:", sqliteErr.message);
       }
-      const posts = db.prepare("SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?").all(limit, offset);
-      res.json(posts);
     }
+
+    // Final fallback to Mock
+    res.json(initialPosts.slice(offset, offset + limit));
   } catch (err: any) {
     console.error("Error fetching posts:", err);
     res.status(500).json({ error: "Failed to fetch posts", details: err.message });
@@ -792,20 +734,28 @@ router.get("/posts", async (req, res) => {
 router.get("/posts/:id", async (req, res) => {
   try {
     if (isPostgres) {
-      const { rows } = await sql`SELECT * FROM posts WHERE id = ${req.params.id}`;
-      if (rows.length === 0) return res.status(404).json({ error: "Post not found" });
-      res.json(rows[0]);
-    } else if (useMockDb) {
-      const post = initialPosts.find(p => p.id === req.params.id);
-      if (!post) return res.status(404).json({ error: "Post not found" });
-      res.json(post);
-    } else {
-      const db = getSqliteDb();
-      if (!db) throw new Error("SQLite database not initialized");
-      const post = db.prepare("SELECT * FROM posts WHERE id = ?").get(req.params.id);
-      if (!post) return res.status(404).json({ error: "Post not found" });
-      res.json(post);
+      try {
+        const { rows } = await sql`SELECT * FROM posts WHERE id = ${req.params.id}`;
+        if (rows.length > 0) return res.json(rows[0]);
+      } catch (e) {
+        console.warn("[POST DETAIL] Postgres failed, falling back.");
+      }
     }
+    
+    const db = getSqliteDb();
+    if (db && !useMockDb) {
+      try {
+        const post = db.prepare("SELECT * FROM posts WHERE id = ?").get(req.params.id);
+        if (post) return res.json(post);
+      } catch (e) {
+        console.warn("[POST DETAIL] SQLite failed, falling back.");
+      }
+    }
+
+    // Final fallback to Mock
+    const post = initialPosts.find(p => p.id === req.params.id);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+    res.json(post);
   } catch (err: any) {
     console.error("Error fetching post:", err);
     res.status(500).json({ error: "Failed to fetch post", details: err.message });

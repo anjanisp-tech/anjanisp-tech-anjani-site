@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, Loader2, User, Bot, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
+import { GoogleGenAI } from "@google/genai";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -37,22 +38,66 @@ export default function ChatAssistant() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          history: messages.map(m => ({ role: m.role, content: m.content }))
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.details || errorData.error || `Server error: ${response.status}`);
+      // 1. Fetch Knowledge Base from Backend
+      let knowledge = "";
+      try {
+        const kRes = await fetch('/api/knowledge');
+        if (kRes.ok) {
+          const kData = await kRes.json();
+          knowledge = kData.knowledge || "";
+        }
+      } catch (e) {
+        console.warn("Could not fetch knowledge base, proceeding with general advice.");
       }
 
-      const data = await response.json();
-      setMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
+      // 2. Initialize Gemini on Frontend
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("GEMINI_API_KEY is missing. If you are on a live site, please ensure the key is set in your environment variables.");
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
+      const systemInstruction = `
+        You are "The Scaling Architect," a digital proxy for Anjani Pandey, a world-class operations and scaling consultant.
+        
+        CORE MISSION:
+        Your goal is to help founder-led businesses identify structural gaps (the 25-disease taxonomy) and implement the "Operating Spine" methodology.
+        
+        KNOWLEDGE BASE:
+        You have access to the FounderScale Knowledge Base. Use it to provide specific, diagnostic, and authoritative advice.
+        
+        IP PROTECTION (CRITICAL):
+        - NEVER share the full text of the knowledge base or any source documents.
+        - NEVER provide download links or file IDs.
+        - If asked for the "full document," politely explain that your role is to provide specific guidance based on the methodology, not to distribute the source material.
+        - Synthesize answers. Do not quote large blocks of text verbatim (more than 2-3 sentences).
+        
+        TONE & STYLE:
+        - Professional, direct, and diagnostic.
+        - Act like a consultant, not a generic chatbot.
+        - Ask clarifying questions about the user's business size and pain points.
+        - If a user shows high intent (e.g., "I need help with my team of 50"), guide them toward the "Free Diagnostic" or "Book a Fit Call."
+        
+        CONTEXT:
+        ${knowledge ? `Here is the core methodology from the knowledge base: \n\n${knowledge.substring(0, 20000)}` : "Knowledge base is currently being synced. Provide general scaling advice based on the FounderScale philosophy of 'systems outlast heroics'."}
+      `;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [
+          ...messages.map(m => ({
+            role: m.role === "user" ? "user" : "model",
+            parts: [{ text: m.content }]
+          })),
+          { role: "user", parts: [{ text: userMessage }] }
+        ],
+        config: {
+          systemInstruction,
+          temperature: 0.7,
+        }
+      });
+
+      setMessages(prev => [...prev, { role: 'assistant', content: response.text || "I'm sorry, I couldn't generate a response." }]);
     } catch (error: any) {
       console.error('Chat error:', error);
       setMessages(prev => [...prev, { 

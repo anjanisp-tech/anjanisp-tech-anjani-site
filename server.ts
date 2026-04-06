@@ -49,10 +49,25 @@ async function startServer() {
   // Global Error Handler (MUST BE LAST)
   app.use((err: any, req: any, res: any, next: any) => {
     console.error("[GLOBAL SERVER ERROR]", err);
-    res.status(500).json({ 
-      error: "Internal Server Error", 
-      details: err.message || "An unknown error occurred"
-    });
+    // If it's an API request, return JSON
+    if (req.path.startsWith('/api')) {
+      return res.status(200).json({ 
+        status: "error",
+        error: "Internal API Error", 
+        details: err.message || "An unknown error occurred"
+      });
+    }
+    // Otherwise, let it fall through or send a simple message
+    res.status(200).send(`
+      <html>
+        <body style="font-family: sans-serif; padding: 2rem; text-align: center;">
+          <h1>Service Temporarily Unavailable</h1>
+          <p>We are currently experiencing some technical difficulties. Please try again in a few moments.</p>
+          <p style="color: #666; font-size: 0.8rem;">Error: ${err.message || 'Unknown'}</p>
+          <button onclick="window.location.reload()" style="padding: 0.5rem 1rem; cursor: pointer;">Try Again</button>
+        </body>
+      </html>
+    `);
   });
 
   app.listen(PORT, "0.0.0.0", () => {
