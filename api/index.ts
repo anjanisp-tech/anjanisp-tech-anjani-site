@@ -177,11 +177,14 @@ if (isPostgres) {
 
 // SQLite Fallback (for local/preview without Postgres)
 let sqliteDb: any = null;
+let useMockDb = false;
 
 const requireInEsm = createRequire(import.meta.url);
 
 function getSqliteDb() {
   if (sqliteDb) return sqliteDb;
+  if (useMockDb) return null;
+
   try {
     console.log("[DB INIT] Initializing SQLite database...");
     // Lazy load better-sqlite3 to prevent module load crashes
@@ -225,49 +228,44 @@ function getSqliteDb() {
     `);
     seedSqlite();
     return sqliteDb;
-  } catch (err) {
-    console.error("CRITICAL: Failed to initialize SQLite:", err);
+  } catch (err: any) {
+    console.error("CRITICAL: Failed to initialize SQLite:", err.message);
+    if (process.env.VERCEL) {
+      console.warn("[DB INIT] SQLite failed on Vercel (likely missing native binary). Enabling Mock DB fallback.");
+      useMockDb = true;
+    }
     return null;
   }
 }
 
-function seedSqlite() {
-  if (isPostgres) return;
-  
-  const db = getSqliteDb();
-  if (!db) {
-    console.error("[DB SEED] Failed to initialize SQLite for seeding");
-    return;
+const initialPosts = [
+  {
+    id: "founder-overload-map",
+    title: "THE FOUNDER OVERLOAD MAP",
+    date: "18-Feb-2026",
+    category: "Operations",
+    excerpt: "If your company stops moving when you step away, you did not build a business. You built a dependency engine. Learn how to diagnose and fix the structural gaps causing founder overload.",
+    content: "Many leaders assume exhaustion is the price of ambition. It is not. Sustainable companies do not demand constant founder energy. They demand sound operating design.\n\nBurnout is usually diagnosed as a personal issue. In practice, it is structural. When execution depends on one person, growth multiplies pressure instead of results.\n\nHere is the pattern visible across scaling firms.\n\n### SYMPTOMS\n\nWhen founders become the system, certain signals appear:\n\n* Decisions require their validation\n* Teams escalate small issues upward\n* Calendars fill with alignment meetings\n* Work slows during their absence\n\nThese symptoms often get misread as growth complexity. They are actually architecture gaps."
+  },
+  {
+    id: "systems-outlast-heroics",
+    title: "WHY SPEED BECOMES DANGEROUS INSIDE GROWING ORGANIZATIONS",
+    date: "19-Feb-2026",
+    category: "Scaling",
+    excerpt: "Heroic execution works until complexity increases. Learn why systems, not stamina, are the key to winning at scale and building a durable organization.",
+    content: "Many early stage companies grow on momentum. A founder pushes hard. A small team stretches capacity. Strong performers step up repeatedly. Results improve.\n\nThis phase creates confidence. It also creates risk.\n\nHeroic execution works because complexity is still manageable. Decisions are fast. Communication is direct. Corrections happen instantly. Intensity compensates for missing structure."
+  },
+  {
+    id: "hiring-trap-growing-companies",
+    title: "THE HIRING TRAP MOST GROWING COMPANIES FALL INTO",
+    date: "21-Feb-2026",
+    category: "Scaling",
+    excerpt: "Hiring increases capacity, but it doesn't improve design. Discover why adding headcount to a broken process only multiplies your problems.",
+    content: "Growth creates pressure. Pressure creates friction. Many leaders respond by adding people.\n\nAt first, this works. Output increases. Deadlines are met. Stress drops.\n\nBut over time, something strange happens. Hiring keeps increasing while efficiency stays flat.\n\nThis pattern reveals a structural issue.\n\n**Hiring increases capacity. It does not improve design.**"
   }
-  
-  console.log("Seeding SQLite database...");
-  const initialPosts = [
-    {
-      id: "founder-overload-map",
-      title: "THE FOUNDER OVERLOAD MAP",
-      date: "18-Feb-2026",
-      category: "Operations",
-      excerpt: "If your company stops moving when you step away, you did not build a business. You built a dependency engine. Learn how to diagnose and fix the structural gaps causing founder overload.",
-      content: "Many leaders assume exhaustion is the price of ambition. It is not. Sustainable companies do not demand constant founder energy. They demand sound operating design.\n\nBurnout is usually diagnosed as a personal issue. In practice, it is structural. When execution depends on one person, growth multiplies pressure instead of results.\n\nHere is the pattern visible across scaling firms.\n\n### SYMPTOMS\n\nWhen founders become the system, certain signals appear:\n\n* Decisions require their validation\n* Teams escalate small issues upward\n* Calendars fill with alignment meetings\n* Work slows during their absence\n\nThese symptoms often get misread as growth complexity. They are actually architecture gaps."
-    },
-    {
-      id: "systems-outlast-heroics",
-      title: "WHY SPEED BECOMES DANGEROUS INSIDE GROWING ORGANIZATIONS",
-      date: "19-Feb-2026",
-      category: "Scaling",
-      excerpt: "Heroic execution works until complexity increases. Learn why systems, not stamina, are the key to winning at scale and building a durable organization.",
-      content: "Many early stage companies grow on momentum. A founder pushes hard. A small team stretches capacity. Strong performers step up repeatedly. Results improve.\n\nThis phase creates confidence. It also creates risk.\n\nHeroic execution works because complexity is still manageable. Decisions are fast. Communication is direct. Corrections happen instantly. Intensity compensates for missing structure."
-    },
-    {
-      id: "hiring-trap-growing-companies",
-      title: "THE HIRING TRAP MOST GROWING COMPANIES FALL INTO",
-      date: "21-Feb-2026",
-      category: "Scaling",
-      excerpt: "Hiring increases capacity, but it doesn't improve design. Discover why adding headcount to a broken process only multiplies your problems.",
-      content: "Growth creates pressure. Pressure creates friction. Many leaders respond by adding people.\n\nAt first, this works. Output increases. Deadlines are met. Stress drops.\n\nBut over time, something strange happens. Hiring keeps increasing while efficiency stays flat.\n\nThis pattern reveals a structural issue.\n\n**Hiring increases capacity. It does not improve design.**"
-    }
-  ];
+];
 
+function seedSqlite() {
   try {
     const insert = sqliteDb.prepare(`
       INSERT INTO posts (id, title, date, category, excerpt, content)
@@ -411,7 +409,9 @@ router.use(async (req, res, next) => {
       await initDb();
     } else {
       const db = getSqliteDb();
-      if (!db) throw new Error("Failed to initialize SQLite database");
+      if (!db && !useMockDb) {
+        throw new Error("Database initialization failed (Postgres not configured and SQLite failed)");
+      }
     }
     next();
   } catch (err: any) {
@@ -671,35 +671,31 @@ router.get("/health", async (req, res) => {
         throw new Error(`Postgres Init Failed: ${err.message}`);
       });
     } else {
-      seedSqlite();
+      const db = getSqliteDb();
+      if (!db && !useMockDb) {
+        throw new Error("SQLite initialization failed and no fallback enabled");
+      }
     }
     
-    const resendKey = getResendKey();
-    const isResendConfigured = !!resendKey && resendKey.startsWith('re_');
-
     res.json({ 
       status: "ok", 
-      dbType: isPostgres ? "Postgres" : "SQLite",
-      initializedAt: new Date().toISOString(),
-      resendConfigured: isResendConfigured,
-      postgresConfigured: !!process.env.POSTGRES_URL,
-      envCheck: {
-        hasResendKey: !!resendKey,
-        resendKeyLength: resendKey ? resendKey.length : 0,
-        fromEmail: process.env.RESEND_FROM_EMAIL || process.env.VITE_RESEND_FROM_EMAIL || 'onboarding@resend.dev',
-        toEmail: process.env.RESEND_TO_EMAIL || process.env.VITE_RESEND_TO_EMAIL || 'anjanisp@gmail.com',
-        allKeys: Object.keys(process.env).filter(k => 
-          k.toUpperCase().includes('RESEND') || 
-          k.toUpperCase().includes('ADMIN') ||
-          k.toUpperCase().includes('POSTGRES') ||
-          k.toUpperCase().includes('VITE_')
-        ),
-        usingOverrideFile: fs.existsSync(KEY_FILE) || fs.existsSync(TMP_KEY_FILE) || !!memoryKey
+      db: isPostgres ? "Postgres" : (useMockDb ? "Mock (In-Memory)" : "SQLite"),
+      initializedAt: dbInitializedAt,
+      vercel: !!process.env.VERCEL,
+      config: {
+        HAS_GEMINI: !!process.env.GEMINI_API_KEY,
+        HAS_RESEND: !!getResendKey(),
+        HAS_GOOGLE_DRIVE: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
       }
     });
   } catch (err: any) {
     console.error("Health Check Error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ 
+      error: err.message, 
+      details: "Database initialization failed. If on Vercel, please connect Postgres storage.",
+      isPostgres,
+      vercel: !!process.env.VERCEL
+    });
   }
 });
 
@@ -711,13 +707,18 @@ router.get("/debug", async (req, res) => {
       const c = await sql`SELECT COUNT(*) as count FROM comments`;
       postCount = p.rows[0];
       commentCount = c.rows[0];
+    } else if (useMockDb) {
+      postCount = { count: initialPosts.length };
+      commentCount = { count: 0 };
     } else {
-      postCount = sqliteDb.prepare("SELECT COUNT(*) as count FROM posts").get();
-      commentCount = sqliteDb.prepare("SELECT COUNT(*) as count FROM comments").get();
+      const db = getSqliteDb();
+      if (!db) throw new Error("SQLite database not initialized");
+      postCount = db.prepare("SELECT COUNT(*) as count FROM posts").get();
+      commentCount = db.prepare("SELECT COUNT(*) as count FROM comments").get();
     }
     res.json({
       status: "ok",
-      dbType: isPostgres ? "Postgres" : "SQLite",
+      dbType: isPostgres ? "Postgres" : (useMockDb ? "Mock" : "SQLite"),
       counts: { posts: postCount, comments: commentCount }
     });
   } catch (err: any) {
@@ -733,6 +734,8 @@ router.get("/posts", async (req, res) => {
     if (isPostgres) {
       const { rows } = await sql`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
       res.json(rows);
+    } else if (useMockDb) {
+      res.json(initialPosts.slice(offset, offset + limit));
     } else {
       const db = getSqliteDb();
       if (!db) throw new Error("SQLite database not initialized");
@@ -751,6 +754,10 @@ router.get("/posts/:id", async (req, res) => {
       const { rows } = await sql`SELECT * FROM posts WHERE id = ${req.params.id}`;
       if (rows.length === 0) return res.status(404).json({ error: "Post not found" });
       res.json(rows[0]);
+    } else if (useMockDb) {
+      const post = initialPosts.find(p => p.id === req.params.id);
+      if (!post) return res.status(404).json({ error: "Post not found" });
+      res.json(post);
     } else {
       const db = getSqliteDb();
       if (!db) throw new Error("SQLite database not initialized");
