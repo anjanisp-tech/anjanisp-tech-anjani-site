@@ -39,12 +39,12 @@ export default function ChatAssistant() {
     try {
       // 0. Check if Server is alive (Health)
       try {
-        const healthResponse = await fetch('/api/health');
+        const healthResponse = await fetch('/server-health');
         if (!healthResponse.ok) {
-          throw new Error(`Health Check failed: ${healthResponse.status}`);
+          throw new Error(`Server Liveness failed: ${healthResponse.status}`);
         }
       } catch (healthErr: any) {
-        console.error("Server Health Check failed:", healthErr);
+        console.error("Server Liveness Check failed:", healthErr);
         // Try the direct test ping as a last resort
         try {
           const testPing = await fetch('/api-test-ping');
@@ -57,6 +57,23 @@ export default function ChatAssistant() {
           setIsLoading(false);
           return;
         }
+      }
+
+      // 0.1 Check API Health (DB, etc.)
+      try {
+        const apiHealth = await fetch('/api/health');
+        if (!apiHealth.ok) {
+          const data = await apiHealth.json().catch(() => ({}));
+          throw new Error(data.error || `API Health failed: ${apiHealth.status}`);
+        }
+      } catch (apiErr: any) {
+        console.error("API Health Check failed:", apiErr);
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: `Server is alive, but the API is having issues: ${apiErr.message}. This is likely a database connection problem.` 
+        }]);
+        setIsLoading(false);
+        return;
       }
 
       // 1. Check if API is reachable (Ping)

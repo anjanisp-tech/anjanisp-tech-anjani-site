@@ -14,20 +14,20 @@ async function startServer() {
   // Middleware to parse JSON bodies
   app.use(express.json());
 
-  // Use the API app for /api routes
-  app.use("/api", (req, res, next) => {
-    console.log(`[API REQUEST] ${req.method} ${req.url}`);
-    next();
-  }, apiApp);
-
   // Direct test route to bypass apiApp router entirely
   app.get("/api-test-ping", (req, res) => {
     res.json({ status: "ok", source: "server.ts direct" });
   });
 
-  app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", message: "Server is alive", timestamp: new Date().toISOString() });
+  app.get("/server-health", (req, res) => {
+    res.json({ status: "ok", message: "Server process is alive", timestamp: new Date().toISOString() });
   });
+
+  // Use the API app for /api routes
+  app.use("/api", (req, res, next) => {
+    console.log(`[API REQUEST] ${req.method} ${req.url}`);
+    next();
+  }, apiApp);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

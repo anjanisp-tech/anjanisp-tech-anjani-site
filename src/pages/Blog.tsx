@@ -61,7 +61,9 @@ export default function Blog() {
       const res = await fetch(`/api/posts?limit=${LIMIT}&offset=${currentOffset}`);
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Server error: ${res.status}`);
+        const errorMsg = data.details || data.error || `Server error: ${res.status}`;
+        const hint = data.hint ? `\n\nHint: ${data.hint}` : '';
+        throw new Error(`${errorMsg}${hint}`);
       }
       const data = await res.json();
       

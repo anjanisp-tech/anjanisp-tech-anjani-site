@@ -48,6 +48,9 @@ function getResendKey() {
 }
 
 const router = express.Router();
+const apiApp = express();
+apiApp.use(express.json());
+apiApp.use(router);
 
 // 1. Simple Ping Route for testing
 router.get("/ping", (req, res) => {
@@ -174,10 +177,15 @@ const requireInEsm = createRequire(import.meta.url);
 function getSqliteDb() {
   if (sqliteDb) return sqliteDb;
   try {
-    console.log("Initializing SQLite database...");
+    console.log("[DB INIT] Initializing SQLite database...");
     // Lazy load better-sqlite3 to prevent module load crashes
     const Database = requireInEsm("better-sqlite3");
-    const dbPath = path.join(process.cwd(), "blog.db");
+    
+    // Use /tmp on Vercel for writable DB
+    const isVercel = !!process.env.VERCEL;
+    const dbPath = isVercel ? "/tmp/blog.db" : path.join(process.cwd(), "blog.db");
+    
+    console.log(`[DB INIT] SQLite Path: ${dbPath}`);
     sqliteDb = new Database(dbPath);
     sqliteDb.exec(`
       CREATE TABLE IF NOT EXISTS posts (
@@ -264,126 +272,133 @@ function seedSqlite() {
   }
 }
 
+let isDbInitialized = false;
+
 async function initDb(force = false) {
-  if (isPostgres) {
-    try {
-      console.log(`Initializing Postgres tables (force=${force})...`);
-      await sql`
-        CREATE TABLE IF NOT EXISTS posts (
-          id TEXT PRIMARY KEY,
-          title TEXT NOT NULL,
-          date TEXT NOT NULL,
-          category TEXT NOT NULL,
-          excerpt TEXT NOT NULL,
-          content TEXT NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `.catch(e => console.error("Error creating posts table:", e));
-      
-      await sql`
-        CREATE TABLE IF NOT EXISTS comments (
-          id SERIAL PRIMARY KEY,
-          post_id TEXT NOT NULL,
-          parent_id INTEGER DEFAULT NULL,
-          name TEXT NOT NULL,
-          email TEXT NOT NULL,
-          website TEXT,
-          phone TEXT,
-          comment TEXT NOT NULL,
-          is_admin INTEGER DEFAULT 0,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `.catch(e => console.error("Error creating comments table:", e));
+  if (!isPostgres) return;
+  if (isDbInitialized && !force) return;
 
-      // Add indexes for performance
-      await sql`CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id)`.catch(() => {});
-      await sql`CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id)`.catch(() => {});
-      
-      await sql`
-        CREATE TABLE IF NOT EXISTS subscriptions (
-          id SERIAL PRIMARY KEY,
-          email TEXT UNIQUE NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `.catch(e => console.error("Error creating subscriptions table:", e));
-      
-      console.log("Postgres tables check complete.");
-      
-      // Check if seed data is needed
-      const { rowCount } = await sql`SELECT id FROM posts LIMIT 1`;
-      
-      const initialPosts = [
-        {
-          id: "founder-overload-map",
-          title: "THE FOUNDER OVERLOAD MAP",
-          date: "18-Feb-2026",
-          category: "Operations",
-          excerpt: "If your company stops moving when you step away, you did not build a business. You built a dependency engine. Learn how to diagnose and fix the structural gaps causing founder overload.",
-          content: "Many leaders assume exhaustion is the price of ambition. It is not. Sustainable companies do not demand constant founder energy. They demand sound operating design.\n\nBurnout is usually diagnosed as a personal issue. In practice, it is structural. When execution depends on one person, growth multiplies pressure instead of results.\n\nHere is the pattern visible across scaling firms.\n\n### SYMPTOMS\n\nWhen founders become the system, certain signals appear:\n\n* Decisions require their validation\n* Teams escalate small issues upward\n* Calendars fill with alignment meetings\n* Work slows during their absence\n\nThese symptoms often get misread as growth complexity. They are actually architecture gaps."
-        },
-        {
-          id: "systems-outlast-heroics",
-          title: "WHY SPEED BECOMES DANGEROUS INSIDE GROWING ORGANIZATIONS",
-          date: "19-Feb-2026",
-          category: "Scaling",
-          excerpt: "Heroic execution works until complexity increases. Learn why systems, not stamina, are the key to winning at scale and building a durable organization.",
-          content: "Many early stage companies grow on momentum. A founder pushes hard. A small team stretches capacity. Strong performers step up repeatedly. Results improve.\n\nThis phase creates confidence. It also creates risk.\n\nHeroic execution works because complexity is still manageable. Decisions are fast. Communication is direct. Corrections happen instantly. Intensity compensates for missing structure."
-        },
-        {
-          id: "hiring-trap-growing-companies",
-          title: "THE HIRING TRAP MOST GROWING COMPANIES FALL INTO",
-          date: "21-Feb-2026",
-          category: "Scaling",
-          excerpt: "Hiring increases capacity, but it doesn't improve design. Discover why adding headcount to a broken process only multiplies your problems.",
-          content: "Growth creates pressure. Pressure creates friction. Many leaders respond by adding people.\n\nAt first, this works. Output increases. Deadlines are met. Stress drops.\n\nBut over time, something strange happens. Hiring keeps increasing while efficiency stays flat.\n\nThis pattern reveals a structural issue.\n\n**Hiring increases capacity. It does not improve design.**"
-        }
-      ];
+  try {
+    console.log(`[DB INIT] Initializing Postgres tables (force=${force})...`);
+    // Use a transaction or sequential awaits to ensure tables exist
+    await sql`
+      CREATE TABLE IF NOT EXISTS posts (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        date TEXT NOT NULL,
+        category TEXT NOT NULL,
+        excerpt TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    
+    await sql`
+      CREATE TABLE IF NOT EXISTS comments (
+        id SERIAL PRIMARY KEY,
+        post_id TEXT NOT NULL,
+        parent_id INTEGER DEFAULT NULL,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        website TEXT,
+        phone TEXT,
+        comment TEXT NOT NULL,
+        is_admin INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
 
-      if (rowCount === 0 || force) {
-        console.log(`Aggressive Sync: Deleting and re-inserting ${initialPosts.length} posts...`);
-        // Clear existing to ensure fresh start with new titles/content
-        if (force) await sql`DELETE FROM posts`;
-        
-        for (const p of initialPosts) {
-          await sql`
-            INSERT INTO posts (id, title, date, category, excerpt, content)
-            VALUES (${p.id}, ${p.title}, ${p.date}, ${p.category}, ${p.excerpt}, ${p.content})
-            ON CONFLICT (id) DO UPDATE SET 
-              title = EXCLUDED.title,
-              date = EXCLUDED.date,
-              category = EXCLUDED.category,
-              excerpt = EXCLUDED.excerpt,
-              content = EXCLUDED.content
-          `;
-          console.log(`Synced post: ${p.id} - ${p.title}`);
-        }
-        
-        if (rowCount === 0) {
-          console.log("Seeding initial posts to Postgres complete.");
-        } else {
-          console.log("Force sync of posts to Postgres complete.");
-        }
+    // Add indexes for performance
+    await sql`CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id)`.catch(() => {});
+    await sql`CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id)`.catch(() => {});
+    
+    await sql`
+      CREATE TABLE IF NOT EXISTS subscriptions (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    
+    isDbInitialized = true;
+    console.log("[DB INIT] Postgres tables check complete.");
+    
+    // Check if seed data is needed
+    const { rowCount } = await sql`SELECT id FROM posts LIMIT 1`;
+    
+    const initialPosts = [
+      {
+        id: "founder-overload-map",
+        title: "THE FOUNDER OVERLOAD MAP",
+        date: "18-Feb-2026",
+        category: "Operations",
+        excerpt: "If your company stops moving when you step away, you did not build a business. You built a dependency engine. Learn how to diagnose and fix the structural gaps causing founder overload.",
+        content: "Many leaders assume exhaustion is the price of ambition. It is not. Sustainable companies do not demand constant founder energy. They demand sound operating design.\n\nBurnout is usually diagnosed as a personal issue. In practice, it is structural. When execution depends on one person, growth multiplies pressure instead of results.\n\nHere is the pattern visible across scaling firms.\n\n### SYMPTOMS\n\nWhen founders become the system, certain signals appear:\n\n* Decisions require their validation\n* Teams escalate small issues upward\n* Calendars fill with alignment meetings\n* Work slows during their absence\n\nThese symptoms often get misread as growth complexity. They are actually architecture gaps."
+      },
+      {
+        id: "systems-outlast-heroics",
+        title: "WHY SPEED BECOMES DANGEROUS INSIDE GROWING ORGANIZATIONS",
+        date: "19-Feb-2026",
+        category: "Scaling",
+        excerpt: "Heroic execution works until complexity increases. Learn why systems, not stamina, are the key to winning at scale and building a durable organization.",
+        content: "Many early stage companies grow on momentum. A founder pushes hard. A small team stretches capacity. Strong performers step up repeatedly. Results improve.\n\nThis phase creates confidence. It also creates risk.\n\nHeroic execution works because complexity is still manageable. Decisions are fast. Communication is direct. Corrections happen instantly. Intensity compensates for missing structure."
+      },
+      {
+        id: "hiring-trap-growing-companies",
+        title: "THE HIRING TRAP MOST GROWING COMPANIES FALL INTO",
+        date: "21-Feb-2026",
+        category: "Scaling",
+        excerpt: "Hiring increases capacity, but it doesn't improve design. Discover why adding headcount to a broken process only multiplies your problems.",
+        content: "Growth creates pressure. Pressure creates friction. Many leaders respond by adding people.\n\nAt first, this works. Output increases. Deadlines are met. Stress drops.\n\nBut over time, something strange happens. Hiring keeps increasing while efficiency stays flat.\n\nThis pattern reveals a structural issue.\n\n**Hiring increases capacity. It does not improve design.**"
       }
-    } catch (err) {
-      console.error("Postgres Init Error:", err);
+    ];
+
+    if (rowCount === 0 || force) {
+      console.log(`[DB INIT] Aggressive Sync: Inserting ${initialPosts.length} posts...`);
+      for (const p of initialPosts) {
+        await sql`
+          INSERT INTO posts (id, title, date, category, excerpt, content)
+          VALUES (${p.id}, ${p.title}, ${p.date}, ${p.category}, ${p.excerpt}, ${p.content})
+          ON CONFLICT (id) DO UPDATE SET 
+            title = EXCLUDED.title,
+            date = EXCLUDED.date,
+            category = EXCLUDED.category,
+            excerpt = EXCLUDED.excerpt,
+            content = EXCLUDED.content
+        `;
+      }
+      console.log("[DB INIT] Seeding complete.");
     }
+  } catch (err) {
+    console.error("[DB INIT] Postgres Init Error:", err);
+    throw err; // Rethrow to let the middleware/route handle it
   }
 }
 
 // Ensure DB is initialized on every request in production
 // BUT skip for ping and chat routes which are already handled above
 router.use(async (req, res, next) => {
+  // Skip DB init for simple ping
+  if (req.path === '/ping') return next();
+
   try {
     if (isPostgres) {
       await initDb();
     } else {
-      getSqliteDb();
+      const db = getSqliteDb();
+      if (!db) throw new Error("Failed to initialize SQLite database");
     }
     next();
-  } catch (err) {
+  } catch (err: any) {
     console.error("[DB INIT MIDDLEWARE ERROR]", err);
-    // Don't call next(err) to avoid 500ing the whole app if DB is just slow/down
-    // Let the individual routes handle missing tables if they must
+    // On Vercel, we want to know if it's a connection error
+    if (err.message?.includes('connection') || err.message?.includes('POSTGRES_URL')) {
+      return res.status(500).json({ 
+        error: "Database Connection Error", 
+        details: err.message,
+        hint: "Check your POSTGRES_URL environment variable in Vercel."
+      });
+    }
     next();
   }
 });
@@ -921,4 +936,4 @@ router.use((err: any, req: any, res: any, next: any) => {
   });
 });
 
-export default router;
+export default apiApp;
