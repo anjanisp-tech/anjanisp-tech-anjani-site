@@ -11,6 +11,9 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Middleware to parse JSON bodies
+  app.use(express.json());
+
   // Use the API app for /api routes
   app.use(apiApp);
 

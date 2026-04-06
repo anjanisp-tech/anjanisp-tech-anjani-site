@@ -785,11 +785,11 @@ router.get("/api/admin/subscriptions", adminAuth, async (req, res) => {
 
 // AI Chat Assistant Route
 router.post("/api/chat", async (req, res) => {
-  const { message, history } = req.body;
-  
-  if (!message) return res.status(400).json({ error: "Message is required" });
-
   try {
+    const { message, history } = req.body || {};
+    
+    if (!message) return res.status(400).json({ error: "Message is required" });
+
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY is missing in environment.");
