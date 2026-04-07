@@ -32,6 +32,7 @@ router.get("/diagnostic", async (req, res) => {
       hasResend = Object.values(process.env).some(v => typeof v === 'string' && v.startsWith('re_'));
     }
     const hasGoogleDrive = !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+    const hasAdminPassword = !!process.env.ADMIN_PASSWORD;
 
     let dbStatus = "Not checked";
     try {
@@ -76,7 +77,7 @@ router.get("/diagnostic", async (req, res) => {
       status: "ok",
       isVercel: !!process.env.VERCEL,
       timestamp: new Date().toISOString(),
-      version: "1.0.5",
+      version: "1.0.6",
       dbStatus,
       knowledgeStatus,
       geminiTest,
@@ -86,7 +87,8 @@ router.get("/diagnostic", async (req, res) => {
         HAS_GEMINI: hasGemini,
         GEMINI_KEY_MASKED: geminiMasked,
         HAS_RESEND: hasResend,
-        HAS_GOOGLE_DRIVE: hasGoogleDrive
+        HAS_GOOGLE_DRIVE: hasGoogleDrive,
+        HAS_ADMIN_PASSWORD: hasAdminPassword
       }
     });
   } catch (err: any) {
