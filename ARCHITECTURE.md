@@ -24,7 +24,7 @@ A high-performance personal brand and knowledge-sharing platform for a founder/c
   - **Posts Tab**: CRUD operations for blog articles.
   - **Knowledge Tab**: Configuration for the Google Drive Knowledge Base (File ID) and manual sync trigger.
   - **Subscribers Tab**: View and export newsletter subscribers.
-  - **System Tab**: Database initialization, email testing, and server diagnostics.
+  - **System Tab**: Database initialization, documentation management, email testing, and server diagnostics.
 
 ---
 
@@ -80,9 +80,10 @@ The application uses a relational database with the following tables:
 ---
 
 ## 6. Maintenance & Operations
-- **Database Init**: Can be re-run from the Admin -> System tab to ensure schema integrity.
+- **Database Init**: Can be re-run from the Admin -> System tab to ensure schema integrity. Automatically handles table creation for Postgres and SQLite.
+- **Documentation Management**: The `ARCHITECTURE.md` file can be downloaded directly from the Admin -> System tab for local reference or manual backup.
 - **Knowledge Sync**: Can be forced from the Admin -> Knowledge tab if the Google Doc is updated.
 - **Hard Restart**: Available in Admin -> System to reload environment variables.
 
 ---
-*Last Updated: 2026-04-07*
+*Last Updated: 2026-04-07 (Updated with DB Init & Documentation Download)*
