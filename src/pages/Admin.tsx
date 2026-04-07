@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket } from 'lucide-react';
+import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket, Eye, EyeOff, RefreshCw, Database } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Markdown from 'react-markdown';
 
 interface Comment {
   id: number;
@@ -19,12 +20,13 @@ export default function Admin() {
     return typeof window !== 'undefined' && localStorage.getItem('admin_auth') === 'true';
   });
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers' | 'system' | 'manage'>('comments');
+  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers' | 'system' | 'manage' | 'knowledge'>('comments');
   const [comments, setComments] = useState<Comment[]>([]);
   const [blogs, setBlogs] = useState<any[]>([]);
   const [subscribers, setSubscribers] = useState<{ id: number, email: string, created_at: string }[]>([]);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
   
   const [blogForm, setBlogForm] = useState({
     title: '',
@@ -32,6 +34,12 @@ export default function Admin() {
     category: 'Scaling',
     excerpt: '',
     content: ''
+  });
+
+  const [knowledgeSettings, setKnowledgeSettings] = useState({
+    fileId: '',
+    lastSync: '',
+    status: 'idle' as 'idle' | 'syncing' | 'success' | 'error'
   });
   
   const [status, setStatus] = useState<{ type: 'success' | 'error' | 'idle', message: string }>({ type: 'idle', message: '' });
@@ -84,6 +92,10 @@ export default function Admin() {
     
     if (activeTab === 'manage' && isAuthenticated) {
       fetchBlogs();
+    }
+
+    if (activeTab === 'knowledge' && isAuthenticated) {
+      fetchKnowledgeSettings();
     }
     
     if (activeTab === 'system' && isAuthenticated) {
@@ -198,6 +210,68 @@ export default function Admin() {
     });
     setActiveTab('upload');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const fetchKnowledgeSettings = async () => {
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    try {
+      const res = await fetch('/api/admin/settings', {
+        headers: { 'Authorization': `Bearer ${secret}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setKnowledgeSettings(prev => ({
+          ...prev,
+          fileId: data.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID || ''
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to fetch knowledge settings", err);
+    }
+  };
+
+  const handleSaveKnowledgeFileId = async () => {
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${secret}`
+        },
+        body: JSON.stringify({ 
+          key: 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID', 
+          value: knowledgeSettings.fileId 
+        })
+      });
+      if (res.ok) {
+        alert("Knowledge File ID saved.");
+      }
+    } catch (err) {
+      alert("Failed to save File ID.");
+    }
+  };
+
+  const handleSyncKnowledge = async () => {
+    setKnowledgeSettings(prev => ({ ...prev, status: 'syncing' }));
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    try {
+      const res = await fetch('/api/admin/knowledge/sync', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${secret}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setKnowledgeSettings(prev => ({ ...prev, status: 'success', lastSync: new Date().toLocaleString() }));
+        alert(`Sync successful! Knowledge base is now ${data.length} characters.`);
+      } else {
+        setKnowledgeSettings(prev => ({ ...prev, status: 'error' }));
+        alert("Sync failed. Check system logs.");
+      }
+    } catch (err) {
+      setKnowledgeSettings(prev => ({ ...prev, status: 'error' }));
+      alert("Network error during sync.");
+    }
   };
 
   const fetchSubscribers = async () => {
@@ -355,6 +429,12 @@ export default function Admin() {
                 <Mail size={18} /> Subscribers
               </button>
               <button 
+                onClick={() => setActiveTab('knowledge')}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'knowledge' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
+              >
+                <Database size={18} /> Knowledge
+              </button>
+              <button 
                 onClick={() => setActiveTab('system')}
                 className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'system' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
               >
@@ -460,91 +540,117 @@ export default function Admin() {
               )}
             </div>
           ) : activeTab === 'upload' ? (
-            <div className="max-w-4xl mx-auto">
-              <form onSubmit={handleBlogSubmit} className="bg-white border border-border rounded-3xl p-8 md:p-12 shadow-sm space-y-8">
-                {status.type !== 'idle' && (
-                  <div className={`p-4 rounded-xl flex items-center gap-3 ${status.type === 'success' ? 'bg-slate-50 text-slate-900' : 'bg-red-50 text-red-700'}`}>
-                    {status.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
-                    <span className="font-bold text-sm">{status.message}</span>
+            <div className="max-w-6xl mx-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">{blogs.some(b => b.title === blogForm.title) ? 'Edit Blog Post' : 'Create New Blog Post'}</h2>
+                <button 
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="flex items-center gap-2 px-4 py-2 bg-muted rounded-lg text-sm font-bold text-accent hover:bg-muted/80 transition-all"
+                >
+                  {showPreview ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPreview ? 'Hide Preview' : 'Show Preview'}
+                </button>
+              </div>
+
+              <div className={`grid ${showPreview ? 'lg:grid-cols-2' : 'grid-cols-1'} gap-8`}>
+                <form onSubmit={handleBlogSubmit} className="bg-white border border-border rounded-3xl p-8 shadow-sm space-y-6">
+                  {status.type !== 'idle' && (
+                    <div className={`p-4 rounded-xl flex items-center gap-3 ${status.type === 'success' ? 'bg-slate-50 text-slate-900' : 'bg-red-50 text-red-700'}`}>
+                      {status.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+                      <span className="font-bold text-sm">{status.message}</span>
+                    </div>
+                  )}
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Blog Title *</label>
+                      <input 
+                        type="text" 
+                        required
+                        value={blogForm.title}
+                        onChange={(e) => setBlogForm({...blogForm, title: e.target.value})}
+                        placeholder="e.g. The Scaling Framework"
+                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Date *</label>
+                      <input 
+                        type="text" 
+                        required
+                        value={blogForm.date}
+                        onChange={(e) => setBlogForm({...blogForm, date: e.target.value})}
+                        placeholder="DD-MMM-YYYY"
+                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Category *</label>
+                    <select 
+                      required
+                      value={blogForm.category}
+                      onChange={(e) => setBlogForm({...blogForm, category: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all appearance-none bg-white"
+                    >
+                      <option value="Scaling">Scaling</option>
+                      <option value="Operations">Operations</option>
+                      <option value="Leadership">Leadership</option>
+                      <option value="Strategy">Strategy</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Excerpt * (Short summary)</label>
+                    <textarea 
+                      required
+                      value={blogForm.excerpt}
+                      onChange={(e) => setBlogForm({...blogForm, excerpt: e.target.value})}
+                      placeholder="A brief summary of the article..."
+                      rows={3}
+                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all resize-none"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Full Blog Content * (Markdown supported)</label>
+                    <textarea 
+                      required
+                      value={blogForm.content}
+                      onChange={(e) => setBlogForm({...blogForm, content: e.target.value})}
+                      placeholder="Write your article content here..."
+                      rows={15}
+                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none font-mono text-sm whitespace-pre-wrap"
+                    />
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="w-full btn-primary py-4 flex items-center justify-center gap-3"
+                  >
+                    <FileText size={20} /> {blogs.some(b => b.title === blogForm.title) ? 'Update Blog Post' : 'Publish Blog Post'}
+                  </button>
+                </form>
+
+                {showPreview && (
+                  <div className="bg-white border border-border rounded-3xl p-8 shadow-sm overflow-y-auto max-h-[800px]">
+                    <div className="mb-8">
+                      <span className="px-3 py-1 bg-accent/5 text-accent rounded-full text-[10px] font-bold uppercase tracking-widest mb-4 inline-block">
+                        {blogForm.category}
+                      </span>
+                      <h1 className="text-3xl font-bold mb-4">{blogForm.title || 'Post Title Preview'}</h1>
+                      <div className="text-sm text-accent-light mb-8">{blogForm.date}</div>
+                      <div className="p-4 bg-muted rounded-xl italic text-accent-light mb-8 border-l-4 border-accent">
+                        {blogForm.excerpt || 'Excerpt preview...'}
+                      </div>
+                    </div>
+                    <div className="prose prose-slate max-w-none prose-headings:text-accent prose-a:text-accent">
+                      <Markdown>{blogForm.content || 'Content preview...'}</Markdown>
+                    </div>
                   </div>
                 )}
-
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Blog Title *</label>
-                    <input 
-                      type="text" 
-                      required
-                      value={blogForm.title}
-                      onChange={(e) => setBlogForm({...blogForm, title: e.target.value})}
-                      placeholder="e.g. The Scaling Framework"
-                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Date *</label>
-                    <input 
-                      type="text" 
-                      required
-                      value={blogForm.date}
-                      onChange={(e) => setBlogForm({...blogForm, date: e.target.value})}
-                      placeholder="DD-MMM-YYYY"
-                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Category *</label>
-                  <select 
-                    required
-                    value={blogForm.category}
-                    onChange={(e) => setBlogForm({...blogForm, category: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all appearance-none bg-white"
-                  >
-                    <option value="Scaling">Scaling</option>
-                    <option value="Operations">Operations</option>
-                    <option value="Leadership">Leadership</option>
-                    <option value="Strategy">Strategy</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Excerpt * (Short summary)</label>
-                  <textarea 
-                    required
-                    value={blogForm.excerpt}
-                    onChange={(e) => setBlogForm({...blogForm, excerpt: e.target.value})}
-                    placeholder="A brief summary of the article..."
-                    rows={3}
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all resize-none"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Full Blog Content * (Markdown supported)</label>
-                  <textarea 
-                    required
-                    value={blogForm.content}
-                    onChange={(e) => setBlogForm({...blogForm, content: e.target.value})}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.stopPropagation();
-                      }
-                    }}
-                    placeholder="Write your article content here..."
-                    rows={15}
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none font-mono text-sm whitespace-pre-wrap"
-                  />
-                </div>
-
-                <button 
-                  type="submit"
-                  className="w-full btn-primary py-4 flex items-center justify-center gap-3"
-                >
-                  <FileText size={20} /> {blogs.some(b => b.title === blogForm.title) ? 'Update Blog Post' : 'Publish Blog Post'}
-                </button>
-              </form>
+              </div>
             </div>
           ) : activeTab === 'manage' ? (
             <div className="space-y-6">
@@ -598,6 +704,84 @@ export default function Admin() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            </div>
+          ) : activeTab === 'knowledge' ? (
+            <div className="max-w-4xl mx-auto space-y-8">
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-6">Chatbot Knowledge Base</h2>
+                <p className="text-accent-light mb-8">
+                  The chatbot's "brain" is synced from a Google Doc or .docx file in your Google Drive. 
+                  Update the file ID below and trigger a sync to refresh the AI's knowledge.
+                </p>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Google Drive File ID</label>
+                    <div className="flex gap-4">
+                      <input 
+                        type="text" 
+                        value={knowledgeSettings.fileId}
+                        onChange={(e) => setKnowledgeSettings({...knowledgeSettings, fileId: e.target.value})}
+                        placeholder="Enter Google Drive File ID..."
+                        className="flex-1 px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all font-mono text-sm"
+                      />
+                      <button 
+                        onClick={handleSaveKnowledgeFileId}
+                        className="btn-primary px-8 py-3"
+                      >
+                        Save ID
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-accent/40 mt-2 italic">
+                      Tip: The File ID is the long string in the Google Doc URL (e.g., docs.google.com/document/d/<b>FILE_ID</b>/edit)
+                    </p>
+                  </div>
+
+                  <div className="pt-8 border-t border-border">
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h3 className="font-bold">Sync Status</h3>
+                        <p className="text-xs text-accent-light">Last synced: {knowledgeSettings.lastSync || 'Never'}</p>
+                      </div>
+                      <button 
+                        onClick={handleSyncKnowledge}
+                        disabled={knowledgeSettings.status === 'syncing'}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
+                          knowledgeSettings.status === 'syncing' 
+                            ? 'bg-muted text-accent/40 cursor-not-allowed' 
+                            : 'bg-accent text-white hover:bg-accent-light shadow-lg'
+                        }`}
+                      >
+                        <RefreshCw size={18} className={knowledgeSettings.status === 'syncing' ? 'animate-spin' : ''} />
+                        {knowledgeSettings.status === 'syncing' ? 'Syncing...' : 'Sync Now'}
+                      </button>
+                    </div>
+
+                    <div className="p-4 bg-muted/30 rounded-2xl border border-border">
+                      <div className="flex items-center gap-3 text-sm">
+                        <div className={`w-3 h-3 rounded-full ${
+                          knowledgeSettings.status === 'success' ? 'bg-green-500' : 
+                          knowledgeSettings.status === 'error' ? 'bg-red-500' : 'bg-slate-300'
+                        }`} />
+                        <span className="font-medium">
+                          {knowledgeSettings.status === 'syncing' ? 'Sync in progress...' : 
+                           knowledgeSettings.status === 'success' ? 'Knowledge base is up to date.' : 
+                           knowledgeSettings.status === 'error' ? 'Last sync failed. Check credentials.' : 'Ready to sync.'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-accent text-white p-8 rounded-3xl shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 -skew-x-12 translate-x-1/2 -translate-y-1/2" />
+                <h3 className="text-xl font-bold mb-4 relative z-10">Pro Tip: Content Velocity</h3>
+                <p className="text-white/70 text-sm leading-relaxed relative z-10">
+                  To keep the AI updated with your latest thinking, simply add your new insights, case studies, or frameworks to your master Google Doc. 
+                  Once updated, click "Sync Now" above, and the chatbot will immediately start using that information in its conversations.
+                </p>
               </div>
             </div>
           ) : activeTab === 'subscribers' ? (

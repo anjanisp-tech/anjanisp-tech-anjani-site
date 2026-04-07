@@ -100,10 +100,102 @@ router.get("/diagnostic", async (req, res) => {
 router.get("/knowledge", async (req, res) => {
   try {
     const { getKnowledgeBase } = await getKnowledge();
-    const knowledge = await getKnowledgeBase();
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    
+    let fileIdOverride: string | undefined;
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
+      if (rows.length > 0) fileIdOverride = rows[0].value;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
+        if (row) fileIdOverride = row.value;
+      }
+    }
+
+    const knowledge = await getKnowledgeBase(req.query.force === 'true', fileIdOverride);
     res.json({ knowledge });
   } catch (err: any) {
     res.status(500).json({ error: "Failed to fetch knowledge base", details: err.message });
+  }
+});
+
+// Admin Settings Routes
+router.get("/admin/settings", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    let settings: Record<string, string> = {};
+    
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      const { rows } = await sql`SELECT * FROM settings`;
+      rows.forEach(r => settings[r.key] = r.value);
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        const rows = db.prepare("SELECT * FROM settings").all();
+        rows.forEach((r: any) => settings[r.key] = r.value);
+      }
+    }
+    res.json(settings);
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to fetch settings" });
+  }
+});
+
+router.post("/admin/settings", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  const { key, value } = req.body;
+  if (!key) return res.status(400).json({ error: "Key is required" });
+  try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      await sql`INSERT INTO settings (key, value) VALUES (${key}, ${value}) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").run(key, value);
+      }
+    }
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to save setting" });
+  }
+});
+
+router.post("/admin/knowledge/sync", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  try {
+    const { getKnowledgeBase } = await getKnowledge();
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    
+    let fileIdOverride: string | undefined;
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
+      if (rows.length > 0) fileIdOverride = rows[0].value;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
+        if (row) fileIdOverride = row.value;
+      }
+    }
+
+    const knowledge = await getKnowledgeBase(true, fileIdOverride);
+    res.json({ success: true, length: knowledge.length });
+  } catch (err: any) {
+    res.status(500).json({ error: "Sync failed", details: err.message });
   }
 });
 
@@ -129,7 +221,22 @@ router.post("/chat", async (req, res) => {
     }
 
     const { getKnowledgeBase } = await getKnowledge();
-    const knowledge = await getKnowledgeBase();
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    
+    let fileIdOverride: string | undefined;
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
+      if (rows.length > 0) fileIdOverride = rows[0].value;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
+        if (row) fileIdOverride = row.value;
+      }
+    }
+
+    const knowledge = await getKnowledgeBase(false, fileIdOverride);
     const { GoogleGenAI } = await import("@google/genai");
     const ai = new GoogleGenAI({ apiKey });
     const systemInstruction = `You are "The Scaling Architect," a digital proxy for Anjani Pandey, founder of Metmov. 

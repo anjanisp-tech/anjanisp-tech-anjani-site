@@ -9,9 +9,9 @@ let cachedKnowledge: string | null = null;
 let lastSync: number = 0;
 const SYNC_INTERVAL = 1000 * 60 * 60; // 1 hour
 
-export async function getKnowledgeBase(): Promise<string> {
+export async function getKnowledgeBase(force: boolean = false, fileIdOverride?: string): Promise<string> {
   const now = Date.now();
-  if (cachedKnowledge && (now - lastSync < SYNC_INTERVAL)) {
+  if (!force && cachedKnowledge && (now - lastSync < SYNC_INTERVAL)) {
     return cachedKnowledge;
   }
 
@@ -21,7 +21,7 @@ export async function getKnowledgeBase(): Promise<string> {
     
     const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n');
-    const fileId = process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID;
+    const fileId = fileIdOverride || process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID;
 
     if (!email || !privateKey || !fileId) {
       console.warn("Google Service Account credentials or File ID missing. Knowledge base will be empty.");
