@@ -123,7 +123,15 @@ export default function ChatAssistant() {
                           {m.suggestions.map((s, si) => (
                             <button
                               key={si}
-                              onClick={() => handleSend(undefined, s)}
+                              onClick={() => {
+                                if (s.toLowerCase().includes('book a fit call')) {
+                                  window.open(FIT_CALL_URL, '_blank');
+                                } else if (s.toLowerCase().includes('take the free diagnostic')) {
+                                  window.open(MINI_DIAGNOSTIC_URL, '_blank');
+                                } else {
+                                  handleSend(undefined, s);
+                                }
+                              }}
                               className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 bg-accent/5 border border-accent/10 rounded-full text-accent hover:bg-accent hover:text-white transition-all"
                             >
                               {s}
