@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, Loader2, User, Bot, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import Markdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 
 interface Message {
@@ -12,7 +14,10 @@ interface Message {
 export default function ChatAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: "Hello! I'm The Scaling Architect. I'm here to help you identify structural gaps in your business and install the 'Operating Spine' methodology. How can I assist you today?" }
+    { 
+      role: 'assistant', 
+      content: "* Hello! I'm The Scaling Architect.\n* I help founders identify structural gaps and install the 'Operating Spine'.\n* How can I assist you today?" 
+    }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -116,7 +121,9 @@ export default function ChatAssistant() {
                       {m.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                     </div>
                     <div className={`p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user' ? 'bg-accent text-white rounded-tr-none' : 'bg-white border border-border text-accent-light rounded-tl-none shadow-sm'}`}>
-                      {m.content}
+                      <div className="prose prose-sm max-w-none prose-p:my-0 prose-ul:my-2 prose-li:my-1">
+                        <Markdown remarkPlugins={[remarkBreaks]}>{m.content}</Markdown>
+                      </div>
                       
                       {m.suggestions && m.suggestions.length > 0 && (
                         <div className="mt-4 pt-4 border-t border-border/50 flex flex-wrap gap-2">
