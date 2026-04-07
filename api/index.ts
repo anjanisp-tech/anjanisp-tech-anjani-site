@@ -4,7 +4,10 @@ import { GoogleGenAI } from "@google/genai";
 const router = express.Router();
 const apiApp = express();
 apiApp.use(express.json());
-apiApp.use(router);
+
+// Mount router at both /api and root to handle Vercel rewrites vs local mounting
+apiApp.use("/api", router);
+apiApp.use("/", router);
 
 // Lazy import helpers to avoid top-level crashes
 const getDb = async () => import("./db");
@@ -30,6 +33,7 @@ router.get("/ping", (req, res) => {
 router.get("/diagnostic", (req, res) => {
   try {
     const hasGemini = !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 10;
+    const geminiMasked = process.env.GEMINI_API_KEY ? `${process.env.GEMINI_API_KEY.substring(0, 4)}...${process.env.GEMINI_API_KEY.substring(process.env.GEMINI_API_KEY.length - 4)}` : "missing";
     const hasPostgres = !!process.env.POSTGRES_URL && process.env.POSTGRES_URL.includes('://');
     
     // Minimal Resend check without utils.ts
@@ -47,6 +51,7 @@ router.get("/diagnostic", (req, res) => {
         NODE_ENV: process.env.NODE_ENV,
         HAS_POSTGRES: hasPostgres,
         HAS_GEMINI: hasGemini,
+        GEMINI_KEY_MASKED: geminiMasked,
         HAS_RESEND: hasResend,
         HAS_GOOGLE_DRIVE: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
       }
