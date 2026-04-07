@@ -175,6 +175,18 @@ router.post("/admin/init-db", async (req, res, next) => {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `;
+      await sql`
+        CREATE TABLE IF NOT EXISTS analytics_calculator (
+          id SERIAL PRIMARY KEY,
+          currency TEXT NOT NULL,
+          revenue REAL NOT NULL,
+          team_size INTEGER NOT NULL,
+          heroic_hours REAL NOT NULL,
+          total_tax REAL NOT NULL,
+          email TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
       
       return res.json({ success: true, message: "Postgres tables initialized" });
     } else {
@@ -787,6 +799,30 @@ router.post("/blog/:id/comments", async (req, res) => {
   }
 });
 
+router.post("/analytics/calculator", async (req, res) => {
+  const { currency, revenue, teamSize, heroicHours, totalTax, email } = req.body;
+  try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    const { sql } = await import("@vercel/postgres");
+
+    if (isPostgres) {
+      await sql`
+        INSERT INTO analytics_calculator (currency, revenue, team_size, heroic_hours, total_tax, email)
+        VALUES (${currency}, ${revenue}, ${teamSize}, ${heroicHours}, ${totalTax}, ${email || null})
+      `;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        db.prepare("INSERT INTO analytics_calculator (currency, revenue, team_size, heroic_hours, total_tax, email) VALUES (?, ?, ?, ?, ?, ?)")
+          .run(currency, revenue, teamSize, heroicHours, totalTax, email || null);
+      }
+    }
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to log calculator results", details: err.message });
+  }
+});
+
 // 6. Analytics Routes
 router.get("/admin/analytics", async (req, res, next) => {
   const { adminAuth } = await getUtils();
@@ -797,6 +833,7 @@ router.get("/admin/analytics", async (req, res, next) => {
     
     let chatbotQueries = [];
     let blogViews = [];
+    let calculatorLeads = [];
 
     if (isPostgres) {
       const { sql } = await import("@vercel/postgres");
@@ -808,8 +845,10 @@ router.get("/admin/analytics", async (req, res, next) => {
         GROUP BY b.post_id, p.title
         ORDER BY views DESC
       `;
+      const calcRes = await sql`SELECT * FROM analytics_calculator ORDER BY created_at DESC LIMIT 100`;
       chatbotQueries = chatRes.rows;
       blogViews = blogRes.rows;
+      calculatorLeads = calcRes.rows;
     } else {
       const db = getSqliteDb();
       if (db && !useMockDb) {
@@ -821,10 +860,11 @@ router.get("/admin/analytics", async (req, res, next) => {
           GROUP BY b.post_id, p.title
           ORDER BY views DESC
         `).all();
+        calculatorLeads = db.prepare("SELECT * FROM analytics_calculator ORDER BY created_at DESC LIMIT 100").all();
       }
     }
 
-    res.json({ chatbotQueries, blogViews });
+    res.json({ chatbotQueries, blogViews, calculatorLeads });
   } catch (err: any) {
     res.status(500).json({ error: "Failed to fetch analytics", details: err.message });
   }

@@ -99,6 +99,16 @@ export function getSqliteDb() {
         post_id TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+      CREATE TABLE IF NOT EXISTS analytics_calculator (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        currency TEXT NOT NULL,
+        revenue REAL NOT NULL,
+        team_size INTEGER NOT NULL,
+        heroic_hours REAL NOT NULL,
+        total_tax REAL NOT NULL,
+        email TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
     
     return sqliteDb;

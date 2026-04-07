@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket, Eye, EyeOff, RefreshCw, Database, BarChart3 } from 'lucide-react';
+import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket, Eye, EyeOff, RefreshCw, Database, BarChart3, Calculator } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 
@@ -25,7 +25,7 @@ export default function Admin() {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [subscribers, setSubscribers] = useState<{ id: number, email: string, created_at: string }[]>([]);
   const [audits, setAudits] = useState<any[]>([]);
-  const [analytics, setAnalytics] = useState<{ chatbotQueries: any[], blogViews: any[] }>({ chatbotQueries: [], blogViews: [] });
+  const [analytics, setAnalytics] = useState<{ chatbotQueries: any[], blogViews: any[], calculatorLeads: any[] }>({ chatbotQueries: [], blogViews: [], calculatorLeads: [] });
   const [isAuditing, setIsAuditing] = useState(false);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
   const [replyTo, setReplyTo] = useState<number | null>(null);
@@ -1281,6 +1281,41 @@ export default function Admin() {
                     <div className="py-12 text-center text-accent/30 font-bold italic">No chat queries yet.</div>
                   )}
                 </div>
+              </div>
+
+              {/* Calculator Leads */}
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                  <Calculator className="text-accent" size={24} /> Calculator Leads & Results
+                </h3>
+                {isLoadingAnalytics ? (
+                  <div className="py-12 flex justify-center"><RefreshCw className="animate-spin text-accent/20" /></div>
+                ) : analytics.calculatorLeads && analytics.calculatorLeads.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="pb-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Date</th>
+                          <th className="pb-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Email</th>
+                          <th className="pb-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Revenue</th>
+                          <th className="pb-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Total Tax</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {analytics.calculatorLeads.map((lead: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-muted/30 transition-colors">
+                            <td className="py-4 text-xs font-mono">{new Date(lead.created_at).toLocaleDateString()}</td>
+                            <td className="py-4 text-sm font-bold">{lead.email || <span className="opacity-20 italic">Anonymous</span>}</td>
+                            <td className="py-4 text-sm font-mono">{lead.currency} {lead.revenue.toLocaleString()}</td>
+                            <td className="py-4 text-sm font-mono font-bold text-red-600">{lead.currency} {lead.total_tax.toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="py-12 text-center text-accent/30 font-bold italic">No calculator data yet.</div>
+                )}
               </div>
 
               {/* Monetization Insights */}

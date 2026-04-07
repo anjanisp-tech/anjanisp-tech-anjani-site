@@ -11,6 +11,9 @@ export default function BottleneckCostCalculator() {
   const [teamSize, setTeamSize] = useState<number>(5);
   const [heroicHours, setHeroicHours] = useState<number>(15);
   const [showResult, setShowResult] = useState(false);
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmittedLead, setHasSubmittedLead] = useState(false);
   const [results, setResults] = useState({
     timeLoss: 0,
     growthLoss: 0,
@@ -18,6 +21,25 @@ export default function BottleneckCostCalculator() {
     totalTax: 0,
     hourlyRate: 0
   });
+
+  const logResults = async (userEmail?: string) => {
+    try {
+      await fetch('/api/analytics/calculator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currency,
+          revenue,
+          teamSize,
+          heroicHours,
+          totalTax: results.totalTax,
+          email: userEmail
+        })
+      });
+    } catch (err) {
+      console.error("Failed to log calculator results", err);
+    }
+  };
 
   // Update revenue range when currency changes
   useEffect(() => {
@@ -46,20 +68,34 @@ export default function BottleneckCostCalculator() {
     const frictionCost = teamSize * frictionCostPerPerson;
     
     const totalTax = timeLoss + growthLoss + frictionCost;
-
-    setResults({
+    
+    const newResults = {
       timeLoss: Math.max(0, timeLoss),
       growthLoss,
       frictionCost,
       totalTax,
       hourlyRate
-    });
+    };
+
+    setResults(newResults);
     setShowResult(true);
+    
+    // Log initial calculation (anonymous)
+    logResults();
     
     // Scroll to results
     setTimeout(() => {
       document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
+  };
+
+  const handleLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setIsSubmitting(true);
+    await logResults(email);
+    setIsSubmitting(false);
+    setHasSubmittedLead(true);
   };
 
   const formatCurrency = (val: number) => {
@@ -238,46 +274,98 @@ export default function BottleneckCostCalculator() {
                   className="space-y-6"
                 >
                   {/* Total Tax Card */}
-                  <div className="bg-accent text-white p-10 rounded-3xl shadow-xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-8 opacity-10">
+                  <div className="bg-accent text-white p-10 rounded-3xl shadow-xl relative overflow-hidden border border-white/10">
+                    <div className="absolute top-0 right-0 p-8 opacity-5">
                       <AlertTriangle size={120} />
                     </div>
+                    {/* Hardware/Technical Grid Overlay */}
+                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                    
                     <div className="relative z-10">
-                      <h3 className="text-sm font-bold uppercase tracking-widest opacity-60 mb-2">Your Annual Bottleneck Cost</h3>
-                      <div className="text-5xl md:text-7xl font-bold tracking-tighter mb-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] opacity-60">System Leak Detected</h3>
+                      </div>
+                      <h3 className="text-xs font-bold uppercase tracking-widest opacity-40 mb-1">Annual Bottleneck Tax</h3>
+                      <div className="text-5xl md:text-7xl font-mono font-bold tracking-tighter mb-6">
                         {formatCurrency(results.totalTax)}
                       </div>
-                      <p className="text-white/70 text-sm max-w-md">
-                        This is the hidden cost of running your business without an Operating Spine. 
-                        It's the price of being the "Hero" instead of the "Architect."
-                      </p>
+                      <div className="flex flex-wrap gap-4 pt-6 border-t border-white/10">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono opacity-40 uppercase">Status:</span>
+                          <span className="text-[10px] font-mono text-red-400 uppercase font-bold tracking-widest">Critical Drain</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono opacity-40 uppercase">Impact:</span>
+                          <span className="text-[10px] font-mono text-white uppercase font-bold tracking-widest">20% Growth Cap</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
                   {/* Breakdown Grid */}
                   <div className="grid sm:grid-cols-3 gap-4">
-                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm">
-                      <div className="text-accent/40 mb-3"><Clock size={20} /></div>
-                      <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-1">Time Drain</div>
-                      <div className="text-xl font-bold text-accent">{formatCurrency(results.timeLoss)}</div>
-                      <p className="text-[10px] text-accent-light/50 mt-2">Cost of doing low-value work.</p>
+                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm group hover:border-accent transition-colors">
+                      <div className="text-accent/20 mb-3 group-hover:text-accent transition-colors"><Clock size={18} /></div>
+                      <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-accent/40 mb-1">Time Drain</div>
+                      <div className="text-xl font-mono font-bold text-accent">{formatCurrency(results.timeLoss)}</div>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm">
-                      <div className="text-accent/40 mb-3"><TrendingDown size={20} /></div>
-                      <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-1">Growth Cap</div>
-                      <div className="text-xl font-bold text-accent">{formatCurrency(results.growthLoss)}</div>
-                      <p className="text-[10px] text-accent-light/50 mt-2">Lost revenue from bottlenecking.</p>
+                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm group hover:border-accent transition-colors">
+                      <div className="text-accent/20 mb-3 group-hover:text-accent transition-colors"><TrendingDown size={18} /></div>
+                      <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-accent/40 mb-1">Growth Cap</div>
+                      <div className="text-xl font-mono font-bold text-accent">{formatCurrency(results.growthLoss)}</div>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm">
-                      <div className="text-accent/40 mb-3"><Users size={20} /></div>
-                      <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-1">Team Friction</div>
-                      <div className="text-xl font-bold text-accent">{formatCurrency(results.frictionCost)}</div>
-                      <p className="text-[10px] text-accent-light/50 mt-2">Cost of systemless inefficiency.</p>
+                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm group hover:border-accent transition-colors">
+                      <div className="text-accent/20 mb-3 group-hover:text-accent transition-colors"><Users size={18} /></div>
+                      <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-accent/40 mb-1">Team Friction</div>
+                      <div className="text-xl font-mono font-bold text-accent">{formatCurrency(results.frictionCost)}</div>
+                    </div>
+                  </div>
+
+                  {/* Lead Capture Section */}
+                  <div className="bg-accent/5 p-8 md:p-10 rounded-3xl border border-accent/10 relative overflow-hidden">
+                    <div className="relative z-10">
+                      {!hasSubmittedLead ? (
+                        <>
+                          <h3 className="text-2xl font-bold mb-3">Get the Full Analysis Report</h3>
+                          <p className="text-sm text-accent-light/70 mb-8 max-w-md">
+                            We'll send you a detailed breakdown of these numbers plus a 3-step plan to install your Operating Spine and reclaim your time.
+                          </p>
+                          <form onSubmit={handleLeadSubmit} className="flex flex-col sm:flex-row gap-3">
+                            <input 
+                              type="email" 
+                              required
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              placeholder="Enter your professional email" 
+                              className="flex-1 px-6 py-4 rounded-xl bg-white border border-border outline-none focus:border-accent transition-all text-sm"
+                            />
+                            <button 
+                              type="submit" 
+                              disabled={isSubmitting}
+                              className="bg-accent text-white px-8 py-4 rounded-xl font-bold hover:bg-accent-light transition-all disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {isSubmitting ? 'Sending...' : 'Send My Report'}
+                            </button>
+                          </form>
+                          <p className="text-[10px] text-accent/30 mt-4 font-mono uppercase tracking-widest">
+                            Privacy Guaranteed. No Spam.
+                          </p>
+                        </>
+                      ) : (
+                        <div className="text-center py-4">
+                          <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                            <ArrowRight size={24} />
+                          </div>
+                          <h3 className="text-2xl font-bold mb-2">Report Sent!</h3>
+                          <p className="text-accent-light/70">Check your inbox for the full Bottleneck Analysis and your custom Operating Spine roadmap.</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* Call to Action */}
-                  <div className="bg-white p-8 rounded-3xl border border-accent/10 shadow-sm">
+                  <div className="bg-white p-8 rounded-3xl border border-border shadow-sm">
                     <h3 className="text-xl font-bold mb-4">Stop Paying the Tax.</h3>
                     <p className="text-sm text-accent-light/70 mb-6">
                       The Bottleneck Cost isn't a cost of doing business—it's a symptom of a structural disease. 
@@ -293,7 +381,12 @@ export default function BottleneckCostCalculator() {
                         Take the Free Diagnostic
                       </a>
                       <button 
-                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        onClick={() => {
+                          setShowResult(false);
+                          setHasSubmittedLead(false);
+                          setEmail('');
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
                         className="btn-outline flex-1 py-4"
                       >
                         Recalculate
