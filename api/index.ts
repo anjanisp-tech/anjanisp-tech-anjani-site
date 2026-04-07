@@ -158,6 +158,23 @@ router.post("/admin/init-db", async (req, res, next) => {
         );
       `;
       
+      await sql`
+        CREATE TABLE IF NOT EXISTS analytics_chatbot (
+          id SERIAL PRIMARY KEY,
+          query TEXT NOT NULL,
+          response TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS analytics_blog (
+          id SERIAL PRIMARY KEY,
+          post_id TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+      
       return res.json({ success: true, message: "Postgres tables initialized" });
     } else {
       const db = getSqliteDb();
@@ -262,8 +279,23 @@ router.post("/admin/audit", async (req, res, next) => {
 
     // 3. Knowledge Base Check
     try {
-      const k = await getKnowledgeBase();
-      results.checks.knowledge = { status: k ? "ok" : "warning", length: k ? k.length : 0 };
+      const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+      const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+      const fileId = process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID;
+      
+      if (!email || !privateKey || !fileId) {
+        results.checks.knowledge = { 
+          status: "warning", 
+          message: "Credentials or File ID missing in environment variables." 
+        };
+      } else {
+        const k = await getKnowledgeBase();
+        results.checks.knowledge = { 
+          status: k ? "ok" : "warning", 
+          length: k ? k.length : 0,
+          message: k ? "Knowledge base loaded successfully." : "Knowledge base is empty."
+        };
+      }
     } catch (e: any) {
       results.checks.knowledge = { status: "error", message: e.message };
     }
@@ -271,8 +303,13 @@ router.post("/admin/audit", async (req, res, next) => {
     // 4. Resend Check
     try {
       const { getResendKey } = await getUtils();
-      const hasResend = !!getResendKey();
-      results.checks.resend = { status: hasResend ? "ok" : "warning", present: hasResend };
+      const apiKey = getResendKey();
+      const hasResend = !!apiKey;
+      results.checks.resend = { 
+        status: hasResend ? "ok" : "warning", 
+        present: hasResend,
+        message: hasResend ? "Resend API key found." : "Resend API key missing (check RESEND_API_KEY)."
+      };
     } catch (e: any) {
       results.checks.resend = { status: "error", message: e.message };
     }
@@ -496,9 +533,11 @@ router.post("/chat", async (req, res) => {
     const knowledge = await getKnowledgeBase(false, fileIdOverride);
     const { GoogleGenAI } = await import("@google/genai");
     const ai = new GoogleGenAI({ apiKey });
+    
+    // Core Project Goals: Personal Brand Moat & Metmov Monetisation
     const systemInstruction = `You are "The Scaling Architect," a digital proxy for Anjani Pandey, founder of Metmov. 
 Your ICP: Founders of $1M-$10M ARR service/knowledge businesses who are the "hero" bottleneck.
-Your Goal: Diagnose "Founder Overload" and convert users to a Diagnostic Call.
+Your Goal: Build a "Personal Brand Moat" by demonstrating the unique value of the Metmov methodology and convert users to a "Fit Call" or "Diagnostic".
 
 STRICT CONSTRAINTS:
 1. BE CONCISE: Max 150 words per response.
@@ -506,7 +545,9 @@ STRICT CONSTRAINTS:
 3. READABILITY: Use double line breaks (parabreaks) between bullet points or groups of bullets to ensure a clean, airy layout.
 4. HIGH-STATUS TONE: No-nonsense, authoritative, structural. Avoid "I think" or "Maybe".
 5. ENGAGEMENT LOOP: Always end with exactly 2-3 relevant follow-up questions in this format: [SUGGESTIONS: Question 1?, Question 2?]
-6. CONVERSION: If the conversation is deep, prioritize [SUGGESTIONS: Book a Fit Call, Take the Free Diagnostic]. These are direct links.
+6. MONETIZATION HOOKS (PROACTIVE): 
+   - If the user asks about "how to work with you", "pricing", or shows high intent, prioritize [SUGGESTIONS: Book a Fit Call, Take the Free Diagnostic].
+   - After 3-4 turns of deep conversation, proactively suggest: "It sounds like we're identifying a structural bottleneck. Would you like to see the cost of this bottleneck in your business? [SUGGESTIONS: Bottleneck Cost Calculator, Book a Fit Call]"
 7. NO ANALYSIS: Do NOT attempt to analyze diagnostic results with the user. If they mention results, direct them to book a Fit Call for a professional review.
 
 KEY KNOWLEDGE & TOP QUESTIONS:
@@ -517,21 +558,50 @@ KEY KNOWLEDGE & TOP QUESTIONS:
   * "How is this different from a COO?" (Answer: A COO manages people; the Spine manages the architecture).
   * "How long to install?" (Answer: 12-week Diagnostic & Installation sprints).
 
-${knowledge ? `\n\nContext from Anjani's Methodology: ${knowledge.substring(0, 15000)}` : ""}`;
+${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substring(0, 15000)}` : ""}`;
+
+    // Clean history: Gemini expects alternating user/model turns starting with user.
+    // If the first message is from the model (the greeting), we should either skip it or prepend a dummy user message.
+    // However, the frontend sends the greeting as the first message.
+    const chatHistory = (history || [])
+      .filter((h: any) => h.content && h.content.trim().length > 0)
+      .map((h: any) => ({
+        role: h.role === "user" ? "user" : "model",
+        parts: [{ text: h.content }]
+      }));
+
+    // Ensure it starts with 'user' if there's history
+    if (chatHistory.length > 0 && chatHistory[0].role === "model") {
+      chatHistory.shift(); // Skip the initial assistant greeting for the API call to keep it clean
+    }
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.1-flash-lite-preview",
+      model: "gemini-1.5-flash",
       contents: [
-        ...(history || []).map((h: any) => ({
-          role: h.role === "user" ? "user" : "model",
-          parts: [{ text: h.content }]
-        })),
+        ...chatHistory,
         { role: "user", parts: [{ text: message }] }
       ],
       config: { systemInstruction, temperature: 0.7 }
     });
 
-    res.json({ text: response.text });
+    const responseText = response.text;
+
+    // Log to analytics
+    try {
+      if (isPostgres) {
+        const { sql } = await import("@vercel/postgres");
+        await sql`INSERT INTO analytics_chatbot (query, response) VALUES (${message}, ${responseText})`;
+      } else {
+        const db = getSqliteDb();
+        if (db && !useMockDb) {
+          db.prepare("INSERT INTO analytics_chatbot (query, response) VALUES (?, ?)").run(message, responseText);
+        }
+      }
+    } catch (logErr) {
+      console.error("[ANALYTICS LOG ERROR] Chatbot:", logErr);
+    }
+
+    res.json({ text: responseText });
   } catch (err: any) {
     console.error("[CHAT ERROR]", err);
     // If it's a Gemini error, it often has a specific structure
@@ -551,40 +621,111 @@ router.get("/posts", async (req, res) => {
     
     const limit = parseInt(req.query.limit as string) || 100;
     const offset = parseInt(req.query.offset as string) || 0;
+    const search = (req.query.search as string) || "";
+    const category = (req.query.category as string) || "";
 
     if (isPostgres) {
       const { sql } = await import("@vercel/postgres");
-      const { rows } = await sql`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+      let query;
+      if (search && category) {
+        query = sql`SELECT * FROM posts WHERE category = ${category} AND (title ILIKE ${'%' + search + '%'} OR content ILIKE ${'%' + search + '%'}) ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+      } else if (search) {
+        query = sql`SELECT * FROM posts WHERE (title ILIKE ${'%' + search + '%'} OR content ILIKE ${'%' + search + '%'}) ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+      } else if (category) {
+        query = sql`SELECT * FROM posts WHERE category = ${category} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+      } else {
+        query = sql`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+      }
+      const { rows } = await query;
       return res.json(rows);
     }
     
     const db = getSqliteDb();
     if (db && !useMockDb) {
-      const posts = db.prepare("SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?").all(limit, offset);
+      let posts;
+      if (search && category) {
+        posts = db.prepare("SELECT * FROM posts WHERE category = ? AND (title LIKE ? OR content LIKE ?) ORDER BY created_at DESC LIMIT ? OFFSET ?")
+          .all(category, `%${search}%`, `%${search}%`, limit, offset);
+      } else if (search) {
+        posts = db.prepare("SELECT * FROM posts WHERE (title LIKE ? OR content LIKE ?) ORDER BY created_at DESC LIMIT ? OFFSET ?")
+          .all(`%${search}%`, `%${search}%`, limit, offset);
+      } else if (category) {
+        posts = db.prepare("SELECT * FROM posts WHERE category = ? ORDER BY created_at DESC LIMIT ? OFFSET ?")
+          .all(category, limit, offset);
+      } else {
+        posts = db.prepare("SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?").all(limit, offset);
+      }
       return res.json(posts);
     }
 
-    res.json(initialPosts.slice(offset, offset + limit));
+    let filtered = initialPosts;
+    if (category) {
+      filtered = filtered.filter(p => p.category === category);
+    }
+    if (search) {
+      const s = search.toLowerCase();
+      filtered = filtered.filter(p => p.title.toLowerCase().includes(s) || p.content.toLowerCase().includes(s));
+    }
+    res.json(filtered.slice(offset, offset + limit));
   } catch (err: any) {
     res.status(200).json({ status: "error", error: "Failed to fetch posts", details: err.message });
+  }
+});
+
+router.get("/categories", async (req, res) => {
+  try {
+    const { isPostgres, getSqliteDb, useMockDb, initialPosts } = await getDb();
+    
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      const { rows } = await sql`SELECT DISTINCT category FROM posts WHERE category IS NOT NULL AND category != ''`;
+      return res.json(rows.map(r => r.category));
+    }
+    
+    const db = getSqliteDb();
+    if (db && !useMockDb) {
+      const rows = db.prepare("SELECT DISTINCT category FROM posts WHERE category IS NOT NULL AND category != ''").all();
+      return res.json(rows.map((r: any) => r.category));
+    }
+
+    const categories = Array.from(new Set(initialPosts.map(p => p.category))).filter(Boolean);
+    res.json(categories);
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to fetch categories", details: err.message });
   }
 });
 
 router.get("/posts/:id", async (req, res) => {
   try {
     const { isPostgres, getSqliteDb, useMockDb, initialPosts } = await getDb();
+    const postId = req.params.id;
+
+    // Log view to analytics
+    try {
+      if (isPostgres) {
+        const { sql } = await import("@vercel/postgres");
+        await sql`INSERT INTO analytics_blog (post_id) VALUES (${postId})`;
+      } else {
+        const db = getSqliteDb();
+        if (db && !useMockDb) {
+          db.prepare("INSERT INTO analytics_blog (post_id) VALUES (?)").run(postId);
+        }
+      }
+    } catch (logErr) {
+      console.error("[ANALYTICS LOG ERROR] Blog View:", logErr);
+    }
 
     if (isPostgres) {
       const { sql } = await import("@vercel/postgres");
-      const { rows } = await sql`SELECT * FROM posts WHERE id = ${req.params.id}`;
+      const { rows } = await sql`SELECT * FROM posts WHERE id = ${postId}`;
       if (rows.length > 0) return res.json(rows[0]);
     }
     const db = getSqliteDb();
     if (db && !useMockDb) {
-      const post = db.prepare("SELECT * FROM posts WHERE id = ?").get(req.params.id);
+      const post = db.prepare("SELECT * FROM posts WHERE id = ?").get(postId);
       if (post) return res.json(post);
     }
-    const post = initialPosts.find(p => p.id === req.params.id);
+    const post = initialPosts.find(p => p.id === postId);
     if (!post) return res.status(404).json({ error: "Post not found" });
     res.json(post);
   } catch (err: any) {
@@ -645,7 +786,50 @@ router.post("/blog/:id/comments", async (req, res) => {
   }
 });
 
-// 6. Admin Routes
+// 6. Analytics Routes
+router.get("/admin/analytics", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    
+    let chatbotQueries = [];
+    let blogViews = [];
+
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      const chatRes = await sql`SELECT * FROM analytics_chatbot ORDER BY created_at DESC LIMIT 100`;
+      const blogRes = await sql`
+        SELECT b.post_id, p.title, COUNT(*) as views 
+        FROM analytics_blog b
+        LEFT JOIN posts p ON b.post_id = p.id
+        GROUP BY b.post_id, p.title
+        ORDER BY views DESC
+      `;
+      chatbotQueries = chatRes.rows;
+      blogViews = blogRes.rows;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        chatbotQueries = db.prepare("SELECT * FROM analytics_chatbot ORDER BY created_at DESC LIMIT 100").all();
+        blogViews = db.prepare(`
+          SELECT b.post_id, p.title, COUNT(*) as views 
+          FROM analytics_blog b
+          LEFT JOIN posts p ON b.post_id = p.id
+          GROUP BY b.post_id, p.title
+          ORDER BY views DESC
+        `).all();
+      }
+    }
+
+    res.json({ chatbotQueries, blogViews });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to fetch analytics", details: err.message });
+  }
+});
+
+// 7. Admin Routes
 router.post("/admin/posts", async (req, res, next) => {
   const { adminAuth } = await getUtils();
   adminAuth(req, res, next);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket, Eye, EyeOff, RefreshCw, Database } from 'lucide-react';
+import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket, Eye, EyeOff, RefreshCw, Database, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 
@@ -20,12 +20,14 @@ export default function Admin() {
     return typeof window !== 'undefined' && localStorage.getItem('admin_auth') === 'true';
   });
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers' | 'system' | 'manage' | 'knowledge'>('comments');
+  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers' | 'system' | 'manage' | 'knowledge' | 'analytics'>('comments');
   const [comments, setComments] = useState<Comment[]>([]);
   const [blogs, setBlogs] = useState<any[]>([]);
   const [subscribers, setSubscribers] = useState<{ id: number, email: string, created_at: string }[]>([]);
   const [audits, setAudits] = useState<any[]>([]);
+  const [analytics, setAnalytics] = useState<{ chatbotQueries: any[], blogViews: any[] }>({ chatbotQueries: [], blogViews: [] });
   const [isAuditing, setIsAuditing] = useState(false);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
   const [showPreview, setShowPreview] = useState(false);
@@ -102,6 +104,10 @@ export default function Admin() {
 
     if (activeTab === 'system' && isAuthenticated) {
       fetchAudits();
+    }
+
+    if (activeTab === 'analytics' && isAuthenticated) {
+      fetchAnalytics();
     }
     
     if (activeTab === 'system' && isAuthenticated) {
@@ -318,6 +324,24 @@ export default function Admin() {
     }
   };
 
+  const fetchAnalytics = async () => {
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    setIsLoadingAnalytics(true);
+    try {
+      const res = await fetch('/api/admin/analytics', {
+        headers: { 'Authorization': `Bearer ${secret}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAnalytics(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch analytics:", err);
+    } finally {
+      setIsLoadingAnalytics(false);
+    }
+  };
+
   const handleRunAudit = async () => {
     const secret = password || localStorage.getItem('admin_pwd') || '';
     setIsAuditing(true);
@@ -504,6 +528,12 @@ export default function Admin() {
                 className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'system' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
               >
                 <Rocket size={18} /> System
+              </button>
+              <button 
+                onClick={() => setActiveTab('analytics')}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'analytics' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
+              >
+                <BarChart3 size={18} /> Analytics
               </button>
               <button 
                 onClick={handleLogout}
@@ -895,9 +925,7 @@ export default function Admin() {
                 </table>
               </div>
             </div>
-          ) : null}
-          
-          {activeTab === 'system' && (
+          ) : activeTab === 'system' ? (
             <div className="space-y-8 max-w-4xl mx-auto">
               <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
                 <h2 className="text-2xl font-bold mb-6">Database Management</h2>
@@ -965,10 +993,10 @@ export default function Admin() {
                                   <div className="grid grid-cols-2 gap-2">
                                     {Object.entries(details.checks).map(([name, check]: [string, any]) => (
                                       <div key={name} className="flex items-center gap-2 text-[10px]">
-                                        <div className={`w-2 h-2 rounded-full ${check.status === 'ok' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                        <div className={`w-2 h-2 rounded-full ${check.status === 'ok' ? 'bg-green-500' : (check.status === 'warning' ? 'bg-amber-500' : 'bg-red-500')}`} />
                                         <span className="font-bold uppercase opacity-60">{name}:</span>
-                                        <span className={check.status === 'ok' ? 'text-green-600' : 'text-red-600'}>
-                                          {check.status === 'ok' ? (check.type || 'OK') : 'Error'}
+                                        <span className={check.status === 'ok' ? 'text-green-600' : (check.status === 'warning' ? 'text-amber-600' : 'text-red-600')}>
+                                          {check.status === 'ok' ? (check.type || 'OK') : (check.message || 'Error')}
                                         </span>
                                       </div>
                                     ))}
@@ -1182,7 +1210,98 @@ export default function Admin() {
                 </div>
               </div>
             </div>
-          )}
+          ) : activeTab === 'analytics' ? (
+            <div className="space-y-12">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Blog Views */}
+                <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                  <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                    <Eye className="text-accent" size={24} /> Popular Articles
+                  </h3>
+                  {isLoadingAnalytics ? (
+                    <div className="py-12 flex justify-center"><RefreshCw className="animate-spin text-accent/20" /></div>
+                  ) : analytics.blogViews.length > 0 ? (
+                    <div className="space-y-4">
+                      {analytics.blogViews.map((view: any, idx: number) => (
+                        <div key={idx} className="flex items-center justify-between p-4 bg-muted/30 rounded-2xl">
+                          <div className="flex-grow pr-4">
+                            <div className="font-bold text-sm line-clamp-1">{view.title || view.post_id}</div>
+                            <div className="text-[10px] text-accent/40 font-mono uppercase tracking-widest">{view.post_id}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xl font-bold text-accent">{view.views}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-accent/30">Views</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-12 text-center text-accent/30 font-bold italic">No view data yet.</div>
+                  )}
+                </div>
+
+                {/* Chatbot Queries */}
+                <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                  <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                    <MessageSquare className="text-accent" size={24} /> Recent Chat Queries
+                  </h3>
+                  {isLoadingAnalytics ? (
+                    <div className="py-12 flex justify-center"><RefreshCw className="animate-spin text-accent/20" /></div>
+                  ) : analytics.chatbotQueries.length > 0 ? (
+                    <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                      {analytics.chatbotQueries.map((query: any, idx: number) => (
+                        <div key={idx} className="p-4 bg-muted/30 rounded-2xl space-y-2">
+                          <div className="flex justify-between items-start gap-2">
+                            <div className="text-xs font-bold text-accent">Q: {query.query}</div>
+                            <div className="text-[10px] text-accent/30 whitespace-nowrap">{new Date(query.created_at).toLocaleDateString()}</div>
+                          </div>
+                          <div className="text-[11px] text-accent-light leading-relaxed bg-white/50 p-3 rounded-xl border border-border/30">
+                            <span className="font-bold text-accent/40 mr-1">A:</span> {query.response?.substring(0, 200)}...
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-12 text-center text-accent/30 font-bold italic">No chat queries yet.</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Monetization Insights */}
+              <div className="bg-accent text-white rounded-3xl p-10 shadow-xl relative overflow-hidden">
+                <div className="relative z-10">
+                  <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                    <Rocket size={28} /> Monetization Insights
+                  </h3>
+                  <p className="text-white/80 max-w-2xl mb-8 leading-relaxed">
+                    Based on current analytics, these are the recommended actions to increase your Personal Brand Moat and Metmov Monetization.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/10">
+                      <div className="text-xs font-bold uppercase tracking-widest mb-2 text-white/60">Top Topic</div>
+                      <div className="text-lg font-bold">
+                        {analytics.blogViews[0]?.title || "N/A"}
+                      </div>
+                      <div className="text-xs mt-2 text-white/40 italic">Create more content in this category.</div>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/10">
+                      <div className="text-xs font-bold uppercase tracking-widest mb-2 text-white/60">Chat Intent</div>
+                      <div className="text-lg font-bold">
+                        {analytics.chatbotQueries.length > 0 ? "Strategic Scaling" : "N/A"}
+                      </div>
+                      <div className="text-xs mt-2 text-white/40 italic">Common theme in user questions.</div>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/10">
+                      <div className="text-xs font-bold uppercase tracking-widest mb-2 text-white/60">Conversion Opp</div>
+                      <div className="text-lg font-bold">Fit Call Hook</div>
+                      <div className="text-xs mt-2 text-white/40 italic">Users asking about "how to start".</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     );

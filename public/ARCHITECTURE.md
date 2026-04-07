@@ -75,6 +75,11 @@ The application uses a relational database with the following tables:
 - **Checks**: Verifies Database connectivity, Gemini API availability, Knowledge Base integrity, and Resend API configuration.
 - **Persistence**: Results are stored in the `audits` table for historical tracking.
 
+### Monetization Strategy
+- **Conversion Engine**: The AI Chatbot acts as the primary lead generation tool.
+- **Hooks**: Proactive suggestions for "Fit Calls", "Diagnostics", and the "Bottleneck Cost Calculator" based on conversational depth and intent.
+- **Tracking**: Admin Analytics (Future) will track which hooks are most effective at converting users.
+
 ---
 
 ## 5. External Integrations & Environment Variables
@@ -102,7 +107,23 @@ The application uses a relational database with the following tables:
   - ✅ The tool performs end-to-end system health checks (Database, Gemini API, Knowledge Base, Resend API).
   - ✅ Results are stored in the `audits` table and viewable in the Admin -> System tab.
 
-### 8. Current Known Issues (Audit Failures)
+- **Chatbot Memory & Monetization Hooks (COMPLETED)**:
+  - ✅ Implemented conversational context (memory) for the AI chatbot.
+  - ✅ Added proactive "Monetization Hooks" to suggest Fit Calls and Diagnostics based on conversation depth.
+
+- **Blog Search & Advanced Tagging (COMPLETED)**:
+  - ✅ Implemented server-side search and category filtering for blog posts.
+  - ✅ Added a debounced search bar and dynamic category tags to the blog index.
+
+- **Admin Analytics Dashboard (COMPLETED)**:
+  - ✅ Implemented tracking for chatbot queries and blog post views.
+  - ✅ Added an Analytics tab to the Admin panel with monetization insights.
+
+### 8. Future Build Roadmap (Prioritized for Brand Moat & Monetization)
+1. **Audit Hygiene & Environment Setup**: Fix current audit failures and ensure 100% connectivity for Knowledge Base and Resend.
+2. **Premium Content Gate**: Implement a simple gate for high-value "metmov" resources to capture leads.
+
+### 9. Current Known Issues (Audit Failures)
 - **Knowledge Base Audit**: Currently reporting "Error". Likely due to missing or inaccessible Google Doc ID in settings.
 - **Resend API Audit**: Currently reporting "Error". Likely due to missing `RESEND_API_KEY` or domain verification issues.
 

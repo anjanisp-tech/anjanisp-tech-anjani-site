@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Filter, X, Loader2, AlertCircle } from 'lucide-react';
-import { useState, useMemo, useEffect } from 'react';
+import { ArrowRight, Filter, X, Loader2, AlertCircle, Search } from 'lucide-react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 
 interface BlogPost {
   id: string;
@@ -13,6 +13,7 @@ interface BlogPost {
 
 export default function Blog() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -21,49 +22,48 @@ export default function Blog() {
 
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null); // Format: "YYYY-MM"
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newsletterEmail) return;
-    setNewsletterStatus('loading');
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: newsletterEmail })
-      });
+      const res = await fetch('/api/categories');
       if (res.ok) {
-        setNewsletterStatus('success');
-        setNewsletterEmail('');
-      } else {
-        const data = await res.json().catch(() => ({}));
-        console.error("Subscription failed:", res.status, data);
-        setNewsletterStatus('error');
+        const data = await res.json();
+        setCategories(data);
       }
     } catch (err) {
-      console.error("Subscription network error:", err);
-      setNewsletterStatus('error');
+      console.error("Failed to fetch categories", err);
     }
   };
 
-  useEffect(() => {
-    fetchPosts(0, true);
-  }, []);
-
-  const fetchPosts = async (currentOffset: number, isInitial: boolean = false) => {
+  const fetchPosts = useCallback(async (currentOffset: number, isInitial: boolean = false, category: string | null = null, search: string = '') => {
     if (isInitial) setIsLoading(true);
     else setIsFetchingMore(true);
 
     try {
-      const res = await fetch(`/api/posts?limit=${LIMIT}&offset=${currentOffset}`);
+      const params = new URLSearchParams({
+        limit: LIMIT.toString(),
+        offset: currentOffset.toString(),
+      });
+      if (category) params.append('category', category);
+      if (search) params.append('search', search);
+
+      const res = await fetch(`/api/posts?${params.toString()}`);
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         const errorMsg = data.details || data.error || `Server error: ${res.status}`;
-        const hint = data.hint ? `\n\nHint: ${data.hint}` : '';
-        throw new Error(`${errorMsg}${hint}`);
+        throw new Error(errorMsg);
       }
       const data = await res.json();
       
@@ -82,63 +82,50 @@ export default function Blog() {
       setOffset(currentOffset + data.length);
     } catch (err: any) {
       console.error("Failed to fetch posts", err);
-      setError(err.details || err.message);
+      setError(err.message);
     } finally {
       setIsLoading(false);
       setIsFetchingMore(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    fetchPosts(0, true, selectedCategory, debouncedSearch);
+  }, [selectedCategory, debouncedSearch, fetchPosts]);
 
   const handleLoadMore = () => {
-    fetchPosts(offset);
+    fetchPosts(offset, false, selectedCategory, debouncedSearch);
   };
 
-  // Extract unique categories
-  const categories = useMemo(() => {
-    return Array.from(new Set(blogPosts.map(post => post.category)));
-  }, [blogPosts]);
-
-  // Extract unique months (Format: "Month YYYY")
-  const months = useMemo(() => {
-    const monthMap = new Map<string, string>(); // "YYYY-MM" -> "Month YYYY"
-    blogPosts.forEach(post => {
-      const parts = post.date.split('-');
-      if (parts.length === 3) {
-        const monthStr = parts[1];
-        const yearStr = parts[2];
-        const key = `${yearStr}-${monthStr}`;
-        monthMap.set(key, `${monthStr} ${yearStr}`);
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    setNewsletterStatus('loading');
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newsletterEmail })
+      });
+      if (res.ok) {
+        setNewsletterStatus('success');
+        setNewsletterEmail('');
+      } else {
+        setNewsletterStatus('error');
       }
-    });
-    return Array.from(monthMap.entries()).sort((a, b) => b[0].localeCompare(a[0]));
-  }, [blogPosts]);
-
-  const filteredPosts = useMemo(() => {
-    return blogPosts.filter(post => {
-      const categoryMatch = !selectedCategory || post.category === selectedCategory;
-      
-      let dateMatch = true;
-      if (selectedMonth) {
-        const [year, month] = selectedMonth.split('-');
-        dateMatch = post.date.includes(month) && post.date.includes(year);
-      }
-      
-      return categoryMatch && dateMatch;
-    });
-  }, [selectedCategory, selectedMonth, blogPosts]);
+    } catch (err) {
+      setNewsletterStatus('error');
+    }
+  };
 
   const clearFilters = () => {
     setSelectedCategory(null);
-    setSelectedMonth(null);
+    setSearchQuery('');
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="animate-spin text-accent" size={48} />
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -147,12 +134,7 @@ export default function Blog() {
           <AlertCircle className="mx-auto mb-4" size={48} />
           <h2 className="text-2xl font-bold mb-2">Oops! Something went wrong</h2>
           <p className="mb-6">{error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="btn-primary"
-          >
-            Try Again
-          </button>
+          <button onClick={() => window.location.reload()} className="btn-primary">Try Again</button>
         </div>
       </div>
     );
@@ -173,58 +155,59 @@ export default function Blog() {
 
       <section className="pb-40">
         <div className="container-custom">
-          {/* Filters */}
-          <div className="mb-16 flex flex-wrap gap-8 items-end border-b border-border pb-8">
-            <div className="space-y-3">
-              <label className="text-xs font-bold uppercase tracking-widest text-accent/40 flex items-center gap-2">
-                <Filter size={14} /> Category
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {categories.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
-                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
-                      selectedCategory === cat 
-                        ? 'bg-accent text-white border-accent' 
-                        : 'bg-muted text-accent/60 border-border/50 hover:border-accent/30'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+          {/* Search & Filters */}
+          <div className="mb-16 space-y-8 border-b border-border pb-8">
+            <div className="max-w-xl relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-accent/30" size={20} />
+              <input 
+                type="text"
+                placeholder="Search articles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 bg-muted border border-border/50 rounded-2xl outline-none focus:border-accent transition-all text-sm font-medium"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-8 items-end">
+              <div className="space-y-3">
+                <label className="text-xs font-bold uppercase tracking-widest text-accent/40 flex items-center gap-2">
+                  <Filter size={14} /> Category
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+                      className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+                        selectedCategory === cat 
+                          ? 'bg-accent text-white border-accent' 
+                          : 'bg-muted text-accent/60 border-border/50 hover:border-accent/30'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-3">
-              <label className="text-xs font-bold uppercase tracking-widest text-accent/40 flex items-center gap-2">
-                <Filter size={14} /> Date
-              </label>
-              <select 
-                value={selectedMonth || ''} 
-                onChange={(e) => setSelectedMonth(e.target.value || null)}
-                className="bg-muted border border-border/50 rounded-lg px-4 py-2 text-xs font-bold text-accent/70 outline-none focus:border-accent transition-all"
-              >
-                <option value="">All Time</option>
-                {months.map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
+              {(selectedCategory || searchQuery) && (
+                <button 
+                  onClick={clearFilters}
+                  className="flex items-center gap-2 text-xs font-bold text-accent/40 hover:text-accent transition-colors pb-2"
+                >
+                  <X size={14} /> Clear Filters
+                </button>
+              )}
             </div>
-
-            {(selectedCategory || selectedMonth) && (
-              <button 
-                onClick={clearFilters}
-                className="flex items-center gap-2 text-xs font-bold text-accent/40 hover:text-accent transition-colors pb-2"
-              >
-                <X size={14} /> Clear Filters
-              </button>
-            )}
           </div>
 
           <div className="grid gap-16">
-            {filteredPosts.length > 0 ? (
-              filteredPosts.map((post) => (
+            {isLoading ? (
+              <div className="py-20 flex justify-center">
+                <Loader2 className="animate-spin text-accent" size={32} />
+              </div>
+            ) : blogPosts.length > 0 ? (
+              blogPosts.map((post) => (
                 <article key={post.id} className="group">
                   <div className="flex flex-col md:flex-row gap-8 items-start">
                     <div className="md:w-1/4">
@@ -250,14 +233,14 @@ export default function Blog() {
               ))
             ) : (
               <div className="py-20 text-center">
-                <h3 className="text-xl font-bold text-accent/40">No articles found matching your filters.</h3>
+                <h3 className="text-xl font-bold text-accent/40">No articles found matching your search.</h3>
                 <button onClick={clearFilters} className="mt-4 text-accent font-bold hover:underline">Clear all filters</button>
               </div>
             )}
           </div>
 
           {/* Load More */}
-          {hasMore && !selectedCategory && !selectedMonth && (
+          {hasMore && !isLoading && (
             <div className="mt-20 text-center">
               <button 
                 onClick={handleLoadMore}
@@ -302,12 +285,12 @@ export default function Blog() {
               </button>
             </form>
             {newsletterStatus === 'success' && (
-              <p className="mt-4 text-sm font-bold text-slate-900 animate-in fade-in slide-in-from-top-2">
+              <p className="mt-4 text-sm font-bold text-slate-900">
                 Welcome! You're now on the list.
               </p>
             )}
             {newsletterStatus === 'error' && (
-              <p className="mt-4 text-sm font-bold text-red-500 animate-in fade-in slide-in-from-top-2">
+              <p className="mt-4 text-sm font-bold text-red-500">
                 Something went wrong. Please try again.
               </p>
             )}
