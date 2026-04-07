@@ -57,6 +57,7 @@ export function getSqliteDb() {
         category TEXT NOT NULL,
         excerpt TEXT NOT NULL,
         content TEXT NOT NULL,
+        is_premium INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
       CREATE TABLE IF NOT EXISTS comments (

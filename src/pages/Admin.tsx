@@ -37,7 +37,8 @@ export default function Admin() {
     date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
     category: 'Scaling',
     excerpt: '',
-    content: ''
+    content: '',
+    is_premium: false
   });
 
   const [knowledgeSettings, setKnowledgeSettings] = useState({
@@ -218,7 +219,8 @@ export default function Admin() {
       date: post.date,
       category: post.category,
       excerpt: post.excerpt,
-      content: post.content
+      content: post.content,
+      is_premium: !!post.is_premium
     });
     setActiveTab('upload');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -441,7 +443,8 @@ export default function Admin() {
           date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
           category: 'Scaling',
           excerpt: '',
-          content: ''
+          content: '',
+          is_premium: false
         });
       } else {
         const data = await res.json();
@@ -694,6 +697,19 @@ export default function Admin() {
                       <option value="Leadership">Leadership</option>
                       <option value="Strategy">Strategy</option>
                     </select>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-4 bg-accent/5 rounded-xl border border-accent/10">
+                    <input 
+                      type="checkbox" 
+                      id="is_premium"
+                      checked={blogForm.is_premium}
+                      onChange={(e) => setBlogForm({...blogForm, is_premium: e.target.checked})}
+                      className="w-5 h-5 rounded border-accent/20 text-accent focus:ring-accent"
+                    />
+                    <label htmlFor="is_premium" className="text-sm font-bold text-accent cursor-pointer">
+                      Premium Content (Gate behind lead capture)
+                    </label>
                   </div>
 
                   <div className="space-y-2">

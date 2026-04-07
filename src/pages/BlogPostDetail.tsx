@@ -25,6 +25,7 @@ interface BlogPost {
   category: string;
   excerpt: string;
   content: string;
+  is_premium?: number;
 }
 
 export default function BlogPostDetail() {
@@ -45,31 +46,47 @@ export default function BlogPostDetail() {
 
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  
+  const [isUnlocked, setIsUnlocked] = useState(() => {
+    return typeof window !== 'undefined' && localStorage.getItem('metmov_subscriber') === 'true';
+  });
 
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent, isGate: boolean = false) => {
     e.preventDefault();
-    console.log("Newsletter form submitted with email:", newsletterEmail);
-    if (!newsletterEmail) return;
-    setNewsletterStatus('loading');
+    const emailToUse = isGate ? gateEmail : newsletterEmail;
+    if (!emailToUse) return;
+    
+    if (isGate) setGateStatus('loading');
+    else setNewsletterStatus('loading');
+
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: newsletterEmail })
+        body: JSON.stringify({ email: emailToUse })
       });
       if (res.ok) {
-        setNewsletterStatus('success');
-        setNewsletterEmail('');
+        if (isGate) {
+          setGateStatus('success');
+          localStorage.setItem('metmov_subscriber', 'true');
+          setTimeout(() => setIsUnlocked(true), 1000);
+        } else {
+          setNewsletterStatus('success');
+          setNewsletterEmail('');
+          localStorage.setItem('metmov_subscriber', 'true');
+        }
       } else {
-        const data = await res.json().catch(() => ({}));
-        console.error("Subscription failed:", res.status, data);
-        setNewsletterStatus('error');
+        if (isGate) setGateStatus('error');
+        else setNewsletterStatus('error');
       }
     } catch (err) {
-      console.error("Subscription network error:", err);
-      setNewsletterStatus('error');
+      if (isGate) setGateStatus('error');
+      else setNewsletterStatus('error');
     }
   };
+
+  const [gateEmail, setGateEmail] = useState('');
+  const [gateStatus, setGateStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     if (id) {
@@ -174,8 +191,66 @@ export default function BlogPostDetail() {
             </header>
 
             {/* Content */}
-            <div className="markdown-body prose prose-lg max-w-none prose-accent mb-16">
-              <Markdown remarkPlugins={[remarkBreaks]}>{post.content}</Markdown>
+            <div className="relative">
+              {post.is_premium && !isUnlocked ? (
+                <div className="space-y-12">
+                  {/* Teaser Content (First 200 chars) */}
+                  <div className="prose prose-lg max-w-none prose-accent opacity-60 pointer-events-none select-none mask-fade-bottom">
+                    <Markdown remarkPlugins={[remarkBreaks]}>
+                      {post.content.substring(0, 400) + "..."}
+                    </Markdown>
+                  </div>
+
+                  {/* Lock Screen */}
+                  <div className="bg-muted p-8 md:p-12 rounded-[2rem] border border-accent/10 shadow-xl text-center relative z-20 -mt-20">
+                    <div className="w-16 h-16 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <Tag size={24} />
+                    </div>
+                    <h2 className="text-3xl font-bold mb-4">This is Premium Content</h2>
+                    <p className="text-accent-light mb-8 max-w-md mx-auto">
+                      This framework is part of our high-value "metmov" resources. 
+                      Join our newsletter to unlock this article and get weekly scaling frameworks.
+                    </p>
+                    
+                    <form onSubmit={(e) => handleNewsletterSubmit(e, true)} className="max-w-md mx-auto space-y-4">
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <input 
+                          type="email" 
+                          required
+                          value={gateEmail}
+                          onChange={(e) => setGateEmail(e.target.value)}
+                          placeholder="Enter your professional email" 
+                          className="flex-1 px-6 py-4 rounded-xl bg-white border border-border outline-none focus:border-accent transition-all"
+                        />
+                        <button 
+                          type="submit" 
+                          disabled={gateStatus === 'loading'}
+                          className="btn-primary px-8 py-4 rounded-xl font-bold disabled:opacity-50"
+                        >
+                          {gateStatus === 'loading' ? 'Unlocking...' : 'Unlock Now'}
+                        </button>
+                      </div>
+                      {gateStatus === 'success' && (
+                        <p className="text-sm font-bold text-slate-900 animate-in fade-in">
+                          Success! Unlocking the framework...
+                        </p>
+                      )}
+                      {gateStatus === 'error' && (
+                        <p className="text-sm font-bold text-red-500 animate-in fade-in">
+                          Something went wrong. Please try again.
+                        </p>
+                      )}
+                      <p className="text-[10px] text-accent/40 uppercase tracking-widest font-bold">
+                        No spam. Just high-signal scaling frameworks.
+                      </p>
+                    </form>
+                  </div>
+                </div>
+              ) : (
+                <div className="markdown-body prose prose-lg max-w-none prose-accent mb-16">
+                  <Markdown remarkPlugins={[remarkBreaks]}>{post.content}</Markdown>
+                </div>
+              )}
             </div>
 
             {/* Content-to-Funnel Bridge */}

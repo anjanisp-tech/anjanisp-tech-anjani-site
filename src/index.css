@@ -35,6 +35,10 @@
   }
 }
 
+@utility mask-fade-bottom {
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+
 @layer base {
   body {
     @apply bg-surface text-accent font-sans antialiased selection:bg-accent/10;

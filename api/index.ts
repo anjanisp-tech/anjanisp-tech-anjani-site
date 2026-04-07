@@ -114,6 +114,7 @@ router.post("/admin/init-db", async (req, res, next) => {
           category TEXT NOT NULL,
           excerpt TEXT NOT NULL,
           content TEXT NOT NULL,
+          is_premium INTEGER DEFAULT 0,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `;
@@ -834,7 +835,7 @@ router.post("/admin/posts", async (req, res, next) => {
   const { adminAuth } = await getUtils();
   adminAuth(req, res, next);
 }, async (req, res) => {
-  const { title, date, category, excerpt, content } = req.body;
+  const { title, date, category, excerpt, content, is_premium } = req.body;
   const id = title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
   try {
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
@@ -842,21 +843,21 @@ router.post("/admin/posts", async (req, res, next) => {
 
     if (isPostgres) {
       await sql`
-        INSERT INTO posts (id, title, date, category, excerpt, content)
-        VALUES (${id}, ${title}, ${date}, ${category}, ${excerpt}, ${content})
-        ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, date = EXCLUDED.date, category = EXCLUDED.category, excerpt = EXCLUDED.excerpt, content = EXCLUDED.content
+        INSERT INTO posts (id, title, date, category, excerpt, content, is_premium)
+        VALUES (${id}, ${title}, ${date}, ${category}, ${excerpt}, ${content}, ${is_premium ? 1 : 0})
+        ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, date = EXCLUDED.date, category = EXCLUDED.category, excerpt = EXCLUDED.excerpt, content = EXCLUDED.content, is_premium = EXCLUDED.is_premium
       `;
       const { rows } = await sql`SELECT * FROM posts WHERE id = ${id}`;
       return res.status(201).json(rows[0]);
     }
     const db = getSqliteDb();
     if (db && !useMockDb) {
-      db.prepare("INSERT OR REPLACE INTO posts (id, title, date, category, excerpt, content) VALUES (?, ?, ?, ?, ?, ?)")
-        .run(id, title, date, category, excerpt, content);
+      db.prepare("INSERT OR REPLACE INTO posts (id, title, date, category, excerpt, content, is_premium) VALUES (?, ?, ?, ?, ?, ?, ?)")
+        .run(id, title, date, category, excerpt, content, is_premium ? 1 : 0);
       const newPost = db.prepare("SELECT * FROM posts WHERE id = ?").get(id);
       return res.status(201).json(newPost);
     }
-    res.status(201).json({ id, title, date, category, excerpt, content });
+    res.status(201).json({ id, title, date, category, excerpt, content, is_premium });
   } catch (err: any) {
     res.status(500).json({ error: "Failed to save post", details: err.message });
   }
