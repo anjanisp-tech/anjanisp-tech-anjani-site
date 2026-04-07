@@ -274,6 +274,25 @@ export default function Admin() {
     }
   };
 
+  const handleInitDb = async () => {
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    try {
+      const res = await fetch('/api/admin/init-db', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${secret}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        alert(data.message || "Database initialized successfully.");
+      } else {
+        const data = await res.json();
+        alert("Initialization failed: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      alert("Network error during initialization.");
+    }
+  };
+
   const fetchSubscribers = async () => {
     const secret = password || localStorage.getItem('admin_pwd') || '';
     try {
@@ -834,6 +853,27 @@ export default function Admin() {
           
           {activeTab === 'system' && (
             <div className="space-y-8 max-w-4xl mx-auto">
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-6">Database Management</h2>
+                <div className="p-6 bg-muted/30 rounded-2xl border border-border">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold">Initialize Database</h3>
+                      <p className="text-xs text-accent-light mt-1">
+                        Create missing tables and ensure the schema is up to date. 
+                        Safe to run multiple times.
+                      </p>
+                    </div>
+                    <button 
+                      onClick={handleInitDb}
+                      className="flex items-center gap-2 px-6 py-3 bg-accent text-white rounded-xl font-bold hover:bg-accent-light transition-all shadow-lg"
+                    >
+                      <Database size={18} /> Initialize DB
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
                 <h2 className="text-2xl font-bold mb-6">System Controls</h2>
                 

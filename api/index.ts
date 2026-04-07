@@ -96,6 +96,73 @@ router.get("/diagnostic", async (req, res) => {
   }
 });
 
+router.post("/admin/init-db", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      
+      // Create tables
+      await sql`
+        CREATE TABLE IF NOT EXISTS posts (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          date TEXT NOT NULL,
+          category TEXT NOT NULL,
+          excerpt TEXT NOT NULL,
+          content TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+      
+      await sql`
+        CREATE TABLE IF NOT EXISTS comments (
+          id SERIAL PRIMARY KEY,
+          post_id TEXT NOT NULL,
+          parent_id INTEGER DEFAULT NULL,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          website TEXT,
+          phone TEXT,
+          comment TEXT NOT NULL,
+          is_admin INTEGER DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+      
+      await sql`
+        CREATE TABLE IF NOT EXISTS subscriptions (
+          id SERIAL PRIMARY KEY,
+          email TEXT UNIQUE NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+      
+      await sql`
+        CREATE TABLE IF NOT EXISTS settings (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+      
+      return res.json({ success: true, message: "Postgres tables initialized" });
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        // SQLite tables are already created in getSqliteDb()
+        return res.json({ success: true, message: "SQLite tables are ready" });
+      }
+    }
+    res.json({ success: true, message: "Database initialized" });
+  } catch (err: any) {
+    res.status(500).json({ error: "Initialization failed", details: err.message });
+  }
+});
+
 // 2. Knowledge Base Endpoint
 router.get("/knowledge", async (req, res) => {
   try {
@@ -103,16 +170,20 @@ router.get("/knowledge", async (req, res) => {
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     
     let fileIdOverride: string | undefined;
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
-      if (rows.length > 0) fileIdOverride = rows[0].value;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
-        if (row) fileIdOverride = row.value;
+    try {
+      if (isPostgres) {
+        const { sql } = await import("@vercel/postgres");
+        const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
+        if (rows.length > 0) fileIdOverride = rows[0].value;
+      } else {
+        const db = getSqliteDb();
+        if (db && !useMockDb) {
+          const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
+          if (row) fileIdOverride = row.value;
+        }
       }
+    } catch (dbErr: any) {
+      console.warn("[KNOWLEDGE] Settings table check failed (likely missing):", dbErr.message);
     }
 
     const knowledge = await getKnowledgeBase(req.query.force === 'true', fileIdOverride);
@@ -131,16 +202,20 @@ router.get("/admin/settings", async (req, res, next) => {
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     let settings: Record<string, string> = {};
     
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      const { rows } = await sql`SELECT * FROM settings`;
-      rows.forEach(r => settings[r.key] = r.value);
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        const rows = db.prepare("SELECT * FROM settings").all();
-        rows.forEach((r: any) => settings[r.key] = r.value);
+    try {
+      if (isPostgres) {
+        const { sql } = await import("@vercel/postgres");
+        const { rows } = await sql`SELECT * FROM settings`;
+        rows.forEach(r => settings[r.key] = r.value);
+      } else {
+        const db = getSqliteDb();
+        if (db && !useMockDb) {
+          const rows = db.prepare("SELECT * FROM settings").all();
+          rows.forEach((r: any) => settings[r.key] = r.value);
+        }
       }
+    } catch (dbErr: any) {
+      console.warn("[SETTINGS] Settings table missing:", dbErr.message);
     }
     res.json(settings);
   } catch (err: any) {
@@ -158,7 +233,23 @@ router.post("/admin/settings", async (req, res, next) => {
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     if (isPostgres) {
       const { sql } = await import("@vercel/postgres");
-      await sql`INSERT INTO settings (key, value) VALUES (${key}, ${value}) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`;
+      try {
+        await sql`INSERT INTO settings (key, value) VALUES (${key}, ${value}) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`;
+      } catch (dbErr: any) {
+        if (dbErr.message.includes('relation "settings" does not exist')) {
+          // Try to create the table if it's missing
+          await sql`
+            CREATE TABLE IF NOT EXISTS settings (
+              key TEXT PRIMARY KEY,
+              value TEXT NOT NULL,
+              updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+          `;
+          await sql`INSERT INTO settings (key, value) VALUES (${key}, ${value}) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`;
+        } else {
+          throw dbErr;
+        }
+      }
     } else {
       const db = getSqliteDb();
       if (db && !useMockDb) {
@@ -167,7 +258,7 @@ router.post("/admin/settings", async (req, res, next) => {
     }
     res.json({ success: true });
   } catch (err: any) {
-    res.status(500).json({ error: "Failed to save setting" });
+    res.status(500).json({ error: "Failed to save setting", details: err.message });
   }
 });
 
@@ -180,16 +271,20 @@ router.post("/admin/knowledge/sync", async (req, res, next) => {
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     
     let fileIdOverride: string | undefined;
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
-      if (rows.length > 0) fileIdOverride = rows[0].value;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
-        if (row) fileIdOverride = row.value;
+    try {
+      if (isPostgres) {
+        const { sql } = await import("@vercel/postgres");
+        const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
+        if (rows.length > 0) fileIdOverride = rows[0].value;
+      } else {
+        const db = getSqliteDb();
+        if (db && !useMockDb) {
+          const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
+          if (row) fileIdOverride = row.value;
+        }
       }
+    } catch (dbErr: any) {
+      console.warn("[SYNC] Settings table check failed (likely missing):", dbErr.message);
     }
 
     const knowledge = await getKnowledgeBase(true, fileIdOverride);
@@ -224,16 +319,21 @@ router.post("/chat", async (req, res) => {
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     
     let fileIdOverride: string | undefined;
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
-      if (rows.length > 0) fileIdOverride = rows[0].value;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
-        if (row) fileIdOverride = row.value;
+    try {
+      if (isPostgres) {
+        const { sql } = await import("@vercel/postgres");
+        const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
+        if (rows.length > 0) fileIdOverride = rows[0].value;
+      } else {
+        const db = getSqliteDb();
+        if (db && !useMockDb) {
+          const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
+          if (row) fileIdOverride = row.value;
+        }
       }
+    } catch (dbErr: any) {
+      console.warn("[CHAT] Settings table check failed (likely missing):", dbErr.message);
+      // Fallback to env var if table doesn't exist
     }
 
     const knowledge = await getKnowledgeBase(false, fileIdOverride);
