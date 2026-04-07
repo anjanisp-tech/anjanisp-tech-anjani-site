@@ -137,6 +137,52 @@ export default function Home() {
         </div>
       </section>
 
+      {/* NEW SECTION – Founder Tax Lead Magnet */}
+      <section className="bg-accent text-white py-24 overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 -skew-x-12 translate-x-1/2" />
+        <div className="container-custom relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-[10px] font-bold uppercase tracking-widest mb-6 border border-white/10">
+                Lead Magnet
+              </div>
+              <h2 className="text-4xl md:text-5xl text-white mb-6 leading-tight">
+                What is your <span className="text-white/60 italic">Founder Tax?</span>
+              </h2>
+              <p className="text-xl text-white/70 mb-8 leading-relaxed">
+                Being the "Hero" of your company isn't just exhausting—it's expensive. 
+                Our interactive calculator quantifies the specific dollar amount you are losing by being the bottleneck.
+              </p>
+              <Link to="/calculator" className="bg-white text-accent hover:bg-muted px-10 py-4 rounded-md font-bold text-lg transition-all inline-flex items-center gap-3 shadow-xl">
+                Calculate Your Tax
+                <ArrowRight size={20} />
+              </Link>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm border border-white/10 p-8 rounded-3xl">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                  <span className="text-sm font-medium text-white/60">Time Drain</span>
+                  <span className="text-xl font-mono font-bold">$XX,XXX</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                  <span className="text-sm font-medium text-white/60">Growth Cap</span>
+                  <span className="text-xl font-mono font-bold">$XXX,XXX</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-white/60">Total Founder Tax</span>
+                  <span className="text-3xl font-mono font-bold text-white">$XXX,XXX</span>
+                </div>
+                <div className="pt-4">
+                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div className="w-2/3 h-full bg-white/40" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* SECTION 3 – Approach */}
       <section className="bg-white">
         <div className="container-custom">

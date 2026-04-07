@@ -10,6 +10,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Admin from './pages/Admin';
 import Sitemap from './pages/Sitemap';
+import FounderTaxCalculator from './pages/FounderTaxCalculator';
 
 function Analytics() {
   const location = useLocation();
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/sitemap" element={<Sitemap />} />
+          <Route path="/calculator" element={<FounderTaxCalculator />} />
         </Routes>
       </Layout>
     </Router>

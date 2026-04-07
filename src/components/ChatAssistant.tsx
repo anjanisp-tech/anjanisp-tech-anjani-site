@@ -135,6 +135,8 @@ export default function ChatAssistant() {
                                   window.open(FIT_CALL_URL, '_blank');
                                 } else if (s.toLowerCase().includes('take the free diagnostic')) {
                                   window.open(MINI_DIAGNOSTIC_URL, '_blank');
+                                } else if (s.toLowerCase().includes('founder tax calculator')) {
+                                  window.location.href = '/calculator';
                                 } else {
                                   handleSend(undefined, s);
                                 }
@@ -184,6 +186,12 @@ export default function ChatAssistant() {
                 className="whitespace-nowrap px-4 py-2 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all border border-transparent hover:border-accent/20"
               >
                 Fix Founder Overload
+              </button>
+              <button 
+                onClick={() => window.location.href = '/calculator'}
+                className="whitespace-nowrap px-4 py-2 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-bold uppercase tracking-widest text-accent hover:bg-accent hover:text-white transition-all flex items-center gap-1"
+              >
+                Founder Tax Calculator <ArrowRight size={10} />
               </button>
               <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="whitespace-nowrap px-4 py-2 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-bold uppercase tracking-widest text-accent hover:bg-accent hover:text-white transition-all flex items-center gap-1">
                 Free Diagnostic <ArrowRight size={10} />
