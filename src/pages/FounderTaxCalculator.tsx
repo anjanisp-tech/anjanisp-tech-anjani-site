@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calculator, ArrowRight, Info, AlertTriangle, TrendingDown, Clock, Users, DollarSign } from 'lucide-react';
-import Layout from '../components/Layout';
 import { MINI_DIAGNOSTIC_URL } from '../constants';
 
 export default function FounderTaxCalculator() {
@@ -56,8 +55,7 @@ export default function FounderTaxCalculator() {
   };
 
   return (
-    <Layout>
-      <div className="bg-muted min-h-screen pb-24">
+    <div className="bg-muted min-h-screen pb-24">
         {/* Hero Section */}
         <section className="pt-20 pb-12 bg-white border-b border-border">
           <div className="container-custom text-center">
@@ -303,6 +301,5 @@ export default function FounderTaxCalculator() {
           </div>
         </section>
       </div>
-    </Layout>
   );
 }
