@@ -6,6 +6,7 @@ import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  suggestions?: string[];
 }
 
 export default function ChatAssistant() {
@@ -53,7 +54,17 @@ export default function ChatAssistant() {
         throw new Error(errorMsg);
       }
 
-      setMessages(prev => [...prev, { role: 'assistant', content: data.text || "I'm sorry, I couldn't generate a response." }]);
+      let text = data.text || "I'm sorry, I couldn't generate a response.";
+      let suggestions: string[] = [];
+
+      // Parse [SUGGESTIONS: Q1, Q2]
+      const suggestionMatch = text.match(/\[SUGGESTIONS:\s*(.*?)\]/);
+      if (suggestionMatch) {
+        suggestions = suggestionMatch[1].split(',').map((s: string) => s.trim());
+        text = text.replace(/\[SUGGESTIONS:\s*.*?\]/, '').trim();
+      }
+
+      setMessages(prev => [...prev, { role: 'assistant', content: text, suggestions }]);
     } catch (error: any) {
       console.error('Chat error:', error);
       setMessages(prev => [...prev, { 
@@ -106,6 +117,20 @@ export default function ChatAssistant() {
                     </div>
                     <div className={`p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user' ? 'bg-accent text-white rounded-tr-none' : 'bg-white border border-border text-accent-light rounded-tl-none shadow-sm'}`}>
                       {m.content}
+                      
+                      {m.suggestions && m.suggestions.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-border/50 flex flex-wrap gap-2">
+                          {m.suggestions.map((s, si) => (
+                            <button
+                              key={si}
+                              onClick={() => handleSend(undefined, s)}
+                              className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 bg-accent/5 border border-accent/10 rounded-full text-accent hover:bg-accent hover:text-white transition-all"
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
