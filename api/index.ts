@@ -163,6 +163,21 @@ router.post("/admin/init-db", async (req, res, next) => {
   }
 });
 
+router.get("/admin/architecture", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  try {
+    const fs = await import("fs/promises");
+    const path = await import("path");
+    const filePath = path.join(process.cwd(), "ARCHITECTURE.md");
+    const content = await fs.readFile(filePath, "utf-8");
+    res.json({ content });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to read architecture file", details: err.message });
+  }
+});
+
 // 2. Knowledge Base Endpoint
 router.get("/knowledge", async (req, res) => {
   try {

@@ -293,6 +293,31 @@ export default function Admin() {
     }
   };
 
+  const handleDownloadArchitecture = async () => {
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    try {
+      const res = await fetch('/api/admin/architecture', {
+        headers: { 'Authorization': `Bearer ${secret}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const blob = new Blob([data.content], { type: 'text/markdown' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('hidden', '');
+        a.setAttribute('href', url);
+        a.setAttribute('download', 'ARCHITECTURE.md');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        alert("Failed to download architecture doc.");
+      }
+    } catch (err) {
+      alert("Network error during download.");
+    }
+  };
+
   const fetchSubscribers = async () => {
     const secret = password || localStorage.getItem('admin_pwd') || '';
     try {
@@ -869,6 +894,26 @@ export default function Admin() {
                       className="flex items-center gap-2 px-6 py-3 bg-accent text-white rounded-xl font-bold hover:bg-accent-light transition-all shadow-lg"
                     >
                       <Database size={18} /> Initialize DB
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-6">Documentation</h2>
+                <div className="p-6 bg-muted/30 rounded-2xl border border-border">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold">Architecture Reference</h3>
+                      <p className="text-xs text-accent-light mt-1">
+                        Download the latest version of the Application Architecture & Sitemap (Markdown format).
+                      </p>
+                    </div>
+                    <button 
+                      onClick={handleDownloadArchitecture}
+                      className="flex items-center gap-2 px-6 py-3 bg-white border border-border text-accent rounded-xl font-bold hover:bg-muted transition-all shadow-sm"
+                    >
+                      <FileText size={18} /> Download .md
                     </button>
                   </div>
                 </div>
