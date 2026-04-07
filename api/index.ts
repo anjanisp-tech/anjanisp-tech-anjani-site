@@ -149,6 +149,15 @@ router.post("/admin/init-db", async (req, res, next) => {
         );
       `;
       
+      await sql`
+        CREATE TABLE IF NOT EXISTS audits (
+          id SERIAL PRIMARY KEY,
+          status TEXT NOT NULL,
+          details TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+      
       return res.json({ success: true, message: "Postgres tables initialized" });
     } else {
       const db = getSqliteDb();
@@ -232,6 +241,113 @@ router.get("/admin/architecture", async (req, res, next) => {
       details: err.message,
       path: err.path || "unknown"
     });
+  }
+});
+
+router.get("/admin/audits", async (req, res, next) => {
+  try {
+    const { adminAuth } = await getUtils();
+    adminAuth(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+}, async (req, res) => {
+  try {
+    const { isPostgres, getSqliteDb } = await getDb();
+    let audits = [];
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      const result = await sql`SELECT * FROM audits ORDER BY created_at DESC LIMIT 50`;
+      audits = result.rows;
+    } else {
+      const db = getSqliteDb();
+      if (db) {
+        audits = db.prepare("SELECT * FROM audits ORDER BY created_at DESC LIMIT 50").all();
+      }
+    }
+    res.json(audits);
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to fetch audits", details: err.message });
+  }
+});
+
+router.post("/admin/audit", async (req, res, next) => {
+  try {
+    const { adminAuth } = await getUtils();
+    adminAuth(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+}, async (req, res) => {
+  try {
+    const { isPostgres, getSqliteDb } = await getDb();
+    const { getKnowledgeBase } = await getKnowledge();
+    
+    const results: any = {
+      timestamp: new Date().toISOString(),
+      checks: {}
+    };
+
+    // 1. Database Check
+    try {
+      if (isPostgres) {
+        const { sql } = await import("@vercel/postgres");
+        await sql`SELECT 1`;
+        results.checks.database = { status: "ok", type: "Postgres" };
+      } else {
+        const db = getSqliteDb();
+        if (db) {
+          db.prepare("SELECT 1").get();
+          results.checks.database = { status: "ok", type: "SQLite" };
+        } else {
+          results.checks.database = { status: "warning", type: "Mock" };
+        }
+      }
+    } catch (e: any) {
+      results.checks.database = { status: "error", message: e.message };
+    }
+
+    // 2. Gemini Check
+    try {
+      const hasGemini = !!process.env.GEMINI_API_KEY;
+      results.checks.gemini = { status: hasGemini ? "ok" : "error", present: hasGemini };
+    } catch (e: any) {
+      results.checks.gemini = { status: "error", message: e.message };
+    }
+
+    // 3. Knowledge Base Check
+    try {
+      const k = await getKnowledgeBase();
+      results.checks.knowledge = { status: k ? "ok" : "warning", length: k ? k.length : 0 };
+    } catch (e: any) {
+      results.checks.knowledge = { status: "error", message: e.message };
+    }
+
+    // 4. Resend Check
+    try {
+      const { getResendKey } = await getUtils();
+      const hasResend = !!getResendKey();
+      results.checks.resend = { status: hasResend ? "ok" : "warning", present: hasResend };
+    } catch (e: any) {
+      results.checks.resend = { status: "error", message: e.message };
+    }
+
+    const overallStatus = Object.values(results.checks).every((c: any) => c.status === "ok") ? "healthy" : "degraded";
+    const details = JSON.stringify(results);
+
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      await sql`INSERT INTO audits (status, details) VALUES (${overallStatus}, ${details})`;
+    } else {
+      const db = getSqliteDb();
+      if (db) {
+        db.prepare("INSERT INTO audits (status, details) VALUES (?, ?)").run(overallStatus, details);
+      }
+    }
+
+    res.json({ success: true, status: overallStatus, results });
+  } catch (err: any) {
+    res.status(500).json({ error: "Audit failed", details: err.message });
   }
 });
 

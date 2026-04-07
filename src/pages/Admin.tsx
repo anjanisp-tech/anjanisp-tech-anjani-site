@@ -24,6 +24,8 @@ export default function Admin() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [blogs, setBlogs] = useState<any[]>([]);
   const [subscribers, setSubscribers] = useState<{ id: number, email: string, created_at: string }[]>([]);
+  const [audits, setAudits] = useState<any[]>([]);
+  const [isAuditing, setIsAuditing] = useState(false);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
   const [showPreview, setShowPreview] = useState(false);
@@ -96,6 +98,10 @@ export default function Admin() {
 
     if (activeTab === 'knowledge' && isAuthenticated) {
       fetchKnowledgeSettings();
+    }
+
+    if (activeTab === 'system' && isAuthenticated) {
+      fetchAudits();
     }
     
     if (activeTab === 'system' && isAuthenticated) {
@@ -316,6 +322,41 @@ export default function Admin() {
       }
     } catch (err) {
       alert("Network error during download.");
+    }
+  };
+
+  const fetchAudits = async () => {
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    try {
+      const res = await fetch('/api/admin/audits', {
+        headers: { 'Authorization': `Bearer ${secret}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAudits(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch audits:", err);
+    }
+  };
+
+  const handleRunAudit = async () => {
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    setIsAuditing(true);
+    try {
+      const res = await fetch('/api/admin/audit', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${secret}` }
+      });
+      if (res.ok) {
+        fetchAudits();
+      } else {
+        alert("Audit failed.");
+      }
+    } catch (err) {
+      alert("Network error during audit.");
+    } finally {
+      setIsAuditing(false);
     }
   };
 
@@ -897,6 +938,70 @@ export default function Admin() {
                       <Database size={18} /> Initialize DB
                     </button>
                   </div>
+                </div>
+              </div>
+
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold">Self-Audit System</h2>
+                  <button 
+                    onClick={handleRunAudit}
+                    disabled={isAuditing}
+                    className="flex items-center gap-2 px-6 py-3 bg-accent text-white rounded-xl font-bold hover:bg-accent-light transition-all shadow-lg disabled:opacity-50"
+                  >
+                    {isAuditing ? <RefreshCw size={18} className="animate-spin" /> : <Rocket size={18} />}
+                    Run Audit
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  {audits.length === 0 ? (
+                    <div className="p-12 text-center text-accent/40 bg-muted/30 rounded-2xl border border-dashed border-border">
+                      No audit history found. Run your first audit to check system health.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="text-xs font-bold uppercase tracking-widest text-accent/40 border-b border-border">
+                            <th className="pb-4">Date</th>
+                            <th className="pb-4">Status</th>
+                            <th className="pb-4">Details</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {audits.map((audit) => {
+                            const details = JSON.parse(audit.details);
+                            return (
+                              <tr key={audit.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                                <td className="py-4 text-sm font-medium">{new Date(audit.created_at).toLocaleString()}</td>
+                                <td className="py-4">
+                                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                    audit.status === 'healthy' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                                  }`}>
+                                    {audit.status}
+                                  </span>
+                                </td>
+                                <td className="py-4">
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {Object.entries(details.checks).map(([name, check]: [string, any]) => (
+                                      <div key={name} className="flex items-center gap-2 text-[10px]">
+                                        <div className={`w-2 h-2 rounded-full ${check.status === 'ok' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                        <span className="font-bold uppercase opacity-60">{name}:</span>
+                                        <span className={check.status === 'ok' ? 'text-green-600' : 'text-red-600'}>
+                                          {check.status === 'ok' ? (check.type || 'OK') : 'Error'}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               </div>
 

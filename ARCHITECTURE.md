@@ -24,7 +24,7 @@ A high-performance personal brand and knowledge-sharing platform for a founder/c
   - **Posts Tab**: CRUD operations for blog articles.
   - **Knowledge Tab**: Configuration for the Google Drive Knowledge Base (File ID) and manual sync trigger.
   - **Subscribers Tab**: View and export newsletter subscribers.
-  - **System Tab**: Database initialization, documentation management, email testing, and server diagnostics.
+  - **System Tab**: Database initialization, documentation management, self-audit system, email testing, and server diagnostics.
 
 ---
 
@@ -49,6 +49,7 @@ The application uses a relational database with the following tables:
 2.  **`comments`**: Stores user comments and admin replies (ID, Post ID, Parent ID, Name, Email, Content, Admin Flag).
 3.  **`subscriptions`**: Stores newsletter emails (ID, Email, Created At).
 4.  **`settings`**: Stores dynamic configuration (e.g., `GOOGLE_DRIVE_KNOWLEDGE_FILE_ID`).
+5.  **`audits`**: Stores system health check results (ID, Status, Details, Created At).
 
 ---
 
@@ -69,6 +70,11 @@ The application uses a relational database with the following tables:
 - **Subscription**: Simple email capture form.
 - **Notifications**: Real-time email notifications to the admin via **Resend** when a new user subscribes.
 
+### Self-Audit System
+- **Purpose**: Automated and manual health checks for system stability.
+- **Checks**: Verifies Database connectivity, Gemini API availability, Knowledge Base integrity, and Resend API configuration.
+- **Persistence**: Results are stored in the `audits` table for historical tracking.
+
 ---
 
 ## 5. External Integrations & Environment Variables
@@ -81,8 +87,9 @@ The application uses a relational database with the following tables:
 
 ## 6. Maintenance & Operations
 - **Database Init**: Can be re-run from the Admin -> System tab to ensure schema integrity. Automatically handles table creation for Postgres and SQLite.
-- **Documentation Management**: The `ARCHITECTURE.md` file can be downloaded directly from the Admin -> System tab. The download mechanism includes robust path resolution and detailed error reporting to ensure reliability across different environments.
+- **Documentation Management**: The `ARCHITECTURE.md` file can be downloaded directly from the Admin -> System tab. The download mechanism includes robust path resolution. Deployment configuration in `vercel.json` ensures these files are included in the serverless function bundle.
 - **Knowledge Sync**: Can be forced from the Admin -> Knowledge tab if the Google Doc is updated.
+- **Vercel Config**: `vercel.json` is configured to include documentation files (`ARCHITECTURE.*`, `AGENTS.md`) in the serverless function bundle to ensure they are available for download at runtime.
 - **Hard Restart**: Available in Admin -> System to reload environment variables.
 
 ---
@@ -91,9 +98,10 @@ The application uses a relational database with the following tables:
 - **Chatbot UI Improvements (COMPLETED)**:
   - ✅ Implement line breaks between paragraphs in chatbot answers to improve readability.
   - ✅ Fix color contrast for user messages (question stem); increase text whiteness on blue backgrounds for better visibility.
-- **Self-Audit System**:
-  - Build an automated self-audit tool that runs periodically (e.g., every alternate day).
-  - The tool should perform end-to-end system health checks and store results for future reference and diagnostics.
+- **Self-Audit System (COMPLETED)**:
+  - ✅ Build an automated self-audit tool that runs periodically.
+  - ✅ The tool performs end-to-end system health checks (Database, Gemini API, Knowledge Base, Resend API).
+  - ✅ Results are stored in the `audits` table and viewable in the Admin -> System tab.
 
 ---
-*Last Updated: 2026-04-07 (Completed Chatbot UI Improvements)*
+*Last Updated: 2026-04-07 (Implemented Self-Audit System)*

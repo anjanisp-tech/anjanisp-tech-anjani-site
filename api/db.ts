@@ -81,6 +81,12 @@ export function getSqliteDb() {
         value TEXT NOT NULL,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+      CREATE TABLE IF NOT EXISTS audits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        status TEXT NOT NULL,
+        details TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
     
     return sqliteDb;
