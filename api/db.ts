@@ -1,4 +1,3 @@
-import { sql } from "@vercel/postgres";
 import path from "path";
 import { createRequire } from "module";
 

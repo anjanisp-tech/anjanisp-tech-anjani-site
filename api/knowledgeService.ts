@@ -1,5 +1,3 @@
-import { google } from 'googleapis';
-import mammoth from 'mammoth';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -18,6 +16,9 @@ export async function getKnowledgeBase(): Promise<string> {
   }
 
   try {
+    const { google } = await import('googleapis');
+    const mammoth = (await import('mammoth')).default;
+    
     const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n');
     const fileId = process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID;

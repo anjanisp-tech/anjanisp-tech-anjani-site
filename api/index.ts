@@ -1,5 +1,4 @@
 import express from "express";
-import { GoogleGenAI } from "@google/genai";
 
 const router = express.Router();
 const apiApp = express();
@@ -10,19 +9,12 @@ apiApp.use("/api", router);
 apiApp.use("/", router);
 
 // Lazy import helpers to avoid top-level crashes
-const getDb = async () => import("./db.js");
-const getUtils = async () => import("./utils.js");
-const getKnowledge = async () => import("./knowledgeService.js");
+const getDb = async () => import("./db");
+const getUtils = async () => import("./utils");
+const getKnowledge = async () => import("./knowledgeService");
 
 // Error handler for apiApp itself
-apiApp.use((err: any, req: any, res: any, next: any) => {
-  console.error("[API APP ERROR]", err);
-  res.status(200).json({ 
-    status: "error",
-    error: "API Application Error", 
-    details: err.message || "An unknown error occurred in the API application"
-  });
-});
+// Moved to the end of the file
 
 // 1. Simple Ping Route for testing
 router.get("/ping", (req, res) => {
@@ -30,7 +22,7 @@ router.get("/ping", (req, res) => {
 });
 
 // Diagnostic route - Minimal dependencies to avoid crashes
-router.get("/diagnostic", (req, res) => {
+router.get("/diagnostic", async (req, res) => {
   try {
     const hasGemini = !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 10;
     const geminiMasked = process.env.GEMINI_API_KEY ? `${process.env.GEMINI_API_KEY.substring(0, 4)}...${process.env.GEMINI_API_KEY.substring(process.env.GEMINI_API_KEY.length - 4)}` : "missing";
@@ -44,6 +36,7 @@ router.get("/diagnostic", (req, res) => {
     let geminiTest = "Not tested";
     if (hasGemini) {
       try {
+        const { GoogleGenAI } = await import("@google/genai");
         let apiKey = process.env.GEMINI_API_KEY!.trim().replace(/^["']|["']$/g, '');
         const ai = new GoogleGenAI({ apiKey });
         const testResponse = await ai.models.generateContent({
@@ -111,6 +104,7 @@ router.post("/chat", async (req, res) => {
 
     const { getKnowledgeBase } = await getKnowledge();
     const knowledge = await getKnowledgeBase();
+    const { GoogleGenAI } = await import("@google/genai");
     const ai = new GoogleGenAI({ apiKey });
     const systemInstruction = `You are "The Scaling Architect," a digital proxy for Anjani Pandey... ${knowledge ? `\n\nContext: ${knowledge.substring(0, 15000)}` : ""}`;
 
@@ -143,12 +137,12 @@ router.post("/chat", async (req, res) => {
 router.get("/posts", async (req, res) => {
   try {
     const { isPostgres, getSqliteDb, useMockDb, initialPosts } = await getDb();
-    const { sql } = await import("@vercel/postgres");
     
     const limit = parseInt(req.query.limit as string) || 100;
     const offset = parseInt(req.query.offset as string) || 0;
 
     if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
       const { rows } = await sql`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
       return res.json(rows);
     }
@@ -168,9 +162,9 @@ router.get("/posts", async (req, res) => {
 router.get("/posts/:id", async (req, res) => {
   try {
     const { isPostgres, getSqliteDb, useMockDb, initialPosts } = await getDb();
-    const { sql } = await import("@vercel/postgres");
 
     if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
       const { rows } = await sql`SELECT * FROM posts WHERE id = ${req.params.id}`;
       if (rows.length > 0) return res.json(rows[0]);
     }
@@ -381,6 +375,16 @@ router.get("/admin/subscriptions", async (req, res, next) => {
 router.use((err: any, req: any, res: any, next: any) => {
   console.error("[API ROUTE ERROR]", err);
   res.status(200).json({ status: "error", error: "Internal API Error", details: err.message });
+});
+
+// Global error handler for apiApp (must be last)
+apiApp.use((err: any, req: any, res: any, next: any) => {
+  console.error("[GLOBAL API ERROR]", err);
+  res.status(200).json({ 
+    status: "error",
+    error: "Global API Error", 
+    details: err.message || "An unknown error occurred"
+  });
 });
 
 export default apiApp;
