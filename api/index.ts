@@ -9,9 +9,9 @@ apiApp.use("/api", router);
 apiApp.use("/", router);
 
 // Lazy import helpers to avoid top-level crashes
-const getDb = async () => import("./db");
-const getUtils = async () => import("./utils");
-const getKnowledge = async () => import("./knowledgeService");
+const getDb = async () => import("./db.js");
+const getUtils = async () => import("./utils.js");
+const getKnowledge = async () => import("./knowledgeService.js");
 
 // Error handler for apiApp itself
 // Moved to the end of the file
@@ -33,6 +33,28 @@ router.get("/diagnostic", async (req, res) => {
     }
     const hasGoogleDrive = !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
 
+    let dbStatus = "Not checked";
+    try {
+      const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+      if (isPostgres) dbStatus = "Postgres (Active)";
+      else if (useMockDb) dbStatus = "Mock DB (Active)";
+      else {
+        const db = getSqliteDb();
+        dbStatus = db ? "SQLite (Active)" : "Mock DB (Fallback)";
+      }
+    } catch (err: any) {
+      dbStatus = "Failed: " + (err.message || "Unknown error");
+    }
+
+    let knowledgeStatus = "Not checked";
+    try {
+      const { getKnowledgeBase } = await getKnowledge();
+      const k = await getKnowledgeBase();
+      knowledgeStatus = k ? `Success (${k.length} chars)` : "Empty";
+    } catch (err: any) {
+      knowledgeStatus = "Failed: " + (err.message || "Unknown error");
+    }
+
     let geminiTest = "Not tested";
     if (hasGemini) {
       try {
@@ -41,7 +63,7 @@ router.get("/diagnostic", async (req, res) => {
         const ai = new GoogleGenAI({ apiKey });
         const testResponse = await ai.models.generateContent({
           model: "gemini-3.1-flash-lite-preview",
-          contents: "hi",
+          contents: [{ role: "user", parts: [{ text: "hi" }] }],
           config: { maxOutputTokens: 5 }
         });
         geminiTest = testResponse.text ? "Success: " + testResponse.text.substring(0, 20) : "Empty response";
@@ -54,7 +76,9 @@ router.get("/diagnostic", async (req, res) => {
       status: "ok",
       isVercel: !!process.env.VERCEL,
       timestamp: new Date().toISOString(),
-      version: "1.0.4",
+      version: "1.0.5",
+      dbStatus,
+      knowledgeStatus,
       geminiTest,
       env: {
         NODE_ENV: process.env.NODE_ENV,
