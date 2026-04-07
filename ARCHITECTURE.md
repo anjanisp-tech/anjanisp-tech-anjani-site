@@ -81,9 +81,9 @@ The application uses a relational database with the following tables:
 
 ## 6. Maintenance & Operations
 - **Database Init**: Can be re-run from the Admin -> System tab to ensure schema integrity. Automatically handles table creation for Postgres and SQLite.
-- **Documentation Management**: The `ARCHITECTURE.md` file can be downloaded directly from the Admin -> System tab for local reference or manual backup.
+- **Documentation Management**: The `ARCHITECTURE.md` file can be downloaded directly from the Admin -> System tab. The download mechanism includes robust path resolution and detailed error reporting to ensure reliability across different environments.
 - **Knowledge Sync**: Can be forced from the Admin -> Knowledge tab if the Google Doc is updated.
 - **Hard Restart**: Available in Admin -> System to reload environment variables.
 
 ---
-*Last Updated: 2026-04-07 (Updated with DB Init & Documentation Download)*
+*Last Updated: 2026-04-07 (Updated with Robust Documentation Download)*

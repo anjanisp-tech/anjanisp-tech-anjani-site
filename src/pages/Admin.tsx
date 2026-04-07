@@ -311,7 +311,8 @@ export default function Admin() {
         a.click();
         document.body.removeChild(a);
       } else {
-        alert("Failed to download architecture doc.");
+        const data = await res.json().catch(() => ({ error: "Unknown error" }));
+        alert(`Failed to download architecture doc: ${data.error || "Unknown error"}${data.details ? ` (${data.details})` : ""}`);
       }
     } catch (err) {
       alert("Network error during download.");

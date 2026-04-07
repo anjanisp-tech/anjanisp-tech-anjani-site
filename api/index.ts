@@ -164,17 +164,59 @@ router.post("/admin/init-db", async (req, res, next) => {
 });
 
 router.get("/admin/architecture", async (req, res, next) => {
-  const { adminAuth } = await getUtils();
-  adminAuth(req, res, next);
+  try {
+    const { adminAuth } = await getUtils();
+    adminAuth(req, res, next);
+  } catch (err) {
+    next(err);
+  }
 }, async (req, res) => {
   try {
     const fs = await import("fs/promises");
     const path = await import("path");
-    const filePath = path.join(process.cwd(), "ARCHITECTURE.md");
-    const content = await fs.readFile(filePath, "utf-8");
+    const { fileURLToPath } = await import("url");
+    
+    // Try multiple possible locations for the file
+    const possiblePaths = [
+      path.join(process.cwd(), "ARCHITECTURE.md"),
+      path.join(process.cwd(), "..", "ARCHITECTURE.md"),
+    ];
+
+    try {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      possiblePaths.push(path.join(__dirname, "..", "ARCHITECTURE.md"));
+      possiblePaths.push(path.join(__dirname, "ARCHITECTURE.md"));
+    } catch (e) {}
+
+    let content = "";
+    let foundPath = "";
+    let lastError = "";
+
+    for (const p of possiblePaths) {
+      try {
+        console.log(`[ARCHITECTURE] Checking path: ${p}`);
+        content = await fs.readFile(p, "utf-8");
+        foundPath = p;
+        break;
+      } catch (err: any) {
+        lastError = err.message;
+      }
+    }
+
+    if (!foundPath) {
+      throw new Error(`Could not find ARCHITECTURE.md in any of the expected locations. Last error: ${lastError}`);
+    }
+
+    console.log(`[ARCHITECTURE] Successfully read file from: ${foundPath}`);
     res.json({ content });
   } catch (err: any) {
-    res.status(500).json({ error: "Failed to read architecture file", details: err.message });
+    console.error("[ARCHITECTURE ERROR]", err);
+    res.status(500).json({ 
+      error: "Failed to read architecture file", 
+      details: err.message,
+      path: err.path || "unknown"
+    });
   }
 });
 
