@@ -15,34 +15,48 @@ export async function getKnowledgeBase(force: boolean = false, fileIdOverride?: 
     return cachedKnowledge;
   }
 
-  try {
-    const { google } = await import('googleapis');
-    const mammoth = (await import('mammoth')).default;
-    
-    const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n');
-    const fileId = fileIdOverride || process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID;
+    try {
+      const { google } = await import('googleapis');
+      const mammoth = (await import('mammoth')).default;
+      
+      const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+      const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n');
+      const fileId = fileIdOverride || process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID;
 
-    if (!email || !privateKey || !fileId) {
-      console.warn("Google Service Account credentials or File ID missing. Knowledge base will be empty.");
-      return "";
-    }
+      if (!email || !privateKey || !fileId) {
+        const missing = [];
+        if (!email) missing.push("GOOGLE_SERVICE_ACCOUNT_EMAIL");
+        if (!privateKey) missing.push("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY");
+        if (!fileId) missing.push("GOOGLE_DRIVE_KNOWLEDGE_FILE_ID");
+        console.warn(`[KNOWLEDGE] Missing credentials: ${missing.join(", ")}`);
+        return "";
+      }
 
-    const auth = new google.auth.JWT({
-      email,
-      key: privateKey,
-      scopes: ['https://www.googleapis.com/auth/drive.readonly']
-    });
+      const auth = new google.auth.JWT({
+        email,
+        key: privateKey,
+        scopes: ['https://www.googleapis.com/auth/drive.readonly']
+      });
 
-    const drive = google.drive({ version: 'v3', auth });
+      const drive = google.drive({ version: 'v3', auth });
 
-    console.log(`[KNOWLEDGE] Syncing knowledge base from Google Drive (File ID: ${fileId})...`);
+      console.log(`[KNOWLEDGE] Syncing knowledge base from Google Drive (File ID: ${fileId})...`);
 
-    // First, check the file metadata to see if it's a Google Doc or a binary file
-    const metadata = await drive.files.get({ fileId, fields: 'mimeType' });
-    const mimeType = metadata.data.mimeType;
-    
-    let buffer: Buffer;
+      // First, check the file metadata
+      let metadata;
+      try {
+        metadata = await drive.files.get({ fileId, fields: 'mimeType, name' });
+      } catch (metaErr: any) {
+        if (metaErr.code === 404) throw new Error(`File not found. Check File ID: ${fileId}`);
+        if (metaErr.code === 403) throw new Error(`Permission denied. Ensure service account (${email}) has 'Viewer' access to the file.`);
+        throw metaErr;
+      }
+
+      const mimeType = metadata.data.mimeType;
+      const fileName = metadata.data.name;
+      console.log(`[KNOWLEDGE] Found file: "${fileName}" (${mimeType})`);
+      
+      let buffer: Buffer;
     
     if (mimeType === 'application/vnd.google-apps.document') {
       // It's a native Google Doc, we must export it to docx first

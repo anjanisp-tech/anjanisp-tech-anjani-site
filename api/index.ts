@@ -77,7 +77,7 @@ router.get("/diagnostic", async (req, res) => {
       status: "ok",
       isVercel: !!process.env.VERCEL,
       timestamp: new Date().toISOString(),
-      version: "1.0.6",
+      version: "1.0.7",
       dbStatus,
       knowledgeStatus,
       geminiTest,
@@ -88,6 +88,8 @@ router.get("/diagnostic", async (req, res) => {
         GEMINI_KEY_MASKED: geminiMasked,
         HAS_RESEND: hasResend,
         HAS_GOOGLE_DRIVE: hasGoogleDrive,
+        HAS_GOOGLE_EMAIL: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        HAS_GOOGLE_KEY: !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
         HAS_ADMIN_PASSWORD: hasAdminPassword
       }
     });
@@ -294,19 +296,40 @@ router.post("/admin/audit", async (req, res, next) => {
     try {
       const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
       const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
-      const fileId = process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID;
       
-      if (!email || !privateKey || !fileId) {
+      // Fetch File ID from settings first, then env
+      let fileId = process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID;
+      try {
+        if (isPostgres) {
+          const { sql } = await import("@vercel/postgres");
+          const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
+          if (rows.length > 0) fileId = rows[0].value;
+        } else {
+          const db = getSqliteDb();
+          if (db) {
+            const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
+            if (row) fileId = row.value;
+          }
+        }
+      } catch (e) {}
+
+      const missing = [];
+      if (!email) missing.push("GOOGLE_SERVICE_ACCOUNT_EMAIL");
+      if (!privateKey) missing.push("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY");
+      if (!fileId) missing.push("GOOGLE_DRIVE_KNOWLEDGE_FILE_ID");
+
+      if (missing.length > 0) {
         results.checks.knowledge = { 
           status: "warning", 
-          message: "Credentials or File ID missing in environment variables." 
+          message: `Missing: ${missing.join(", ")}. Setup required in Admin -> Knowledge.`,
+          missing
         };
       } else {
         const k = await getKnowledgeBase();
         results.checks.knowledge = { 
           status: k ? "ok" : "warning", 
           length: k ? k.length : 0,
-          message: k ? "Knowledge base loaded successfully." : "Knowledge base is empty."
+          message: k ? "Knowledge base loaded successfully." : "Knowledge base is empty (check file content)."
         };
       }
     } catch (e: any) {
@@ -624,6 +647,65 @@ ${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substri
       error: "Chat failed", 
       details: errorDetails 
     });
+  }
+});
+
+router.post("/admin/ai-debug", async (req, res, next) => {
+  try {
+    const { adminAuth } = await getUtils();
+    adminAuth(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+}, async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: "Message is required" });
+
+    const { getKnowledgeBase } = await getKnowledge();
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    
+    let fileIdOverride: string | undefined;
+    try {
+      if (isPostgres) {
+        const { sql } = await import("@vercel/postgres");
+        const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
+        if (rows.length > 0) fileIdOverride = rows[0].value;
+      } else {
+        const db = getSqliteDb();
+        if (db && !useMockDb) {
+          const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
+          if (row) fileIdOverride = row.value;
+        }
+      }
+    } catch (e) {}
+
+    const knowledge = await getKnowledgeBase(false, fileIdOverride);
+    
+    let apiKey = process.env.GEMINI_API_KEY;
+    if (apiKey) apiKey = apiKey.trim().replace(/^["']|["']$/g, '');
+
+    if (!apiKey) throw new Error("GEMINI_API_KEY missing");
+
+    const { GoogleGenAI } = await import("@google/genai");
+    const ai = new GoogleGenAI({ apiKey });
+    
+    const systemInstruction = `You are "The Scaling Architect" (Anjani Pandey). Use the provided context to answer.
+    Context: ${knowledge.substring(0, 15000)}`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: [{ role: "user", parts: [{ text: message }] }],
+      config: { systemInstruction, temperature: 0.1 } // Low temp for debugging
+    });
+
+    res.json({ 
+      response: response.text, 
+      context: knowledge.substring(0, 2000) + (knowledge.length > 2000 ? "..." : ""),
+      fullContextLength: knowledge.length
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 });
 

@@ -16,12 +16,15 @@ A high-performance personal brand and knowledge-sharing platform for a founder/c
 - `/blog`: **Blog Index**. List of all articles with category filtering.
 - `/blog/:id`: **Article View**. Full article content with a nested comment system.
 - `/chat`: **AI Expert Chat**. Full-screen chat interface for interacting with the founder's knowledge base.
+- `/calculator`: **Bottleneck Cost Calculator**. Interactive lead magnet to quantify financial loss from structural gaps.
 - `/sitemap`: **Visual Sitemap**. A user-friendly overview of all site sections.
 - `/sitemap.xml`: **Technical Sitemap**. XML format for search engine indexing.
 
 ### Admin Routes (Protected)
 - `/admin`: **Admin Dashboard**. Requires password authentication.
   - **Posts Tab**: CRUD operations for blog articles.
+  - **Analytics Tab**: Real-time tracking of blog views, chatbot queries, and calculator leads.
+  - **AI Debug Tab**: Tool to test chatbot responses and verify Knowledge Base context grounding.
   - **Knowledge Tab**: Configuration for the Google Drive Knowledge Base (File ID) and manual sync trigger.
   - **Subscribers Tab**: View and export newsletter subscribers.
   - **System Tab**: Database initialization, documentation management, self-audit system, email testing, and server diagnostics.
@@ -50,6 +53,9 @@ The application uses a relational database with the following tables:
 3.  **`subscriptions`**: Stores newsletter emails (ID, Email, Created At).
 4.  **`settings`**: Stores dynamic configuration (e.g., `GOOGLE_DRIVE_KNOWLEDGE_FILE_ID`).
 5.  **`audits`**: Stores system health check results (ID, Status, Details, Created At).
+6.  **`analytics_chatbot`**: Stores AI chat history for insights.
+7.  **`analytics_blog`**: Stores article view counts.
+8.  **`analytics_calculator`**: Stores calculator inputs and captured leads (Revenue, Team Size, Tax, Email).
 
 ---
 
@@ -77,8 +83,10 @@ The application uses a relational database with the following tables:
 
 ### Monetization Strategy
 - **Conversion Engine**: The AI Chatbot acts as the primary lead generation tool.
+- **Lead Magnets**: The **Bottleneck Cost Calculator** provides immediate value and captures high-intent leads.
 - **Hooks**: Proactive suggestions for "Fit Calls", "Diagnostics", and the "Bottleneck Cost Calculator" based on conversational depth and intent.
-- **Tracking**: Admin Analytics (Future) will track which hooks are most effective at converting users.
+- **Premium Content**: High-value frameworks gated behind email capture to build the subscriber base.
+- **Tracking**: Admin Analytics tracks chatbot queries, blog views, and calculator leads to refine the funnel.
 
 ---
 
@@ -124,6 +132,12 @@ The application uses a relational database with the following tables:
   - ✅ Integrated with the newsletter subscription system to unlock premium articles.
   - ✅ Added Admin controls to flag specific posts as "Premium".
 
+- **Bottleneck Cost Calculator & Lead Funnel (COMPLETED)**:
+  - ✅ Developed an interactive calculator to quantify "Bottleneck Cost".
+  - ✅ Implemented a "Technical/Hardware" aesthetic for high-authority diagnostics.
+  - ✅ Integrated lead capture for full analysis reports.
+  - ✅ Added backend logging and Admin tracking for all calculator leads.
+
 ### 8. Future Build Roadmap (Prioritized for Brand Moat & Monetization)
 1. **Audit Hygiene & Environment Setup**: Fix current audit failures and ensure 100% connectivity for Knowledge Base and Resend.
 2. **Advanced Chatbot Analytics**: Track specific conversion events (e.g., "Fit Call" clicks) directly in the analytics dashboard.
@@ -133,4 +147,4 @@ The application uses a relational database with the following tables:
 - **Resend API Audit**: Currently reporting "Error". Likely due to missing `RESEND_API_KEY` or domain verification issues.
 
 ---
-*Last Updated: 2026-04-07 (Implemented Self-Audit System)*
+*Last Updated: 2026-04-07 (Implemented Bottleneck Calculator & Lead Funnel)*

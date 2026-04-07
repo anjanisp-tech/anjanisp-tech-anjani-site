@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket, Eye, EyeOff, RefreshCw, Database, BarChart3, Calculator } from 'lucide-react';
+import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket, Eye, EyeOff, RefreshCw, Database, BarChart3, Calculator, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 
@@ -20,7 +20,7 @@ export default function Admin() {
     return typeof window !== 'undefined' && localStorage.getItem('admin_auth') === 'true';
   });
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers' | 'system' | 'manage' | 'knowledge' | 'analytics'>('comments');
+  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers' | 'system' | 'manage' | 'knowledge' | 'analytics' | 'ai-debug'>('comments');
   const [comments, setComments] = useState<Comment[]>([]);
   const [blogs, setBlogs] = useState<any[]>([]);
   const [subscribers, setSubscribers] = useState<{ id: number, email: string, created_at: string }[]>([]);
@@ -31,6 +31,8 @@ export default function Admin() {
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [aiDebugQuery, setAiDebugQuery] = useState('');
+  const [aiDebugResult, setAiDebugResult] = useState<{ response: string, context: string, status: 'idle' | 'loading' | 'success' | 'error' }>({ response: '', context: '', status: 'idle' });
   
   const [blogForm, setBlogForm] = useState({
     title: '',
@@ -111,11 +113,13 @@ export default function Admin() {
       fetchAnalytics();
     }
     
-    if (activeTab === 'system' && isAuthenticated) {
+    if ((activeTab === 'system' || activeTab === 'knowledge') && isAuthenticated) {
       fetch('/api/diagnostic').then(res => res.json()).then(data => {
         const resendEl = document.getElementById('resend-status');
         const dbEl = document.getElementById('db-status');
         const envEl = document.getElementById('env-debug');
+        const statusEmailEl = document.getElementById('status-email');
+        const statusKeyEl = document.getElementById('status-key');
         
         if (resendEl) {
           resendEl.innerText = data.env?.HAS_RESEND ? 'Configured' : 'Missing or Invalid API Key';
@@ -135,6 +139,14 @@ export default function Admin() {
               <div class="flex justify-between"><span>VERSION:</span> <span>${data.version}</span></div>
             </div>
           `;
+        }
+        if (statusEmailEl && data.env) {
+          statusEmailEl.innerText = data.env.HAS_GOOGLE_EMAIL ? 'PRESENT' : 'MISSING';
+          statusEmailEl.className = `font-mono font-bold ${data.env.HAS_GOOGLE_EMAIL ? 'text-green-600' : 'text-red-600'}`;
+        }
+        if (statusKeyEl && data.env) {
+          statusKeyEl.innerText = data.env.HAS_GOOGLE_KEY ? 'PRESENT' : 'MISSING';
+          statusKeyEl.className = `font-mono font-bold ${data.env.HAS_GOOGLE_KEY ? 'text-green-600' : 'text-red-600'}`;
         }
       }).catch(() => {});
     }
@@ -365,6 +377,42 @@ export default function Admin() {
     }
   };
 
+  const handleAiDebug = async () => {
+    if (!aiDebugQuery.trim()) return;
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    setAiDebugResult({ ...aiDebugResult, status: 'loading' });
+    try {
+      const res = await fetch('/api/admin/ai-debug', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${secret}`
+        },
+        body: JSON.stringify({ message: aiDebugQuery })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAiDebugResult({
+          response: data.response,
+          context: data.context,
+          status: 'success'
+        });
+      } else {
+        setAiDebugResult({
+          response: `Error: ${data.error || "Unknown error"}`,
+          context: '',
+          status: 'error'
+        });
+      }
+    } catch (err) {
+      setAiDebugResult({
+        response: "Network error during AI debug.",
+        context: '',
+        status: 'error'
+      });
+    }
+  };
+
   const fetchSubscribers = async () => {
     const secret = password || localStorage.getItem('admin_pwd') || '';
     try {
@@ -537,6 +585,12 @@ export default function Admin() {
                 className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'analytics' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
               >
                 <BarChart3 size={18} /> Analytics
+              </button>
+              <button 
+                onClick={() => setActiveTab('ai-debug')}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'ai-debug' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
+              >
+                <MessageSquare size={18} /> AI Debug
               </button>
               <button 
                 onClick={handleLogout}
@@ -850,6 +904,20 @@ export default function Admin() {
                   </div>
 
                   <div className="pt-8 border-t border-border">
+                    <div className="mb-8 p-4 bg-muted/30 rounded-2xl border border-border">
+                      <h3 className="text-[10px] font-bold uppercase tracking-widest text-accent/40 mb-3">Backend Credentials Status</h3>
+                      <div id="knowledge-env-status" className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-accent-light">Service Account Email:</span>
+                          <span id="status-email" className="font-mono opacity-60">Checking...</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-accent-light">Private Key:</span>
+                          <span id="status-key" className="font-mono opacity-60">Checking...</span>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className="font-bold">Sync Status</h3>
@@ -1044,6 +1112,30 @@ export default function Admin() {
                     >
                       <FileText size={18} /> Download .md
                     </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-6">Environment & Credentials</h2>
+                <div className="space-y-6">
+                  <div id="env-debug"></div>
+                  
+                  <div className="p-6 bg-accent/5 rounded-2xl border border-accent/10">
+                    <h3 className="font-bold flex items-center gap-2 mb-4">
+                      <Info className="text-accent" size={18} /> Knowledge Base Setup Guide
+                    </h3>
+                    <div className="space-y-4 text-xs text-accent-light leading-relaxed">
+                      <p>To enable the AI Knowledge Base, you must provide Google Service Account credentials in the <b>Settings &rarr; Secrets</b> menu of AI Studio:</p>
+                      <ol className="list-decimal ml-4 space-y-2">
+                        <li>Create a Service Account in <a href="https://console.cloud.google.com/iam-admin/serviceaccounts" target="_blank" className="text-accent underline">Google Cloud Console</a>.</li>
+                        <li>Generate a <b>JSON Key</b> for that account.</li>
+                        <li>Copy <code>client_email</code> to <code>GOOGLE_SERVICE_ACCOUNT_EMAIL</code>.</li>
+                        <li>Copy <code>private_key</code> to <code>GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY</code>.</li>
+                        <li>Share your Google Doc with the Service Account email as a <b>Viewer</b>.</li>
+                        <li>Copy the Doc ID to <code>GOOGLE_DRIVE_KNOWLEDGE_FILE_ID</code> (or set it in the Knowledge tab).</li>
+                      </ol>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1350,6 +1442,58 @@ export default function Admin() {
                   </div>
                 </div>
                 <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+              </div>
+            </div>
+          ) : activeTab === 'ai-debug' ? (
+            <div className="max-w-4xl mx-auto space-y-8">
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                  <MessageSquare className="text-accent" size={24} /> AI Proxy Debugger
+                </h2>
+                <p className="text-accent-light mb-8">
+                  Test how the AI responds using your current Knowledge Base context. This helps verify your "Personal Brand Moat" is functioning correctly.
+                </p>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Test Query</label>
+                    <div className="flex gap-4">
+                      <input 
+                        type="text" 
+                        value={aiDebugQuery}
+                        onChange={(e) => setAiDebugQuery(e.target.value)}
+                        placeholder="Ask a methodology question..."
+                        className="flex-1 px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all text-sm"
+                        onKeyDown={(e) => e.key === 'Enter' && !aiDebugResult.status.includes('loading') && handleAiDebug()}
+                      />
+                      <button 
+                        onClick={handleAiDebug}
+                        disabled={aiDebugResult.status === 'loading'}
+                        className="btn-primary px-8 py-3 disabled:opacity-50"
+                      >
+                        {aiDebugResult.status === 'loading' ? 'Testing...' : 'Test AI'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {aiDebugResult.status !== 'idle' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                      <div className="p-6 bg-muted/30 rounded-2xl border border-border">
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">AI Response</h3>
+                        <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                          {aiDebugResult.response}
+                        </div>
+                      </div>
+
+                      <div className="p-6 bg-slate-900 text-slate-300 rounded-2xl border border-slate-800 font-mono text-[10px]">
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-white/40 mb-4 font-sans">Context Used (Knowledge Base Snippet)</h3>
+                        <div className="max-h-60 overflow-y-auto custom-scrollbar leading-relaxed">
+                          {aiDebugResult.context || "No context found in Knowledge Base."}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ) : null}
