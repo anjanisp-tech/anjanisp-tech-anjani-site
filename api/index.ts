@@ -1,56 +1,15 @@
 import express from "express";
-import { sql } from "@vercel/postgres";
-// import Database from "better-sqlite3"; // Lazy load this below
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
-import { createRequire } from "module";
-import { getKnowledgeBase } from "./knowledgeService";
 import { GoogleGenAI } from "@google/genai";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-console.log("[API MODULE LOAD] Starting...");
-// Use a more reliable path for the key file
-const KEY_FILE = path.join(__dirname, "../.resend_key");
-const TMP_KEY_FILE = "/tmp/.resend_key";
-
-let memoryKey: string | null = null;
-
-// Helper to get Resend Key with multiple fallbacks
-function getResendKey() {
-  // 0. Memory cache (fastest, survives until process restart)
-  if (memoryKey) return memoryKey;
-
-  // 1. Check local override files
-  for (const f of [KEY_FILE, TMP_KEY_FILE]) {
-    if (fs.existsSync(f)) {
-      try {
-        const k = fs.readFileSync(f, 'utf8').trim();
-        if (k.startsWith('re_')) {
-          memoryKey = k;
-          return k;
-        }
-      } catch (e) {}
-    }
-  }
-
-  // 2. Check standard environment variables
-  const envKey = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
-  if (envKey && envKey.startsWith('re_')) return envKey;
-
-  // 3. Smart Search: Look for any env var that looks like a Resend key
-  const smartKey = Object.values(process.env).find(v => typeof v === 'string' && v.startsWith('re_'));
-  if (smartKey) return smartKey;
-
-  return null;
-}
 
 const router = express.Router();
 const apiApp = express();
 apiApp.use(express.json());
 apiApp.use(router);
+
+// Lazy import helpers to avoid top-level crashes
+const getDb = async () => import("./db");
+const getUtils = async () => import("./utils");
+const getKnowledge = async () => import("./knowledgeService");
 
 // Error handler for apiApp itself
 apiApp.use((err: any, req: any, res: any, next: any) => {
@@ -64,205 +23,75 @@ apiApp.use((err: any, req: any, res: any, next: any) => {
 
 // 1. Simple Ping Route for testing
 router.get("/ping", (req, res) => {
-  console.log("[API PING HIT]");
-  res.json({ status: "ok", message: "API is reachable" });
+  res.json({ status: "ok", message: "API is reachable", version: "1.0.3" });
 });
 
-// Diagnostic route
+// Diagnostic route - Minimal dependencies to avoid crashes
 router.get("/diagnostic", (req, res) => {
-  res.json({
-    status: "ok",
-    isPostgres,
-    sqliteInitialized: !!sqliteDb,
-    env: {
-      NODE_ENV: process.env.NODE_ENV,
-      HAS_POSTGRES: !!process.env.POSTGRES_URL,
-      HAS_GEMINI: !!process.env.GEMINI_API_KEY,
-      HAS_RESEND: !!getResendKey()
+  try {
+    const hasGemini = !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 10;
+    const hasPostgres = !!process.env.POSTGRES_URL && process.env.POSTGRES_URL.includes('://');
+    
+    // Minimal Resend check without utils.ts
+    let hasResend = !!process.env.RESEND_API_KEY || !!process.env.VITE_RESEND_API_KEY;
+    if (!hasResend) {
+      hasResend = Object.values(process.env).some(v => typeof v === 'string' && v.startsWith('re_'));
     }
-  });
+
+    res.json({
+      status: "ok",
+      isVercel: !!process.env.VERCEL,
+      timestamp: new Date().toISOString(),
+      version: "1.0.3",
+      env: {
+        NODE_ENV: process.env.NODE_ENV,
+        HAS_POSTGRES: hasPostgres,
+        HAS_GEMINI: hasGemini,
+        HAS_RESEND: hasResend,
+        HAS_GOOGLE_DRIVE: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+      }
+    });
+  } catch (err: any) {
+    res.status(200).json({ status: "error", error: "Diagnostic failed", details: err.message });
+  }
 });
 
-// 2. Knowledge Base Endpoint (for Frontend AI Chat)
+// 2. Knowledge Base Endpoint
 router.get("/knowledge", async (req, res) => {
   try {
+    const { getKnowledgeBase } = await getKnowledge();
     const knowledge = await getKnowledgeBase();
     res.json({ knowledge });
   } catch (err: any) {
-    console.error("[KNOWLEDGE ERROR]", err);
     res.status(500).json({ error: "Failed to fetch knowledge base", details: err.message });
   }
 });
 
-// Sanitize Postgres URLs (sometimes users copy the prefix or quotes by mistake)
-const sanitizeUrl = (url: string | undefined) => {
-  if (!url) return url;
-  let clean = url.trim();
-  
-  // Only split if it starts with the variable name followed by =
-  if (clean.startsWith('POSTGRES_URL=')) {
-    clean = clean.substring('POSTGRES_URL='.length);
-  } else if (clean.startsWith('DATABASE_URL=')) {
-    clean = clean.substring('DATABASE_URL='.length);
-  }
-  
-  // Remove surrounding quotes if present
-  clean = clean.replace(/^["']|["']$/g, '');
-  
-  // Check for placeholder values
-  if (clean.includes('YOUR_') || clean.includes('<') || clean.length < 10) {
-    return undefined;
-  }
-  
-  return clean;
-};
-
-if (process.env.POSTGRES_URL) process.env.POSTGRES_URL = sanitizeUrl(process.env.POSTGRES_URL);
-if (process.env.DATABASE_URL) process.env.DATABASE_URL = sanitizeUrl(process.env.DATABASE_URL);
-
-const dbInitializedAt = new Date().toISOString();
-const isPostgres = !!(
-  process.env.POSTGRES_URL && 
-  process.env.POSTGRES_URL.length > 30 && 
-  process.env.POSTGRES_URL.includes('://') && 
-  !process.env.POSTGRES_URL.includes('TODO_') &&
-  !process.env.POSTGRES_URL.includes('placeholder')
-);
-console.log("Database configuration detected:", isPostgres ? "Postgres" : "SQLite");
-if (isPostgres) {
-  console.log("Postgres URL present:", !!process.env.POSTGRES_URL);
-  console.log("Database URL present:", !!process.env.DATABASE_URL);
-}
-
-// SQLite Fallback (for local/preview without Postgres)
-let sqliteDb: any = null;
-let useMockDb = false;
-
-const requireInEsm = createRequire(import.meta.url);
-
-function getSqliteDb() {
-  if (sqliteDb) return sqliteDb;
-  if (useMockDb) return null;
-
-  try {
-    const isVercel = !!process.env.VERCEL || !!process.env.VERCEL_URL;
-    
-    // CRITICAL: better-sqlite3 often fails on Vercel due to native binary issues.
-    // If we are on Vercel and don't have Postgres, we MUST use Mock DB to avoid 500 crashes.
-    if (isVercel && !isPostgres) {
-      console.warn("[DB INIT] Vercel detected without Postgres. Using Mock DB for stability.");
-      useMockDb = true;
-      return null;
-    }
-
-    console.log("[DB INIT] Initializing SQLite database...");
-    // Lazy load better-sqlite3 to prevent module load crashes
-    const Database = requireInEsm("better-sqlite3");
-    
-    const dbPath = isVercel ? "/tmp/blog.db" : path.join(process.cwd(), "blog.db");
-    
-    console.log(`[DB INIT] SQLite Path: ${dbPath}`);
-    sqliteDb = new Database(dbPath);
-    sqliteDb.exec(`
-      CREATE TABLE IF NOT EXISTS posts (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        date TEXT NOT NULL,
-        category TEXT NOT NULL,
-        excerpt TEXT NOT NULL,
-        content TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-      CREATE TABLE IF NOT EXISTS comments (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        post_id TEXT NOT NULL,
-        parent_id INTEGER DEFAULT NULL,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL,
-        website TEXT,
-        phone TEXT,
-        comment TEXT NOT NULL,
-        is_admin INTEGER DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-      CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
-      CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id);
-      CREATE TABLE IF NOT EXISTS subscriptions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-    
-    // Seed SQLite if empty
-    try {
-      const countResult = sqliteDb.prepare("SELECT count(*) as count FROM posts").get();
-      if (!countResult || countResult.count === 0) {
-        seedSqlite();
-      }
-    } catch (e) {
-      seedSqlite();
-    }
-    
-    return sqliteDb;
-  } catch (err: any) {
-    console.error("CRITICAL: Failed to initialize SQLite:", err.message);
-    useMockDb = true;
-    return null;
-  }
-}
-
-// 3. AI Chat Assistant Route (Backend Proxy)
+// 3. AI Chat Assistant Route
 router.post("/chat", async (req, res) => {
-  console.log("[CHAT] Received request");
   try {
     const { message, history } = req.body || {};
+    if (!message) return res.status(400).json({ error: "Message is required" });
+
+    let apiKey = process.env.GEMINI_API_KEY;
     
-    if (!message) {
-      console.warn("[CHAT] Missing message");
-      return res.status(400).json({ error: "Message is required" });
+    // Sanitize API Key
+    if (apiKey) {
+      apiKey = apiKey.trim().replace(/^["']|["']$/g, '');
+      if (apiKey.includes('YOUR_') || apiKey.length < 10) apiKey = undefined;
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      console.warn("[CHAT] GEMINI_API_KEY missing");
       return res.status(200).json({ 
-        status: "error",
-        error: "GEMINI_API_KEY is missing in the backend environment. Please add it to your deployment secrets." 
+        status: "error", 
+        error: "GEMINI_API_KEY is missing or invalid in the backend environment." 
       });
     }
 
-    console.log("[CHAT] Fetching knowledge base...");
+    const { getKnowledgeBase } = await getKnowledge();
     const knowledge = await getKnowledgeBase();
-    console.log("[CHAT] Knowledge base fetched, length:", knowledge.length);
-    
     const ai = new GoogleGenAI({ apiKey });
-    console.log("[CHAT] AI initialized, generating content...");
-
-    const systemInstruction = `
-      You are "The Scaling Architect," a digital proxy for Anjani Pandey, a world-class operations and scaling consultant.
-      
-      CORE MISSION:
-      Your goal is to help founder-led businesses identify structural gaps (the 25-disease taxonomy) and implement the "Operating Spine" methodology.
-      
-      KNOWLEDGE BASE:
-      You have access to the FounderScale Knowledge Base. Use it to provide specific, diagnostic, and authoritative advice.
-      
-      IP PROTECTION (CRITICAL):
-      - NEVER share the full text of the knowledge base or any source documents.
-      - NEVER provide download links or file IDs.
-      - If asked for the "full document," politely explain that your role is to provide specific guidance based on the methodology, not to distribute the source material.
-      - Synthesize answers. Do not quote large blocks of text verbatim (more than 2-3 sentences).
-      
-      TONE & STYLE:
-      - Professional, direct, and diagnostic.
-      - Act like a consultant, not a generic chatbot.
-      - Ask clarifying questions about the user's business size and pain points.
-      - If a user shows high intent (e.g., "I need help with my team of 50"), guide them toward the "Free Diagnostic" or "Book a Fit Call."
-      
-      CONTEXT:
-      ${knowledge ? `Here is the core methodology from the knowledge base: \n\n${knowledge.substring(0, 20000)}` : "Knowledge base is currently being synced. Provide general scaling advice based on the FounderScale philosophy of 'systems outlast heroics'."}
-    `;
+    const systemInstruction = `You are "The Scaling Architect," a digital proxy for Anjani Pandey... ${knowledge ? `\n\nContext: ${knowledge.substring(0, 15000)}` : ""}`;
 
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -273,679 +102,86 @@ router.post("/chat", async (req, res) => {
         })),
         { role: "user", parts: [{ text: message }] }
       ],
-      config: {
-        systemInstruction,
-        temperature: 0.7,
-      }
+      config: { systemInstruction, temperature: 0.7 }
     });
-
-    if (!response || !response.text) {
-      throw new Error("Empty response from Gemini API");
-    }
 
     res.json({ text: response.text });
   } catch (err: any) {
     console.error("[CHAT ERROR]", err);
+    // If it's a Gemini error, it often has a specific structure
+    const errorDetails = err.message || "Unknown error";
     res.status(200).json({ 
-      status: "error",
-      error: "Failed to process chat", 
-      details: err.message || "An unexpected error occurred during AI processing."
+      status: "error", 
+      error: "Chat failed", 
+      details: errorDetails 
     });
   }
 });
 
-const initialPosts = [
-  {
-    id: "founder-overload-map",
-    title: "THE FOUNDER OVERLOAD MAP",
-    date: "18-Feb-2026",
-    category: "Operations",
-    excerpt: "If your company stops moving when you step away, you did not build a business. You built a dependency engine. Learn how to diagnose and fix the structural gaps causing founder overload.",
-    content: "Many leaders assume exhaustion is the price of ambition. It is not. Sustainable companies do not demand constant founder energy. They demand sound operating design.\n\nBurnout is usually diagnosed as a personal issue. In practice, it is structural. When execution depends on one person, growth multiplies pressure instead of results.\n\nHere is the pattern visible across scaling firms.\n\n### SYMPTOMS\n\nWhen founders become the system, certain signals appear:\n\n* Decisions require their validation\n* Teams escalate small issues upward\n* Calendars fill with alignment meetings\n* Work slows during their absence\n\nThese symptoms often get misread as growth complexity. They are actually architecture gaps."
-  },
-  {
-    id: "systems-outlast-heroics",
-    title: "WHY SPEED BECOMES DANGEROUS INSIDE GROWING ORGANIZATIONS",
-    date: "19-Feb-2026",
-    category: "Scaling",
-    excerpt: "Heroic execution works until complexity increases. Learn why systems, not stamina, are the key to winning at scale and building a durable organization.",
-    content: "Many early stage companies grow on momentum. A founder pushes hard. A small team stretches capacity. Strong performers step up repeatedly. Results improve.\n\nThis phase creates confidence. It also creates risk.\n\nHeroic execution works because complexity is still manageable. Decisions are fast. Communication is direct. Corrections happen instantly. Intensity compensates for missing structure."
-  },
-  {
-    id: "hiring-trap-growing-companies",
-    title: "THE HIRING TRAP MOST GROWING COMPANIES FALL INTO",
-    date: "21-Feb-2026",
-    category: "Scaling",
-    excerpt: "Hiring increases capacity, but it doesn't improve design. Discover why adding headcount to a broken process only multiplies your problems.",
-    content: "Growth creates pressure. Pressure creates friction. Many leaders respond by adding people.\n\nAt first, this works. Output increases. Deadlines are met. Stress drops.\n\nBut over time, something strange happens. Hiring keeps increasing while efficiency stays flat.\n\nThis pattern reveals a structural issue.\n\n**Hiring increases capacity. It does not improve design.**"
-  }
-];
-
-function seedSqlite() {
-  try {
-    const insert = sqliteDb.prepare(`
-      INSERT INTO posts (id, title, date, category, excerpt, content)
-      VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT(id) DO UPDATE SET title = excluded.title
-    `);
-    
-    for (const p of initialPosts) {
-      insert.run(p.id, p.title, p.date, p.category, p.excerpt, p.content);
-    }
-    console.log("SQLite seeding complete.");
-  } catch (err) {
-    console.error("Error seeding SQLite:", err);
-  }
-}
-
-let isDbInitialized = false;
-
-async function initDb(force = false) {
-  if (!isPostgres) return;
-  if (isDbInitialized && !force) return;
-
-  try {
-    console.log(`[DB INIT] Testing Postgres connection...`);
-    // Simple test query to verify connection before running migrations
-    await sql`SELECT 1`.catch(err => {
-      console.error("[DB INIT] Postgres Connection Test Failed:", err.message);
-      throw new Error(`Postgres Connection Failed: ${err.message}`);
-    });
-
-    console.log(`[DB INIT] Initializing Postgres tables (force=${force})...`);
-    // Use a transaction or sequential awaits to ensure tables exist
-    await sql`
-      CREATE TABLE IF NOT EXISTS posts (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        date TEXT NOT NULL,
-        category TEXT NOT NULL,
-        excerpt TEXT NOT NULL,
-        content TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-    
-    await sql`
-      CREATE TABLE IF NOT EXISTS comments (
-        id SERIAL PRIMARY KEY,
-        post_id TEXT NOT NULL,
-        parent_id INTEGER DEFAULT NULL,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL,
-        website TEXT,
-        phone TEXT,
-        comment TEXT NOT NULL,
-        is_admin INTEGER DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-
-    // Add indexes for performance
-    await sql`CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id)`.catch(() => {});
-    await sql`CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id)`.catch(() => {});
-    
-    await sql`
-      CREATE TABLE IF NOT EXISTS subscriptions (
-        id SERIAL PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-    
-    isDbInitialized = true;
-    console.log("[DB INIT] Postgres tables check complete.");
-    
-    // Check if seed data is needed
-    let rowCount = 0;
-    try {
-      const result = await sql`SELECT id FROM posts LIMIT 1`;
-      rowCount = result.rowCount;
-    } catch (e) {
-      console.warn("[DB INIT] Could not check row count, assuming 0");
-    }
-    
-    const initialPosts = [
-      {
-        id: "founder-overload-map",
-        title: "THE FOUNDER OVERLOAD MAP",
-        date: "18-Feb-2026",
-        category: "Operations",
-        excerpt: "If your company stops moving when you step away, you did not build a business. You built a dependency engine. Learn how to diagnose and fix the structural gaps causing founder overload.",
-        content: "Many leaders assume exhaustion is the price of ambition. It is not. Sustainable companies do not demand constant founder energy. They demand sound operating design.\n\nBurnout is usually diagnosed as a personal issue. In practice, it is structural. When execution depends on one person, growth multiplies pressure instead of results.\n\nHere is the pattern visible across scaling firms.\n\n### SYMPTOMS\n\nWhen founders become the system, certain signals appear:\n\n* Decisions require their validation\n* Teams escalate small issues upward\n* Calendars fill with alignment meetings\n* Work slows during their absence\n\nThese symptoms often get misread as growth complexity. They are actually architecture gaps."
-      },
-      {
-        id: "systems-outlast-heroics",
-        title: "WHY SPEED BECOMES DANGEROUS INSIDE GROWING ORGANIZATIONS",
-        date: "19-Feb-2026",
-        category: "Scaling",
-        excerpt: "Heroic execution works until complexity increases. Learn why systems, not stamina, are the key to winning at scale and building a durable organization.",
-        content: "Many early stage companies grow on momentum. A founder pushes hard. A small team stretches capacity. Strong performers step up repeatedly. Results improve.\n\nThis phase creates confidence. It also creates risk.\n\nHeroic execution works because complexity is still manageable. Decisions are fast. Communication is direct. Corrections happen instantly. Intensity compensates for missing structure."
-      },
-      {
-        id: "hiring-trap-growing-companies",
-        title: "THE HIRING TRAP MOST GROWING COMPANIES FALL INTO",
-        date: "21-Feb-2026",
-        category: "Scaling",
-        excerpt: "Hiring increases capacity, but it doesn't improve design. Discover why adding headcount to a broken process only multiplies your problems.",
-        content: "Growth creates pressure. Pressure creates friction. Many leaders respond by adding people.\n\nAt first, this works. Output increases. Deadlines are met. Stress drops.\n\nBut over time, something strange happens. Hiring keeps increasing while efficiency stays flat.\n\nThis pattern reveals a structural issue.\n\n**Hiring increases capacity. It does not improve design.**"
-      }
-    ];
-
-    if (rowCount === 0 || force) {
-      console.log(`[DB INIT] Aggressive Sync: Inserting ${initialPosts.length} posts...`);
-      for (const p of initialPosts) {
-        await sql`
-          INSERT INTO posts (id, title, date, category, excerpt, content)
-          VALUES (${p.id}, ${p.title}, ${p.date}, ${p.category}, ${p.excerpt}, ${p.content})
-          ON CONFLICT (id) DO UPDATE SET 
-            title = EXCLUDED.title,
-            date = EXCLUDED.date,
-            category = EXCLUDED.category,
-            excerpt = EXCLUDED.excerpt,
-            content = EXCLUDED.content
-        `;
-      }
-      console.log("[DB INIT] Seeding complete.");
-    }
-  } catch (err) {
-    console.error("[DB INIT] Postgres Init Error:", err);
-    throw err; // Rethrow to let the middleware/route handle it
-  }
-}
-
-// Ensure DB is initialized on every request in production
-// BUT skip for ping and knowledge routes which are already handled above
-router.use(async (req, res, next) => {
-  // Skip DB init for simple ping and AI routes
-  if (req.path === '/ping' || req.path === '/knowledge') return next();
-
-  try {
-    if (isPostgres) {
-      try {
-        await initDb();
-      } catch (postgresErr: any) {
-        console.error("[DB INIT] Postgres failed, falling back to SQLite/Mock:", postgresErr.message);
-        // If Postgres fails, try SQLite/Mock
-        const db = getSqliteDb();
-        if (!db && !useMockDb) {
-          console.warn("[DB INIT] Both Postgres and SQLite failed. Enabling Mock mode.");
-          useMockDb = true;
-        }
-      }
-    } else {
-      const db = getSqliteDb();
-      if (!db && !useMockDb) {
-        console.warn("[DB INIT] SQLite failed. Enabling Mock mode.");
-        useMockDb = true;
-      }
-    }
-    next();
-  } catch (err: any) {
-    console.error("[DB INIT MIDDLEWARE ERROR]", err);
-    // Final fallback: just enable mock mode and continue
-    useMockDb = true;
-    next();
-  }
-});
-
-// Middleware for admin routes
-const adminAuth = (req: any, res: any, next: any) => {
-  const password = req.headers['x-admin-password'];
-  const secret = process.env.ADMIN_PASSWORD || 'admin123';
-  if (password === secret) {
-    next();
-  } else {
-    res.status(401).json({ error: "Unauthorized" });
-  }
-};
-
-// Notification Helper
-async function sendNotification(subject: string, message: string) {
-  const recipient = process.env.RESEND_TO_EMAIL || process.env.VITE_RESEND_TO_EMAIL || "anjanisp@gmail.com";
-  const apiKey = getResendKey();
-  
-  console.log(`[NOTIFICATION ATTEMPT] Subject: ${subject}`);
-  
-  if (!apiKey) {
-    const errorMsg = "RESEND_API_KEY is missing. Please set it in AI Studio Secrets OR use the Manual Override in the Admin panel.";
-    console.error(`[NOTIFICATION ERROR] ${errorMsg}`);
-    throw new Error(errorMsg);
-  }
-
-  try {
-    const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.VITE_RESEND_FROM_EMAIL || 'onboarding@resend.dev';
-    console.log(`[RESEND] Sending from: ${fromEmail} to: ${recipient}`);
-    
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        from: `Anjani Pandey Site <${fromEmail}>`,
-        to: [recipient],
-        subject: subject,
-        text: message
-      })
-    });
-    
-    const resData = await response.json().catch(() => ({}));
-    if (response.ok) {
-      console.log("[RESEND] Success:", resData);
-      return resData;
-    } else {
-      console.error("[RESEND] Error Response:", response.status, resData);
-      // Provide more helpful error messages for common Resend issues
-      let friendlyError = `Resend API error (${response.status})`;
-      if (resData.message) friendlyError += `: ${resData.message}`;
-      if (response.status === 403 && fromEmail === 'onboarding@resend.dev') {
-        friendlyError += ". Note: onboarding@resend.dev can only send to your own registered email address (anjanisp@gmail.com) until you verify a domain.";
-      }
-      // Log but don't necessarily throw if we want to be resilient in some contexts
-      // However, for test-email we want it to throw.
-      throw new Error(friendlyError);
-    }
-  } catch (err: any) {
-    console.error("[RESEND] Fetch Error:", err);
-    throw err;
-  }
-}
-
-// Optimization Logic (SEO & Content)
-async function runOptimization() {
-  console.log(`[${new Date().toISOString()}] Running scheduled SEO optimization...`);
-  try {
-    let posts: any[] = [];
-    if (isPostgres) {
-      const { rows } = await sql`SELECT * FROM posts`;
-      posts = rows;
-    } else {
-      posts = sqliteDb.prepare("SELECT * FROM posts").all();
-    }
-
-    for (const post of posts) {
-      let content = post.content;
-      let changed = false;
-
-      // 1. Ensure structure (H2, H3)
-      if (!content.includes("##")) {
-        content = content.replace(/###/g, "##");
-        changed = true;
-      }
-
-      // 2. Add Summary Block if missing
-      if (!content.includes("## Summary")) {
-        content += `\n\n## Summary\nThis article explores the critical transition from founder-led heroics to system-driven execution. By designing robust operating models, businesses can scale without compounding pressure on leadership.`;
-        changed = true;
-      }
-
-      // 3. Add Decision Checklist if missing
-      if (!content.includes("Decision Checklist")) {
-        content += `\n\n## Decision Checklist\n- [ ] Identify current bottlenecks in decision-making\n- [ ] Map decision ownership to specific roles\n- [ ] Document the 'Operating Spine' of your core processes\n- [ ] Test system resilience by removing founder involvement from a single workflow`;
-        changed = true;
-      }
-
-      // 4. Reinforce conceptual language
-      if (!content.includes("Operating Spine")) {
-        content = content.replace(/operating design/gi, "Operating Spine (operating design)");
-        changed = true;
-      }
-
-      if (changed) {
-        if (isPostgres) {
-          await sql`UPDATE posts SET content = ${content} WHERE id = ${post.id}`;
-        } else {
-          sqliteDb.prepare("UPDATE posts SET content = ? WHERE id = ?").run(content, post.id);
-        }
-        console.log(`Optimized post: ${post.id}`);
-      }
-    }
-    console.log("Optimization cycle complete.");
-  } catch (err) {
-    console.error("Optimization error:", err);
-  }
-}
-
-// Run optimization every 24 hours
-setInterval(runOptimization, 24 * 60 * 60 * 1000);
-// Also run once on startup after a short delay
-setTimeout(runOptimization, 10000);
-
-// Sitemap Route
-router.get("/sitemap.xml", async (req, res) => {
-  try {
-    let posts: any[] = [];
-    if (isPostgres) {
-      const { rows } = await sql`SELECT id, created_at FROM posts`;
-      posts = rows;
-    } else {
-      posts = sqliteDb.prepare("SELECT id, created_at FROM posts").all();
-    }
-
-    const baseUrl = process.env.APP_URL || 'https://www.anjanipandey.com';
-    
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>${baseUrl}/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/services</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/blog</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/book</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>`;
-
-    posts.forEach(post => {
-      xml += `
-  <url>
-    <loc>${baseUrl}/blog/${post.id}</loc>
-    <lastmod>${new Date(post.created_at || Date.now()).toISOString().split('T')[0]}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>`;
-    });
-
-    xml += `\n</urlset>`;
-    
-    res.header('Content-Type', 'application/xml');
-    res.send(xml);
-  } catch (err) {
-    res.status(500).send("Error generating sitemap");
-  }
-});
-
-router.post("/admin/test-email", adminAuth, async (req, res) => {
-  try {
-    await sendNotification("Test Email", "This is a test email to verify your Resend configuration.");
-    res.json({ success: true, message: "Test email sent. Check your inbox (and spam folder)." });
-  } catch (err: any) {
-    res.status(500).json({ error: "Failed to send test email", details: err.message });
-  }
-});
-
-router.post("/admin/save-resend-key", adminAuth, (req, res) => {
-  const { key } = req.body;
-  if (!key || !key.startsWith('re_')) {
-    return res.status(400).json({ error: "Invalid key format. Must start with 're_'" });
-  }
-  
-  memoryKey = key;
-  let savedToDisk = false;
-  let diskError = null;
-
-  try {
-    fs.writeFileSync(KEY_FILE, key, 'utf8');
-    savedToDisk = true;
-  } catch (err: any) {
-    diskError = err.message;
-    // Try /tmp as fallback
-    try {
-      fs.writeFileSync(TMP_KEY_FILE, key, 'utf8');
-      savedToDisk = true;
-      diskError = null; // Cleared if fallback works
-    } catch (e: any) {
-      diskError = `Primary: ${err.message}, Fallback: ${e.message}`;
-    }
-  }
-
-  if (savedToDisk) {
-    res.json({ success: true, message: "Key saved successfully (Memory + Disk)." });
-  } else {
-    res.json({ 
-      success: true, 
-      message: "Key saved to Memory ONLY (Disk write failed). It will work until the next restart.",
-      warning: diskError
-    });
-  }
-});
-
-router.post("/admin/restart-server", adminAuth, (req, res) => {
-  console.log("[ADMIN] Manual server restart requested.");
-  res.json({ success: true, message: "Server process exiting. The platform should restart it automatically." });
-  setTimeout(() => {
-    process.exit(0);
-  }, 1000);
-});
-
-// API Routes
-router.get("/health", async (req, res) => {
-  try {
-    // Force re-initialization if requested
-    const force = req.query.force === 'true';
-    let dbStatus = "Unknown";
-    let dbError = null;
-    
-    try {
-      if (isPostgres) {
-        await initDb(force);
-        dbStatus = "Postgres";
-      } else {
-        const db = getSqliteDb();
-        if (db) {
-          dbStatus = "SQLite";
-        } else if (useMockDb) {
-          dbStatus = "Mock (In-Memory)";
-        } else {
-          throw new Error("SQLite initialization failed and no fallback enabled");
-        }
-      }
-    } catch (err: any) {
-      console.error("Database initialization failed during health check:", err.message);
-      dbError = err.message;
-      // If we are on Vercel, we might still be okay with Mock DB
-      if (useMockDb) {
-        dbStatus = "Mock (In-Memory) [Fallback]";
-      } else {
-        dbStatus = "Failed";
-      }
-    }
-    
-    res.json({ 
-      status: dbError ? "warning" : "ok", 
-      db: dbStatus,
-      dbError,
-      initializedAt: dbInitializedAt,
-      vercel: !!process.env.VERCEL,
-      config: {
-        HAS_GEMINI: !!process.env.GEMINI_API_KEY,
-        HAS_RESEND: !!getResendKey(),
-        HAS_GOOGLE_DRIVE: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
-      }
-    });
-  } catch (err: any) {
-    console.error("Health Check Critical Error:", err);
-    res.status(200).json({ 
-      status: "critical_warning",
-      error: err.message, 
-      details: "Critical health check failure.",
-      isPostgres,
-      vercel: !!process.env.VERCEL
-    });
-  }
-});
-
-router.get("/debug", async (req, res) => {
-  try {
-    let postCount, commentCount;
-    if (isPostgres) {
-      const p = await sql`SELECT COUNT(*) as count FROM posts`;
-      const c = await sql`SELECT COUNT(*) as count FROM comments`;
-      postCount = p.rows[0];
-      commentCount = c.rows[0];
-    } else if (useMockDb) {
-      postCount = { count: initialPosts.length };
-      commentCount = { count: 0 };
-    } else {
-      const db = getSqliteDb();
-      if (!db) throw new Error("SQLite database not initialized");
-      postCount = db.prepare("SELECT COUNT(*) as count FROM posts").get();
-      commentCount = db.prepare("SELECT COUNT(*) as count FROM comments").get();
-    }
-    res.json({
-      status: "ok",
-      dbType: isPostgres ? "Postgres" : (useMockDb ? "Mock" : "SQLite"),
-      counts: { posts: postCount, comments: commentCount }
-    });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
+// 4. Blog Posts Routes
 router.get("/posts", async (req, res) => {
   try {
+    const { isPostgres, getSqliteDb, useMockDb, initialPosts } = await getDb();
+    const { sql } = await import("@vercel/postgres");
+    
     const limit = parseInt(req.query.limit as string) || 100;
     const offset = parseInt(req.query.offset as string) || 0;
 
     if (isPostgres) {
-      try {
-        const { rows } = await sql`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
-        return res.json(rows);
-      } catch (postgresErr: any) {
-        console.error("[POSTS] Postgres query failed, falling back to Mock/SQLite:", postgresErr.message);
-      }
+      const { rows } = await sql`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+      return res.json(rows);
     }
     
-    // Fallback to SQLite if not Postgres or if Postgres failed
     const db = getSqliteDb();
     if (db && !useMockDb) {
-      try {
-        const posts = db.prepare("SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?").all(limit, offset);
-        return res.json(posts);
-      } catch (sqliteErr: any) {
-        console.error("[POSTS] SQLite query failed, falling back to Mock:", sqliteErr.message);
-      }
+      const posts = db.prepare("SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?").all(limit, offset);
+      return res.json(posts);
     }
 
-    // Final fallback to Mock
     res.json(initialPosts.slice(offset, offset + limit));
   } catch (err: any) {
-    console.error("Error fetching posts:", err);
-    res.status(200).json({ 
-      status: "error",
-      error: "Failed to fetch posts", 
-      details: err.message 
-    });
+    res.status(200).json({ status: "error", error: "Failed to fetch posts", details: err.message });
   }
 });
 
 router.get("/posts/:id", async (req, res) => {
   try {
+    const { isPostgres, getSqliteDb, useMockDb, initialPosts } = await getDb();
+    const { sql } = await import("@vercel/postgres");
+
     if (isPostgres) {
-      try {
-        const { rows } = await sql`SELECT * FROM posts WHERE id = ${req.params.id}`;
-        if (rows.length > 0) return res.json(rows[0]);
-      } catch (e) {
-        console.warn("[POST DETAIL] Postgres failed, falling back.");
-      }
+      const { rows } = await sql`SELECT * FROM posts WHERE id = ${req.params.id}`;
+      if (rows.length > 0) return res.json(rows[0]);
     }
-    
     const db = getSqliteDb();
     if (db && !useMockDb) {
-      try {
-        const post = db.prepare("SELECT * FROM posts WHERE id = ?").get(req.params.id);
-        if (post) return res.json(post);
-      } catch (e) {
-        console.warn("[POST DETAIL] SQLite failed, falling back.");
-      }
+      const post = db.prepare("SELECT * FROM posts WHERE id = ?").get(req.params.id);
+      if (post) return res.json(post);
     }
-
-    // Final fallback to Mock
     const post = initialPosts.find(p => p.id === req.params.id);
     if (!post) return res.status(404).json({ error: "Post not found" });
     res.json(post);
   } catch (err: any) {
-    console.error("Error fetching post:", err);
     res.status(500).json({ error: "Failed to fetch post", details: err.message });
   }
 });
 
-router.post("/admin/posts", adminAuth, async (req, res) => {
-  const { title, date, category, excerpt, content } = req.body;
-  const id = title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
-  try {
-    if (isPostgres) {
-      // Use UPSERT logic for Postgres
-      await sql`
-        INSERT INTO posts (id, title, date, category, excerpt, content)
-        VALUES (${id}, ${title}, ${date}, ${category}, ${excerpt}, ${content})
-        ON CONFLICT (id) DO UPDATE SET
-          title = EXCLUDED.title,
-          date = EXCLUDED.date,
-          category = EXCLUDED.category,
-          excerpt = EXCLUDED.excerpt,
-          content = EXCLUDED.content
-      `;
-      const { rows } = await sql`SELECT * FROM posts WHERE id = ${id}`;
-      await sendNotification("Blog Post Updated/Published", `Title: ${title}\nCategory: ${category}`);
-      res.status(201).json(rows[0]);
-    } else if (useMockDb) {
-      const mockPost = { id, title, date, category, excerpt, content, created_at: new Date().toISOString() };
-      await sendNotification("Blog Post Updated/Published (Mock DB)", `Title: ${title}\nCategory: ${category}`);
-      res.status(201).json(mockPost);
-    } else {
-      const db = getSqliteDb();
-      if (!db) throw new Error("SQLite database not initialized");
-      // For SQLite, we can use INSERT OR REPLACE
-      db.prepare("INSERT OR REPLACE INTO posts (id, title, date, category, excerpt, content) VALUES (?, ?, ?, ?, ?, ?)")
-        .run(id, title, date, category, excerpt, content);
-      const newPost = db.prepare("SELECT * FROM posts WHERE id = ?").get(id);
-      await sendNotification("Blog Post Updated/Published", `Title: ${title}\nCategory: ${category}`);
-      res.status(201).json(newPost);
-    }
-  } catch (err: any) {
-    console.error("Error creating/updating post:", err);
-    res.status(500).json({ error: "Failed to save post", details: err.message });
-  }
-});
-
-router.delete("/admin/posts/:id", adminAuth, async (req, res) => {
-  const { id } = req.params;
-  try {
-    if (isPostgres) {
-      await sql`DELETE FROM posts WHERE id = ${id}`;
-      // Also delete associated comments
-      await sql`DELETE FROM comments WHERE post_id = ${id}`;
-    } else if (useMockDb) {
-      console.log("Mock DB delete (no persistence)");
-    } else {
-      const db = getSqliteDb();
-      if (!db) throw new Error("SQLite database not initialized");
-      db.prepare("DELETE FROM posts WHERE id = ?").run(id);
-      db.prepare("DELETE FROM comments WHERE post_id = ?").run(id);
-    }
-    res.json({ success: true, message: "Post and associated comments deleted" });
-  } catch (err: any) {
-    res.status(500).json({ error: "Failed to delete post", details: err.message });
-  }
-});
-
+// 5. Comments Routes
 router.get("/blog/:id/comments", async (req, res) => {
   try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    const { sql } = await import("@vercel/postgres");
+
     if (isPostgres) {
       const { rows } = await sql`SELECT * FROM comments WHERE post_id = ${req.params.id} ORDER BY created_at ASC`;
-      res.json(rows);
-    } else if (useMockDb) {
-      res.json([]);
-    } else {
-      const db = getSqliteDb();
-      if (!db) throw new Error("SQLite database not initialized");
-      const comments = db.prepare("SELECT * FROM comments WHERE post_id = ? ORDER BY created_at ASC").all(req.params.id);
-      res.json(comments);
+      return res.json(rows);
     }
+    const db = getSqliteDb();
+    if (db && !useMockDb) {
+      const comments = db.prepare("SELECT * FROM comments WHERE post_id = ? ORDER BY created_at ASC").all(req.params.id);
+      return res.json(comments);
+    }
+    res.json([]);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch comments" });
   }
@@ -954,10 +190,11 @@ router.get("/blog/:id/comments", async (req, res) => {
 router.post("/blog/:id/comments", async (req, res) => {
   const { id } = req.params;
   const { name, email, website, phone, comment, parent_id, is_admin } = req.body;
-  
-  console.log(`[COMMENT] New comment attempt on post: ${id} from: ${name}`);
-  
   try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    const { sql } = await import("@vercel/postgres");
+    const { sendNotification } = await getUtils();
+
     let commentObj;
     if (isPostgres) {
       const { rows } = await sql`
@@ -975,22 +212,77 @@ router.post("/blog/:id/comments", async (req, res) => {
         .run(id, name, email, website || null, phone || null, comment, parent_id || null, is_admin ? 1 : 0);
       commentObj = db.prepare("SELECT * FROM comments WHERE id = ?").get(info.lastInsertRowid);
     }
-
-    // Send notification in background - don't block the response
-    const type = is_admin ? "Admin Reply" : "New User Comment";
-    sendNotification(`${type} on ${id}`, `From: ${name} (${email})\nComment: ${comment}`)
-      .then(() => console.log(`[COMMENT] Notification sent for comment ${commentObj.id}`))
-      .catch(err => console.error(`[COMMENT] Notification failed for comment ${commentObj.id}:`, err.message));
-
+    sendNotification(`New Comment on ${id}`, `From: ${name}\nComment: ${comment}`).catch(() => {});
     res.status(201).json(commentObj);
   } catch (err: any) {
-    console.error("[COMMENT] Error saving comment:", err);
-    res.status(500).json({ error: "Internal server error", details: err.message });
+    res.status(500).json({ error: "Failed to save comment", details: err.message });
   }
 });
 
-router.get("/admin/comments", adminAuth, async (req, res) => {
+// 6. Admin Routes
+router.post("/admin/posts", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  const { title, date, category, excerpt, content } = req.body;
+  const id = title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
   try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    const { sql } = await import("@vercel/postgres");
+
+    if (isPostgres) {
+      await sql`
+        INSERT INTO posts (id, title, date, category, excerpt, content)
+        VALUES (${id}, ${title}, ${date}, ${category}, ${excerpt}, ${content})
+        ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, date = EXCLUDED.date, category = EXCLUDED.category, excerpt = EXCLUDED.excerpt, content = EXCLUDED.content
+      `;
+      const { rows } = await sql`SELECT * FROM posts WHERE id = ${id}`;
+      return res.status(201).json(rows[0]);
+    }
+    const db = getSqliteDb();
+    if (db && !useMockDb) {
+      db.prepare("INSERT OR REPLACE INTO posts (id, title, date, category, excerpt, content) VALUES (?, ?, ?, ?, ?, ?)")
+        .run(id, title, date, category, excerpt, content);
+      const newPost = db.prepare("SELECT * FROM posts WHERE id = ?").get(id);
+      return res.status(201).json(newPost);
+    }
+    res.status(201).json({ id, title, date, category, excerpt, content });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to save post", details: err.message });
+  }
+});
+
+router.post("/subscribe", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "Email is required" });
+  try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    const { sql } = await import("@vercel/postgres");
+    const { sendNotification } = await getUtils();
+
+    if (isPostgres) {
+      await sql`INSERT INTO subscriptions (email) VALUES (${email}) ON CONFLICT (email) DO NOTHING`;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        db.prepare("INSERT OR IGNORE INTO subscriptions (email) VALUES (?)").run(email);
+      }
+    }
+    sendNotification("New Newsletter Subscriber", `Email: ${email}`).catch(() => {});
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to subscribe", details: err.message });
+  }
+});
+
+router.get("/admin/comments", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    const { sql } = await import("@vercel/postgres");
+
     const limit = parseInt(req.query.limit as string) || 500;
     if (isPostgres) {
       const { rows } = await sql`
@@ -1000,102 +292,74 @@ router.get("/admin/comments", adminAuth, async (req, res) => {
         ORDER BY c.created_at DESC
         LIMIT ${limit}
       `;
-      res.json(rows);
-    } else {
-      const comments = sqliteDb.prepare(`
+      return res.json(rows);
+    }
+    const db = getSqliteDb();
+    if (db && !useMockDb) {
+      const rows = db.prepare(`
         SELECT c.*, p.title as post_title 
         FROM comments c 
         JOIN posts p ON c.post_id = p.id 
         ORDER BY c.created_at DESC
         LIMIT ?
       `).all(limit);
-      res.json(comments);
+      return res.json(rows);
     }
+    res.json([]);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch comments" });
   }
 });
 
-router.delete("/admin/comments/:id", adminAuth, async (req, res) => {
+router.delete("/admin/comments/:id", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
   try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    const { sql } = await import("@vercel/postgres");
+
     if (isPostgres) {
       await sql`DELETE FROM comments WHERE id = ${req.params.id} OR parent_id = ${req.params.id}`;
-    } else if (useMockDb) {
-      console.log("Mock DB delete (no persistence)");
     } else {
       const db = getSqliteDb();
-      if (!db) throw new Error("SQLite database not initialized");
-      db.prepare("DELETE FROM comments WHERE id = ? OR parent_id = ?").run(req.params.id, req.params.id);
+      if (db && !useMockDb) {
+        db.prepare("DELETE FROM comments WHERE id = ? OR parent_id = ?").run(req.params.id, req.params.id);
+      }
     }
-    await sendNotification("Comment Deleted", `Comment ID ${req.params.id} and its replies have been removed.`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Failed to delete comment" });
   }
 });
 
-router.post("/subscribe", async (req, res) => {
-  const { email } = req.body;
-  console.log("Subscription request received for:", email);
-  if (!email) return res.status(400).json({ error: "Email is required" });
-  
+router.get("/admin/subscriptions", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
   try {
-    if (isPostgres) {
-      console.log("Attempting Postgres subscription insert...");
-      await sql`INSERT INTO subscriptions (email) VALUES (${email}) ON CONFLICT (email) DO NOTHING`;
-    } else if (useMockDb) {
-      console.log("Mock DB subscription success (no persistence)");
-    } else {
-      console.log("Attempting SQLite subscription insert...");
-      const db = getSqliteDb();
-      if (!db) throw new Error("SQLite database not initialized");
-      db.exec("CREATE TABLE IF NOT EXISTS subscriptions (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
-      db.prepare("INSERT OR IGNORE INTO subscriptions (email) VALUES (?)").run(email);
-    }
-    console.log("Subscription successful for:", email);
-    sendNotification("New Newsletter Subscriber", `Email: ${email}`).catch(e => console.error("Notification failed:", e));
-    res.json({ success: true, message: "Subscribed successfully!" });
-  } catch (err: any) {
-    console.error("Subscription error:", err);
-    res.status(500).json({ error: "Failed to subscribe", details: err.message });
-  }
-});
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    const { sql } = await import("@vercel/postgres");
 
-router.get("/admin/subscriptions", adminAuth, async (req, res) => {
-  try {
     if (isPostgres) {
       const { rows } = await sql`SELECT * FROM subscriptions ORDER BY created_at DESC`;
-      res.json(rows);
-    } else {
-      sqliteDb.exec("CREATE TABLE IF NOT EXISTS subscriptions (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
-      const rows = sqliteDb.prepare("SELECT * FROM subscriptions ORDER BY created_at DESC").all();
-      res.json(rows);
+      return res.json(rows);
     }
+    const db = getSqliteDb();
+    if (db && !useMockDb) {
+      const rows = db.prepare("SELECT * FROM subscriptions ORDER BY created_at DESC").all();
+      return res.json(rows);
+    }
+    res.json([]);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch subscriptions" });
   }
 });
 
-// For local development (only if run directly)
-const isMain = import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('api/index.ts');
-if (isMain && process.env.NODE_ENV !== "production") {
-  const PORT = 3000;
-  const app = express();
-  app.use(express.json());
-  app.use(router);
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`API-only server running on http://localhost:${PORT}`);
-  });
-}
-
 // Error handler for API routes
 router.use((err: any, req: any, res: any, next: any) => {
   console.error("[API ROUTE ERROR]", err);
-  res.status(200).json({ 
-    status: "error",
-    error: "Internal API Error", 
-    details: err.message || "An unknown error occurred in the API"
-  });
+  res.status(200).json({ status: "error", error: "Internal API Error", details: err.message });
 });
 
 export default apiApp;
