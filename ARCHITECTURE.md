@@ -86,4 +86,14 @@ The application uses a relational database with the following tables:
 - **Hard Restart**: Available in Admin -> System to reload environment variables.
 
 ---
-*Last Updated: 2026-04-07 (Updated with Robust Documentation Download)*
+
+## 7. Future Build Ideas
+- **Chatbot UI Improvements (COMPLETED)**:
+  - ✅ Implement line breaks between paragraphs in chatbot answers to improve readability.
+  - ✅ Fix color contrast for user messages (question stem); increase text whiteness on blue backgrounds for better visibility.
+- **Self-Audit System**:
+  - Build an automated self-audit tool that runs periodically (e.g., every alternate day).
+  - The tool should perform end-to-end system health checks and store results for future reference and diagnostics.
+
+---
+*Last Updated: 2026-04-07 (Completed Chatbot UI Improvements)*

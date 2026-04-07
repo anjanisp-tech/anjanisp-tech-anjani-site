@@ -192,9 +192,11 @@ router.get("/admin/architecture", async (req, res, next) => {
     let content = "";
     let foundPath = "";
     let lastError = "";
+    let checkedPaths: string[] = [];
 
     for (const p of possiblePaths) {
       try {
+        checkedPaths.push(p);
         console.log(`[ARCHITECTURE] Checking path: ${p}`);
         content = await fs.readFile(p, "utf-8");
         foundPath = p;
@@ -205,7 +207,20 @@ router.get("/admin/architecture", async (req, res, next) => {
     }
 
     if (!foundPath) {
-      throw new Error(`Could not find ARCHITECTURE.md in any of the expected locations. Last error: ${lastError}`);
+      // Debug: List files in current and parent dir
+      let dirInfo = "";
+      try {
+        const files = await fs.readdir(process.cwd());
+        dirInfo = `CWD (${process.cwd()}): ${files.join(", ")}`;
+        const parentFiles = await fs.readdir(path.join(process.cwd(), "..")).catch(() => []);
+        if (parentFiles.length > 0) {
+          dirInfo += ` | PARENT: ${parentFiles.join(", ")}`;
+        }
+      } catch (e: any) {
+        dirInfo = `Failed to list dirs: ${e.message}`;
+      }
+
+      throw new Error(`Could not find ARCHITECTURE.md. Checked: ${checkedPaths.join(", ")}. Last error: ${lastError}. Dir info: ${dirInfo}`);
     }
 
     console.log(`[ARCHITECTURE] Successfully read file from: ${foundPath}`);
