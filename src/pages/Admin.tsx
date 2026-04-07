@@ -299,30 +299,8 @@ export default function Admin() {
     }
   };
 
-  const handleDownloadArchitecture = async () => {
-    const secret = password || localStorage.getItem('admin_pwd') || '';
-    try {
-      const res = await fetch('/api/admin/architecture', {
-        headers: { 'Authorization': `Bearer ${secret}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const blob = new Blob([data.content], { type: 'text/markdown' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.setAttribute('hidden', '');
-        a.setAttribute('href', url);
-        a.setAttribute('download', 'ARCHITECTURE.md');
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      } else {
-        const data = await res.json().catch(() => ({ error: "Unknown error" }));
-        alert(`Failed to download architecture doc: ${data.error || "Unknown error"}${data.details ? ` (${data.details})` : ""}`);
-      }
-    } catch (err) {
-      alert("Network error during download.");
-    }
+  const handleDownloadArchitecture = () => {
+    window.open('/ARCHITECTURE.md', '_blank');
   };
 
   const fetchAudits = async () => {
@@ -348,10 +326,11 @@ export default function Admin() {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${secret}` }
       });
+      const data = await res.json().catch(() => ({ error: "Unknown error" }));
       if (res.ok) {
         fetchAudits();
       } else {
-        alert("Audit failed.");
+        alert(`Audit failed: ${data.error || "Unknown error"}${data.details ? ` (${data.details})` : ""}`);
       }
     } catch (err) {
       alert("Network error during audit.");

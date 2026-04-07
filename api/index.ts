@@ -172,78 +172,6 @@ router.post("/admin/init-db", async (req, res, next) => {
   }
 });
 
-router.get("/admin/architecture", async (req, res, next) => {
-  try {
-    const { adminAuth } = await getUtils();
-    adminAuth(req, res, next);
-  } catch (err) {
-    next(err);
-  }
-}, async (req, res) => {
-  try {
-    const fs = await import("fs/promises");
-    const path = await import("path");
-    const { fileURLToPath } = await import("url");
-    
-    // Try multiple possible locations for the file
-    const possiblePaths = [
-      path.join(process.cwd(), "ARCHITECTURE.md"),
-      path.join(process.cwd(), "..", "ARCHITECTURE.md"),
-    ];
-
-    try {
-      const __filename = fileURLToPath(import.meta.url);
-      const __dirname = path.dirname(__filename);
-      possiblePaths.push(path.join(__dirname, "..", "ARCHITECTURE.md"));
-      possiblePaths.push(path.join(__dirname, "ARCHITECTURE.md"));
-    } catch (e) {}
-
-    let content = "";
-    let foundPath = "";
-    let lastError = "";
-    let checkedPaths: string[] = [];
-
-    for (const p of possiblePaths) {
-      try {
-        checkedPaths.push(p);
-        console.log(`[ARCHITECTURE] Checking path: ${p}`);
-        content = await fs.readFile(p, "utf-8");
-        foundPath = p;
-        break;
-      } catch (err: any) {
-        lastError = err.message;
-      }
-    }
-
-    if (!foundPath) {
-      // Debug: List files in current and parent dir
-      let dirInfo = "";
-      try {
-        const files = await fs.readdir(process.cwd());
-        dirInfo = `CWD (${process.cwd()}): ${files.join(", ")}`;
-        const parentFiles = await fs.readdir(path.join(process.cwd(), "..")).catch(() => []);
-        if (parentFiles.length > 0) {
-          dirInfo += ` | PARENT: ${parentFiles.join(", ")}`;
-        }
-      } catch (e: any) {
-        dirInfo = `Failed to list dirs: ${e.message}`;
-      }
-
-      throw new Error(`Could not find ARCHITECTURE.md. Checked: ${checkedPaths.join(", ")}. Last error: ${lastError}. Dir info: ${dirInfo}`);
-    }
-
-    console.log(`[ARCHITECTURE] Successfully read file from: ${foundPath}`);
-    res.json({ content });
-  } catch (err: any) {
-    console.error("[ARCHITECTURE ERROR]", err);
-    res.status(500).json({ 
-      error: "Failed to read architecture file", 
-      details: err.message,
-      path: err.path || "unknown"
-    });
-  }
-});
-
 router.get("/admin/audits", async (req, res, next) => {
   try {
     const { adminAuth } = await getUtils();
@@ -257,11 +185,28 @@ router.get("/admin/audits", async (req, res, next) => {
     let audits = [];
     if (isPostgres) {
       const { sql } = await import("@vercel/postgres");
+      // Ensure table exists
+      await sql`
+        CREATE TABLE IF NOT EXISTS audits (
+          id SERIAL PRIMARY KEY,
+          status TEXT NOT NULL,
+          details TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
       const result = await sql`SELECT * FROM audits ORDER BY created_at DESC LIMIT 50`;
       audits = result.rows;
     } else {
       const db = getSqliteDb();
       if (db) {
+        db.exec(`
+          CREATE TABLE IF NOT EXISTS audits (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            status TEXT NOT NULL,
+            details TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
         audits = db.prepare("SELECT * FROM audits ORDER BY created_at DESC LIMIT 50").all();
       }
     }
@@ -335,14 +280,38 @@ router.post("/admin/audit", async (req, res, next) => {
     const overallStatus = Object.values(results.checks).every((c: any) => c.status === "ok") ? "healthy" : "degraded";
     const details = JSON.stringify(results);
 
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      await sql`INSERT INTO audits (status, details) VALUES (${overallStatus}, ${details})`;
-    } else {
-      const db = getSqliteDb();
-      if (db) {
-        db.prepare("INSERT INTO audits (status, details) VALUES (?, ?)").run(overallStatus, details);
+    try {
+      if (isPostgres) {
+        const { sql } = await import("@vercel/postgres");
+        // Ensure table exists before insert
+        await sql`
+          CREATE TABLE IF NOT EXISTS audits (
+            id SERIAL PRIMARY KEY,
+            status TEXT NOT NULL,
+            details TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        `;
+        await sql`INSERT INTO audits (status, details) VALUES (${overallStatus}, ${details})`;
+      } else {
+        const db = getSqliteDb();
+        if (db) {
+          db.exec(`
+            CREATE TABLE IF NOT EXISTS audits (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              status TEXT NOT NULL,
+              details TEXT NOT NULL,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+          `);
+          db.prepare("INSERT INTO audits (status, details) VALUES (?, ?)").run(overallStatus, details);
+        }
       }
+    } catch (e: any) {
+      console.error("[AUDIT DB ERROR]", e);
+      // Don't fail the whole request if just the log insert fails, 
+      // but we'll include it in the response
+      results.db_log_error = e.message;
     }
 
     res.json({ success: true, status: overallStatus, results });

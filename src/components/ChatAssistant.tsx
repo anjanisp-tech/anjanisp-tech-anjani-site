@@ -120,8 +120,8 @@ export default function ChatAssistant() {
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${m.role === 'user' ? 'bg-accent text-white' : 'bg-white border border-border text-accent'}`}>
                       {m.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                     </div>
-                    <div className={`p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user' ? 'bg-accent text-white font-medium rounded-tr-none' : 'bg-white border border-border text-accent-light rounded-tl-none shadow-sm'}`}>
-                      <div className="prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-li:my-1">
+                    <div className={`p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user' ? 'bg-accent text-white font-bold rounded-tr-none' : 'bg-white border border-border text-accent-light rounded-tl-none shadow-sm'}`}>
+                      <div className="prose prose-sm max-w-none prose-p:my-4 prose-ul:my-2 prose-li:my-1">
                         <Markdown remarkPlugins={[remarkBreaks]}>{m.content}</Markdown>
                       </div>
                       

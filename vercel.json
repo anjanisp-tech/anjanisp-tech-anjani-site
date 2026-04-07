@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api/index.ts": {
-      "includeFiles": "ARCHITECTURE.* AGENTS.md"
+      "includeFiles": "../ARCHITECTURE.md"
     }
   },
   "rewrites": [

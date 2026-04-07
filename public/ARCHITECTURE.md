@@ -87,9 +87,8 @@ The application uses a relational database with the following tables:
 
 ## 6. Maintenance & Operations
 - **Database Init**: Can be re-run from the Admin -> System tab to ensure schema integrity. Automatically handles table creation for Postgres and SQLite.
-- **Documentation Management**: The `ARCHITECTURE.md` file can be downloaded directly from the Admin -> System tab. The download mechanism includes robust path resolution. Deployment configuration in `vercel.json` ensures these files are included in the serverless function bundle.
+- **Documentation Management**: The `ARCHITECTURE.md` file is hosted in the `public/` directory for direct access. It can be downloaded or viewed directly from the Admin -> System tab.
 - **Knowledge Sync**: Can be forced from the Admin -> Knowledge tab if the Google Doc is updated.
-- **Vercel Config**: `vercel.json` is configured to include documentation files (`ARCHITECTURE.*`, `AGENTS.md`) in the serverless function bundle to ensure they are available for download at runtime.
 - **Hard Restart**: Available in Admin -> System to reload environment variables.
 
 ---
