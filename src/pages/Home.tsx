@@ -137,7 +137,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* NEW SECTION – Founder Tax Lead Magnet */}
+      {/* NEW SECTION – Bottleneck Cost Lead Magnet */}
       <section className="bg-accent text-white py-24 overflow-hidden relative">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 -skew-x-12 translate-x-1/2" />
         <div className="container-custom relative z-10">
@@ -147,14 +147,14 @@ export default function Home() {
                 Lead Magnet
               </div>
               <h2 className="text-4xl md:text-5xl text-white mb-6 leading-tight">
-                What is your <span className="text-white/60 italic">Founder Tax?</span>
+                What is your <span className="text-white/60 italic">Bottleneck Cost?</span>
               </h2>
               <p className="text-xl text-white/70 mb-8 leading-relaxed">
                 Being the "Hero" of your company isn't just exhausting—it's expensive. 
-                Our interactive calculator quantifies the specific dollar amount you are losing by being the bottleneck.
+                Our interactive calculator quantifies the specific financial loss caused by structural gaps.
               </p>
               <Link to="/calculator" className="bg-white text-accent hover:bg-muted px-10 py-4 rounded-md font-bold text-lg transition-all inline-flex items-center gap-3 shadow-xl">
-                Calculate Your Tax
+                Calculate Your Cost
                 <ArrowRight size={20} />
               </Link>
             </div>
@@ -169,7 +169,7 @@ export default function Home() {
                   <span className="text-xl font-mono font-bold">$XXX,XXX</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-white/60">Total Founder Tax</span>
+                  <span className="text-sm font-medium text-white/60">Total Bottleneck Cost</span>
                   <span className="text-3xl font-mono font-bold text-white">$XXX,XXX</span>
                 </div>
                 <div className="pt-4">
