@@ -10,9 +10,9 @@ apiApp.use("/api", router);
 apiApp.use("/", router);
 
 // Lazy import helpers to avoid top-level crashes
-const getDb = async () => import("./db");
-const getUtils = async () => import("./utils");
-const getKnowledge = async () => import("./knowledgeService");
+const getDb = async () => import("./db.js");
+const getUtils = async () => import("./utils.js");
+const getKnowledge = async () => import("./knowledgeService.js");
 
 // Error handler for apiApp itself
 apiApp.use((err: any, req: any, res: any, next: any) => {
@@ -35,25 +35,41 @@ router.get("/diagnostic", (req, res) => {
     const hasGemini = !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 10;
     const geminiMasked = process.env.GEMINI_API_KEY ? `${process.env.GEMINI_API_KEY.substring(0, 4)}...${process.env.GEMINI_API_KEY.substring(process.env.GEMINI_API_KEY.length - 4)}` : "missing";
     const hasPostgres = !!process.env.POSTGRES_URL && process.env.POSTGRES_URL.includes('://');
-    
-    // Minimal Resend check without utils.ts
     let hasResend = !!process.env.RESEND_API_KEY || !!process.env.VITE_RESEND_API_KEY;
     if (!hasResend) {
       hasResend = Object.values(process.env).some(v => typeof v === 'string' && v.startsWith('re_'));
+    }
+    const hasGoogleDrive = !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+
+    let geminiTest = "Not tested";
+    if (hasGemini) {
+      try {
+        let apiKey = process.env.GEMINI_API_KEY!.trim().replace(/^["']|["']$/g, '');
+        const ai = new GoogleGenAI({ apiKey });
+        const testResponse = await ai.models.generateContent({
+          model: "gemini-3.1-flash-lite-preview",
+          contents: "hi",
+          config: { maxOutputTokens: 5 }
+        });
+        geminiTest = testResponse.text ? "Success: " + testResponse.text.substring(0, 20) : "Empty response";
+      } catch (err: any) {
+        geminiTest = "Failed: " + (err.message || "Unknown error");
+      }
     }
 
     res.json({
       status: "ok",
       isVercel: !!process.env.VERCEL,
       timestamp: new Date().toISOString(),
-      version: "1.0.3",
+      version: "1.0.4",
+      geminiTest,
       env: {
         NODE_ENV: process.env.NODE_ENV,
         HAS_POSTGRES: hasPostgres,
         HAS_GEMINI: hasGemini,
         GEMINI_KEY_MASKED: geminiMasked,
         HAS_RESEND: hasResend,
-        HAS_GOOGLE_DRIVE: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+        HAS_GOOGLE_DRIVE: hasGoogleDrive
       }
     });
   } catch (err: any) {
@@ -99,7 +115,7 @@ router.post("/chat", async (req, res) => {
     const systemInstruction = `You are "The Scaling Architect," a digital proxy for Anjani Pandey... ${knowledge ? `\n\nContext: ${knowledge.substring(0, 15000)}` : ""}`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3.1-flash-lite-preview",
       contents: [
         ...(history || []).map((h: any) => ({
           role: h.role === "user" ? "user" : "model",
