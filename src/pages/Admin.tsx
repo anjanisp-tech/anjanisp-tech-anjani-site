@@ -39,7 +39,7 @@ export default function Admin() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const secret = (import.meta as any).env?.VITE_ADMIN_PASSWORD || 'admin123';
+      const secret = (import.meta as any).env?.VITE_ADMIN_PASSWORD || 'scaling2024';
       if (password === secret) {
         setIsAuthenticated(true);
         localStorage.setItem('admin_auth', 'true');
@@ -49,7 +49,7 @@ export default function Admin() {
       }
     } catch (err) {
       console.error("Login error:", err);
-      if (password === 'admin123') {
+      if (password === 'scaling2024') {
         setIsAuthenticated(true);
         localStorage.setItem('admin_auth', 'true');
         localStorage.setItem('admin_pwd', password);
@@ -87,34 +87,27 @@ export default function Admin() {
     }
     
     if (activeTab === 'system' && isAuthenticated) {
-      fetch('/api/health').then(res => res.json()).then(data => {
+      fetch('/api/diagnostic').then(res => res.json()).then(data => {
         const resendEl = document.getElementById('resend-status');
         const dbEl = document.getElementById('db-status');
         const envEl = document.getElementById('env-debug');
         
         if (resendEl) {
-          resendEl.innerText = data.resendConfigured ? 'Configured' : 'Missing or Invalid API Key';
-          resendEl.className = `px-2 py-0.5 rounded ${data.resendConfigured ? 'bg-slate-100 text-slate-700' : 'bg-red-100 text-red-700'}`;
+          resendEl.innerText = data.env?.HAS_RESEND ? 'Configured' : 'Missing or Invalid API Key';
+          resendEl.className = `px-2 py-0.5 rounded ${data.env?.HAS_RESEND ? 'bg-slate-100 text-slate-700' : 'bg-red-100 text-red-700'}`;
         }
         if (dbEl) {
-          dbEl.innerText = data.dbType + (data.postgresConfigured ? ' (Postgres)' : ' (Local SQLite)');
-          dbEl.className = `px-2 py-0.5 rounded ${data.postgresConfigured ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-700'}`;
+          dbEl.innerText = data.dbStatus;
+          dbEl.className = `px-2 py-0.5 rounded bg-slate-100 text-slate-700`;
         }
-        if (envEl && data.envCheck) {
+        if (envEl && data.env) {
           envEl.innerHTML = `
             <div class="mt-4 p-3 bg-black/5 rounded text-[10px] font-mono space-y-1">
-              <div class="flex justify-between"><span>RESEND_KEY:</span> <span>${data.envCheck.hasResendKey ? 'PRESENT (' + data.envCheck.resendKeyLength + ' chars)' : 'MISSING'}</span></div>
-              <div class="flex justify-between"><span>FROM_EMAIL:</span> <span>${data.envCheck.fromEmail}</span></div>
-              <div class="flex justify-between"><span>TO_EMAIL:</span> <span>${data.envCheck.toEmail}</span></div>
-              <div class="flex justify-between"><span>DB_TYPE:</span> <span>${data.dbType}</span></div>
-              <div class="flex justify-between"><span>LAST_SYNC:</span> <span>${new Date(data.initializedAt).toLocaleTimeString()}</span></div>
-              <div class="flex justify-between"><span>OVERRIDE:</span> <span class="${data.envCheck.usingOverrideFile ? 'text-slate-900 font-bold' : ''}">${data.envCheck.usingOverrideFile ? 'ACTIVE' : 'NONE'}</span></div>
-              <div class="mt-2 pt-2 border-t border-black/10">
-                <div class="mb-1 opacity-50">Detected Keys:</div>
-                <div class="flex flex-wrap gap-1">
-                  ${data.envCheck.allKeys.map((k: string) => `<span class="bg-black/10 px-1 rounded">${k}</span>`).join('')}
-                </div>
-              </div>
+              <div class="flex justify-between"><span>GEMINI_KEY:</span> <span>${data.env.HAS_GEMINI ? 'PRESENT (' + data.env.GEMINI_KEY_MASKED + ')' : 'MISSING'}</span></div>
+              <div class="flex justify-between"><span>DB_STATUS:</span> <span>${data.dbStatus}</span></div>
+              <div class="flex justify-between"><span>KNOWLEDGE:</span> <span>${data.knowledgeStatus}</span></div>
+              <div class="flex justify-between"><span>GEMINI_TEST:</span> <span>${data.geminiTest}</span></div>
+              <div class="flex justify-between"><span>VERSION:</span> <span>${data.version}</span></div>
             </div>
           `;
         }
@@ -142,7 +135,7 @@ export default function Admin() {
       }).catch(() => {});
 
       const res = await fetch('/api/admin/comments', {
-        headers: { 'x-admin-password': secret }
+        headers: { 'Authorization': `Bearer ${secret}` }
       });
       
       if (res.status === 401) {
@@ -181,7 +174,7 @@ export default function Admin() {
     try {
       const res = await fetch(`/api/admin/posts/${id}`, { 
         method: 'DELETE',
-        headers: { 'x-admin-password': secret }
+        headers: { 'Authorization': `Bearer ${secret}` }
       });
       if (res.ok) {
         setBlogs(blogs.filter(b => b.id !== id));
@@ -211,7 +204,7 @@ export default function Admin() {
     const secret = password || localStorage.getItem('admin_pwd') || '';
     try {
       const res = await fetch('/api/admin/subscriptions', {
-        headers: { 'x-admin-password': secret }
+        headers: { 'Authorization': `Bearer ${secret}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -228,7 +221,7 @@ export default function Admin() {
     try {
       const res = await fetch(`/api/admin/comments/${id}`, { 
         method: 'DELETE',
-        headers: { 'x-admin-password': secret }
+        headers: { 'Authorization': `Bearer ${secret}` }
       });
       if (res.ok) {
         setComments(comments.filter(c => c.id !== id));
@@ -273,7 +266,7 @@ export default function Admin() {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-admin-password': secret
+          'Authorization': `Bearer ${secret}`
         },
         body: JSON.stringify(blogForm)
       });
@@ -694,7 +687,7 @@ export default function Admin() {
                                 method: 'POST',
                                 headers: { 
                                   'Content-Type': 'application/json',
-                                  'x-admin-password': secret
+                                  'Authorization': `Bearer ${secret}`
                                 },
                                 body: JSON.stringify({ key })
                               });
@@ -732,7 +725,7 @@ export default function Admin() {
                           try {
                             const res = await fetch('/api/admin/test-email', {
                               method: 'POST',
-                              headers: { 'x-admin-password': secret }
+                              headers: { 'Authorization': `Bearer ${secret}` }
                             });
                             const data = await res.json();
                             if (res.ok) alert("Success: " + data.message);
@@ -763,7 +756,7 @@ export default function Admin() {
                           try {
                             const res = await fetch('/api/admin/restart-server', {
                               method: 'POST',
-                              headers: { 'x-admin-password': secret }
+                              headers: { 'Authorization': `Bearer ${secret}` }
                             });
                             const data = await res.json();
                             alert(data.message);
@@ -799,8 +792,8 @@ export default function Admin() {
                         btn.innerText = "Syncing...";
                         const secret = password || localStorage.getItem('admin_pwd') || '';
                         try {
-                          const res = await fetch('/api/health?force=true', {
-                            headers: { 'x-admin-password': secret }
+                          const res = await fetch('/api/diagnostic?force=true', {
+                            headers: { 'Authorization': `Bearer ${secret}` }
                           });
                           const data = await res.json();
                           if (res.ok) {
