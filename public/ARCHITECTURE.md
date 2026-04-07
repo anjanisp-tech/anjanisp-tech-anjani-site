@@ -102,5 +102,9 @@ The application uses a relational database with the following tables:
   - ✅ The tool performs end-to-end system health checks (Database, Gemini API, Knowledge Base, Resend API).
   - ✅ Results are stored in the `audits` table and viewable in the Admin -> System tab.
 
+### 8. Current Known Issues (Audit Failures)
+- **Knowledge Base Audit**: Currently reporting "Error". Likely due to missing or inaccessible Google Doc ID in settings.
+- **Resend API Audit**: Currently reporting "Error". Likely due to missing `RESEND_API_KEY` or domain verification issues.
+
 ---
 *Last Updated: 2026-04-07 (Implemented Self-Audit System)*
