@@ -1,0 +1,82 @@
+APPLICATION ARCHITECTURE & SITEMAP REFERENCE
+==========================================
+
+This document serves as the baseline for the application's features, structure, and technical architecture. It is intended to be human-readable and easily updated as the application evolves.
+
+1. PROJECT OVERVIEW
+-------------------
+A high-performance personal brand and knowledge-sharing platform for a founder/consultant. It combines a professional blog with an AI-powered chatbot that uses a Google Drive-hosted knowledge base to provide expert-level advice based on the founder's specific methodology.
+
+2. SITEMAP (ROUTES)
+-------------------
+
+PUBLIC ROUTES:
+- /: Home Page. Hero section, core value proposition, and featured content.
+- /blog: Blog Index. List of all articles with category filtering.
+- /blog/:id: Article View. Full article content with a nested comment system.
+- /chat: AI Expert Chat. Full-screen chat interface for interacting with the founder's knowledge base.
+- /sitemap: Visual Sitemap. A user-friendly overview of all site sections.
+- /sitemap.xml: Technical Sitemap. XML format for search engine indexing.
+
+ADMIN ROUTES (PROTECTED):
+- /admin: Admin Dashboard. Requires password authentication.
+  - Posts Tab: CRUD operations for blog articles.
+  - Knowledge Tab: Configuration for the Google Drive Knowledge Base (File ID) and manual sync trigger.
+  - Subscribers Tab: View and export newsletter subscribers.
+  - System Tab: Database initialization, email testing, and server diagnostics.
+
+3. TECHNICAL ARCHITECTURE
+-------------------------
+
+FRONTEND:
+- Framework: React 18+ with Vite.
+- Styling: Tailwind CSS (Utility-first).
+- Animations: motion (framer-motion) for smooth transitions and interactions.
+- Icons: lucide-react.
+- State Management: React Hooks (useState, useEffect, useMemo).
+
+BACKEND (FULL-STACK):
+- Server: Express.js running on Node.js.
+- API Entry Point: /api/index.ts.
+- Database Layer: /api/db.ts (Abstraction for Postgres and SQLite).
+- Utilities: /api/utils.ts (Auth, Email, Notifications).
+
+DATABASE SCHEMA:
+The application uses a relational database with the following tables:
+1. posts: Stores blog articles (ID, Title, Date, Category, Excerpt, Content).
+2. comments: Stores user comments and admin replies (ID, Post ID, Parent ID, Name, Email, Content, Admin Flag).
+3. subscriptions: Stores newsletter emails (ID, Email, Created At).
+4. settings: Stores dynamic configuration (e.g., GOOGLE_DRIVE_KNOWLEDGE_FILE_ID).
+
+4. CORE FEATURES & LOGIC
+------------------------
+
+AI CHATBOT (RAG SYSTEM):
+- Knowledge Source: A Google Doc hosted on Google Drive.
+- Sync Process: The server fetches the doc content, cleans it, and caches it in memory.
+- Retrieval: When a user asks a question, the AI uses the cached knowledge as context to provide accurate, methodology-specific answers.
+- Model: Powered by Google's Gemini API (gemini-3-flash-preview).
+
+BLOG & COMMENTS:
+- Markdown Support: Articles are written and rendered in Markdown.
+- Nested Comments: Supports threaded conversations.
+- Admin Replies: Comments can be flagged as "Admin" via the dashboard.
+
+NEWSLETTER INTEGRATION:
+- Subscription: Simple email capture form.
+- Notifications: Real-time email notifications to the admin via Resend when a new user subscribes.
+
+5. EXTERNAL INTEGRATIONS & ENVIRONMENT VARIABLES
+------------------------------------------------
+- Google Gemini API: GEMINI_API_KEY (AI Chatbot).
+- Resend API: RESEND_API_KEY (Email notifications).
+- Vercel Postgres: POSTGRES_URL (Production database).
+- Google Drive: Publicly accessible Google Doc (Knowledge Base).
+
+6. MAINTENANCE & OPERATIONS
+---------------------------
+- Database Init: Can be re-run from the Admin -> System tab to ensure schema integrity.
+- Knowledge Sync: Can be forced from the Admin -> Knowledge tab if the Google Doc is updated.
+- Hard Restart: Available in Admin -> System to reload environment variables.
+
+Last Updated: 2026-04-07
