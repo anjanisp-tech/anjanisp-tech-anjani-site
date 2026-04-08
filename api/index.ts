@@ -59,15 +59,12 @@ router.get("/diagnostic", async (req, res) => {
     let geminiTest = "Not tested";
     if (hasGemini) {
       try {
-        const { GoogleGenAI } = await import("@google/genai");
+        const { GoogleGenerativeAI } = await import("@google/generative-ai");
         let apiKey = process.env.GEMINI_API_KEY!.trim().replace(/^["']|["']$/g, '');
-        const ai = new GoogleGenAI({ apiKey });
-        const testResponse = await ai.models.generateContent({
-          model: "gemini-3.1-flash-lite-preview",
-          contents: [{ role: "user", parts: [{ text: "hi" }] }],
-          config: { maxOutputTokens: 5 }
-        });
-        geminiTest = testResponse.text ? "Success: " + testResponse.text.substring(0, 20) : "Empty response";
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const testResponse = await model.generateContent("hi");
+        geminiTest = testResponse.response.text() ? "Success: " + testResponse.response.text().substring(0, 20) : "Empty response";
       } catch (err: any) {
         geminiTest = "Failed: " + (err.message || "Unknown error");
       }
@@ -567,8 +564,8 @@ router.post("/chat", async (req, res) => {
     }
 
     const knowledge = await getKnowledgeBase(false, fileIdOverride);
-    const { GoogleGenAI } = await import("@google/genai");
-    const ai = new GoogleGenAI({ apiKey });
+    const { GoogleGenerativeAI } = await import("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(apiKey);
     
     // Core Project Goals: Personal Brand Moat & Metmov Monetisation
     const systemInstruction = `You are "The Scaling Architect," a digital proxy for Anjani Pandey, founder of Metmov. 
@@ -597,8 +594,6 @@ KEY KNOWLEDGE & TOP QUESTIONS:
 ${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substring(0, 15000)}` : ""}`;
 
     // Clean history: Gemini expects alternating user/model turns starting with user.
-    // If the first message is from the model (the greeting), we should either skip it or prepend a dummy user message.
-    // However, the frontend sends the greeting as the first message.
     const chatHistory = (history || [])
       .filter((h: any) => h.content && h.content.trim().length > 0)
       .map((h: any) => ({
@@ -608,19 +603,23 @@ ${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substri
 
     // Ensure it starts with 'user' if there's history
     if (chatHistory.length > 0 && chatHistory[0].role === "model") {
-      chatHistory.shift(); // Skip the initial assistant greeting for the API call to keep it clean
+      chatHistory.shift(); 
     }
 
-    const response = await ai.models.generateContent({
+    const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-flash",
+      systemInstruction: systemInstruction
+    });
+    
+    const result = await model.generateContent({
       contents: [
         ...chatHistory,
         { role: "user", parts: [{ text: message }] }
       ],
-      config: { systemInstruction, temperature: 0.7 }
+      generationConfig: { temperature: 0.7 }
     });
 
-    const responseText = response.text;
+    const responseText = result.response.text();
 
     // Log to analytics
     try {
@@ -687,20 +686,26 @@ router.post("/admin/ai-debug", async (req, res, next) => {
 
     if (!apiKey) throw new Error("GEMINI_API_KEY missing");
 
-    const { GoogleGenAI } = await import("@google/genai");
-    const ai = new GoogleGenAI({ apiKey });
+    const { GoogleGenerativeAI } = await import("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(apiKey);
     
     const systemInstruction = `You are "The Scaling Architect" (Anjani Pandey). Use the provided context to answer.
     Context: ${knowledge.substring(0, 15000)}`;
 
-    const response = await ai.models.generateContent({
+    const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-flash",
-      contents: [{ role: "user", parts: [{ text: message }] }],
-      config: { systemInstruction, temperature: 0.1 } // Low temp for debugging
+      systemInstruction: systemInstruction
     });
 
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: message }] }],
+      generationConfig: { temperature: 0.1 } // Low temp for debugging
+    });
+
+    const responseText = result.response.text();
+
     res.json({ 
-      response: response.text, 
+      response: responseText, 
       context: knowledge.substring(0, 2000) + (knowledge.length > 2000 ? "..." : ""),
       fullContextLength: knowledge.length
     });
