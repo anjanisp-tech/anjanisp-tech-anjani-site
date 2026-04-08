@@ -19,15 +19,16 @@ export async function getKnowledgeBase(force: boolean = false, fileIdOverride?: 
       const { google } = await import('googleapis');
       const mammoth = (await import('mammoth')).default;
       
-      const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-      const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n');
-      const fileId = fileIdOverride || process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID;
+      const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || process.env.EMAIL;
+      const rawKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || process.env.KEY;
+      const privateKey = rawKey?.replace(/\\n/g, '\n');
+      const fileId = fileIdOverride || process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID || process.env.DOC_ID;
 
       if (!email || !privateKey || !fileId) {
         const missing = [];
-        if (!email) missing.push("GOOGLE_SERVICE_ACCOUNT_EMAIL");
-        if (!privateKey) missing.push("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY");
-        if (!fileId) missing.push("GOOGLE_DRIVE_KNOWLEDGE_FILE_ID");
+        if (!email) missing.push("GOOGLE_SERVICE_ACCOUNT_EMAIL (or EMAIL)");
+        if (!privateKey) missing.push("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY (or KEY)");
+        if (!fileId) missing.push("GOOGLE_DRIVE_KNOWLEDGE_FILE_ID (or DOC_ID)");
         console.warn(`[KNOWLEDGE] Missing credentials: ${missing.join(", ")}`);
         return "";
       }

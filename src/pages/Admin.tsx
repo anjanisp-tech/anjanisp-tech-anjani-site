@@ -141,11 +141,11 @@ export default function Admin() {
           `;
         }
         if (statusEmailEl && data.env) {
-          statusEmailEl.innerText = data.env.HAS_GOOGLE_EMAIL ? 'PRESENT' : 'MISSING';
+          statusEmailEl.innerText = data.env.HAS_GOOGLE_EMAIL ? (data.env.USING_ALT_NAMES ? 'PRESENT (via EMAIL)' : 'PRESENT') : 'MISSING';
           statusEmailEl.className = `font-mono font-bold ${data.env.HAS_GOOGLE_EMAIL ? 'text-green-600' : 'text-red-600'}`;
         }
         if (statusKeyEl && data.env) {
-          statusKeyEl.innerText = data.env.HAS_GOOGLE_KEY ? 'PRESENT' : 'MISSING';
+          statusKeyEl.innerText = data.env.HAS_GOOGLE_KEY ? (data.env.USING_ALT_NAMES ? 'PRESENT (via KEY)' : 'PRESENT') : 'MISSING';
           statusKeyEl.className = `font-mono font-bold ${data.env.HAS_GOOGLE_KEY ? 'text-green-600' : 'text-red-600'}`;
         }
       }).catch(() => {});

@@ -85,8 +85,9 @@ router.get("/diagnostic", async (req, res) => {
         GEMINI_KEY_MASKED: geminiMasked,
         HAS_RESEND: hasResend,
         HAS_GOOGLE_DRIVE: hasGoogleDrive,
-        HAS_GOOGLE_EMAIL: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        HAS_GOOGLE_KEY: !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
+        HAS_GOOGLE_EMAIL: !!(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || process.env.EMAIL),
+        HAS_GOOGLE_KEY: !!(process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || process.env.KEY),
+        USING_ALT_NAMES: !!(process.env.EMAIL || process.env.KEY),
         HAS_ADMIN_PASSWORD: hasAdminPassword
       }
     });
@@ -291,11 +292,11 @@ router.post("/admin/audit", async (req, res, next) => {
 
     // 3. Knowledge Base Check
     try {
-      const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-      const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+      const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || process.env.EMAIL;
+      const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || process.env.KEY;
       
       // Fetch File ID from settings first, then env
-      let fileId = process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID;
+      let fileId = process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID || process.env.DOC_ID;
       try {
         if (isPostgres) {
           const { sql } = await import("@vercel/postgres");
