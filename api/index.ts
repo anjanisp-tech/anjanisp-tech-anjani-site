@@ -24,8 +24,9 @@ router.get("/ping", (req, res) => {
 // Diagnostic route - Minimal dependencies to avoid crashes
 router.get("/diagnostic", async (req, res) => {
   try {
-    const hasGemini = !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 10;
-    const geminiMasked = process.env.GEMINI_API_KEY ? `${process.env.GEMINI_API_KEY.substring(0, 4)}...${process.env.GEMINI_API_KEY.substring(process.env.GEMINI_API_KEY.length - 4)}` : "missing";
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    const hasGemini = !!geminiKey && geminiKey.length > 10;
+    const geminiMasked = geminiKey ? `${geminiKey.substring(0, 4)}...${geminiKey.substring(geminiKey.length - 4)}` : "missing";
     const hasPostgres = !!process.env.POSTGRES_URL && process.env.POSTGRES_URL.includes('://');
     let hasResend = !!process.env.RESEND_API_KEY || !!process.env.VITE_RESEND_API_KEY;
     if (!hasResend) {
@@ -71,7 +72,7 @@ router.get("/diagnostic", async (req, res) => {
     if (hasGemini) {
       try {
         const { GoogleGenerativeAI } = await import("@google/generative-ai");
-        let apiKey = process.env.GEMINI_API_KEY!.trim().replace(/^["']|["']$/g, '');
+        const apiKey = geminiKey!.trim().replace(/^["']|["']$/g, '');
         const genAI = new GoogleGenerativeAI(apiKey);
         
         // Try multiple models to find one that works in this region/account
@@ -483,6 +484,51 @@ router.get("/admin/settings", async (req, res, next) => {
   }
 });
 
+router.post("/admin/save-resend-key", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  const { key } = req.body;
+  if (!key || !key.startsWith('re_')) return res.status(400).json({ error: "Invalid Resend key" });
+  try {
+    const { fileURLToPath } = await import("url");
+    const { dirname, join } = await import("path");
+    const fs = await import("fs");
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const TMP_KEY_FILE = "/tmp/.resend_key";
+    
+    fs.writeFileSync(TMP_KEY_FILE, key, 'utf8');
+    res.json({ success: true, message: "Key saved to temporary storage." });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to save key", details: err.message });
+  }
+});
+
+router.post("/admin/test-email", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  try {
+    const { sendNotification } = await getUtils();
+    await sendNotification("Test Email", "This is a test email from your admin dashboard.");
+    res.json({ success: true, message: "Test email sent successfully." });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to send test email", details: err.message });
+  }
+});
+
+router.post("/admin/restart-server", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  res.json({ success: true, message: "Server is restarting. Please wait 10 seconds and refresh." });
+  setTimeout(() => {
+    console.log("Admin requested server restart. Exiting process...");
+    process.exit(0);
+  }, 1000);
+});
+
 router.post("/admin/settings", async (req, res, next) => {
   const { adminAuth } = await getUtils();
   adminAuth(req, res, next);
@@ -560,7 +606,7 @@ router.post("/chat", async (req, res) => {
     const { message, history } = req.body || {};
     if (!message) return res.status(400).json({ error: "Message is required" });
 
-    let apiKey = process.env.GEMINI_API_KEY;
+    let apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     
     // Sanitize API Key
     if (apiKey) {
@@ -571,7 +617,7 @@ router.post("/chat", async (req, res) => {
     if (!apiKey) {
       return res.status(200).json({ 
         status: "error", 
-        error: "GEMINI_API_KEY is missing or invalid in the backend environment." 
+        error: "GEMINI_API_KEY (or GOOGLE_API_KEY) is missing or invalid in the backend environment." 
       });
     }
 

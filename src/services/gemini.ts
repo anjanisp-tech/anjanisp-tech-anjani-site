@@ -1,13 +1,13 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function analyzeWebsite(url: string) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is missing. Please add it to AI Studio Secrets.");
   }
 
-  const ai = new GoogleGenAI({ apiKey });
-  const model = "gemini-3-flash-preview";
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   const prompt = `
     You are a world-class digital marketing expert like Neil Patel. 
     Analyze the following website URL: ${url}
@@ -25,11 +25,8 @@ export async function analyzeWebsite(url: string) {
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model,
-      contents: [{ parts: [{ text: prompt }] }],
-    });
-    return response.text;
+    const result = await model.generateContent(prompt);
+    return result.response.text();
   } catch (error) {
     console.error("Gemini Analysis Error:", error);
     throw new Error("Failed to analyze website. Please try again later.");
