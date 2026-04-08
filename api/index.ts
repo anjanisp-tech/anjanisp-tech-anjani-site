@@ -31,8 +31,19 @@ router.get("/diagnostic", async (req, res) => {
     if (!hasResend) {
       hasResend = Object.values(process.env).some(v => typeof v === 'string' && v.startsWith('re_'));
     }
-    const hasGoogleDrive = !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+    const hasGoogleDrive = !!(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || process.env.EMAIL) && !!(process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || process.env.KEY);
     const hasAdminPassword = !!process.env.ADMIN_PASSWORD;
+
+    // Get all env keys for debugging (masked)
+    const envKeys = Object.keys(process.env).map(key => {
+      const val = process.env[key];
+      return {
+        key,
+        present: !!val,
+        length: val?.length || 0,
+        preview: val && val.length > 4 ? val.substring(0, 2) + "..." + val.substring(val.length - 2) : "..."
+      };
+    });
 
     let dbStatus = "Not checked";
     try {
@@ -62,11 +73,31 @@ router.get("/diagnostic", async (req, res) => {
         const { GoogleGenerativeAI } = await import("@google/generative-ai");
         let apiKey = process.env.GEMINI_API_KEY!.trim().replace(/^["']|["']$/g, '');
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const testResponse = await model.generateContent("hi");
-        geminiTest = testResponse.response.text() ? "Success: " + testResponse.response.text().substring(0, 20) : "Empty response";
+        
+        // Try multiple models to find one that works in this region/account
+        const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+        let lastErr = "";
+        
+        for (const modelName of models) {
+          try {
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const testResponse = await model.generateContent("hi");
+            const text = testResponse.response.text();
+            if (text) {
+              geminiTest = `Success (${modelName}): ` + text.substring(0, 20);
+              break;
+            }
+          } catch (err: any) {
+            lastErr = err.message;
+            continue;
+          }
+        }
+        
+        if (geminiTest === "Not tested") {
+          geminiTest = "Failed all models. Last error: " + lastErr;
+        }
       } catch (err: any) {
-        geminiTest = "Failed: " + (err.message || "Unknown error");
+        geminiTest = "Setup Failed: " + (err.message || "Unknown error");
       }
     }
 
@@ -88,7 +119,8 @@ router.get("/diagnostic", async (req, res) => {
         HAS_GOOGLE_EMAIL: !!(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || process.env.EMAIL),
         HAS_GOOGLE_KEY: !!(process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || process.env.KEY),
         USING_ALT_NAMES: !!(process.env.EMAIL || process.env.KEY),
-        HAS_ADMIN_PASSWORD: hasAdminPassword
+        HAS_ADMIN_PASSWORD: hasAdminPassword,
+        ENV_KEYS: envKeys
       }
     });
   } catch (err: any) {
@@ -607,20 +639,38 @@ ${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substri
       chatHistory.shift(); 
     }
 
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      systemInstruction: systemInstruction
-    });
-    
-    const result = await model.generateContent({
-      contents: [
-        ...chatHistory,
-        { role: "user", parts: [{ text: message }] }
-      ],
-      generationConfig: { temperature: 0.7 }
-    });
+    // Robust model selection
+    const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+    let lastError: any = null;
+    let responseText = "";
 
-    const responseText = result.response.text();
+    for (const modelName of models) {
+      try {
+        const model = genAI.getGenerativeModel({ 
+          model: modelName,
+          systemInstruction: systemInstruction
+        });
+        
+        const result = await model.generateContent({
+          contents: [
+            ...chatHistory,
+            { role: "user", parts: [{ text: message }] }
+          ],
+          generationConfig: { temperature: 0.7 }
+        });
+
+        responseText = result.response.text();
+        if (responseText) break;
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`[CHAT] Model ${modelName} failed:`, err.message);
+        continue;
+      }
+    }
+
+    if (!responseText) {
+      throw lastError || new Error("All models failed to generate a response.");
+    }
 
     // Log to analytics
     try {

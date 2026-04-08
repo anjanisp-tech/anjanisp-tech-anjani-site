@@ -130,6 +130,18 @@ export default function Admin() {
           dbEl.className = `px-2 py-0.5 rounded bg-slate-100 text-slate-700`;
         }
         if (envEl && data.env) {
+          const envKeysHtml = data.env.ENV_KEYS ? `
+            <div class="mt-4 p-3 bg-black/5 rounded text-[10px] font-mono space-y-1 border border-black/10">
+              <div class="font-bold border-b border-black/10 pb-1 mb-1">Environment Keys (Debug)</div>
+              ${data.env.ENV_KEYS.map((k: any) => `
+                <div class="flex justify-between">
+                  <span class="${k.present ? 'text-green-700 font-bold' : 'text-red-400'}">${k.key}:</span> 
+                  <span>${k.present ? 'PRESENT (' + k.length + ' chars, ' + k.preview + ')' : 'MISSING'}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : '';
+
           envEl.innerHTML = `
             <div class="mt-4 p-3 bg-black/5 rounded text-[10px] font-mono space-y-1">
               <div class="flex justify-between"><span>GEMINI_KEY:</span> <span>${data.env.HAS_GEMINI ? 'PRESENT (' + data.env.GEMINI_KEY_MASKED + ')' : 'MISSING'}</span></div>
@@ -138,6 +150,7 @@ export default function Admin() {
               <div class="flex justify-between"><span>GEMINI_TEST:</span> <span>${data.geminiTest}</span></div>
               <div class="flex justify-between"><span>VERSION:</span> <span>${data.version}</span></div>
             </div>
+            ${envKeysHtml}
           `;
         }
         if (statusEmailEl && data.env) {
