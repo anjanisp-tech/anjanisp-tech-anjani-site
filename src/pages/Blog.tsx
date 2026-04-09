@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Filter, X, Loader2, AlertCircle, Search } from 'lucide-react';
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import SEO from '../components/SEO';
 
 interface BlogPost {
   id: string;
@@ -142,6 +143,11 @@ export default function Blog() {
 
   return (
     <div className="bg-white min-h-screen">
+      <SEO 
+        title="Blog | Scaling, Leadership & Operations | Anjani Pandey"
+        description="Insights on scaling operations, building systems, and breaking free from the founder trap. By Anjani Pandey."
+        canonical="https://www.anjanipandey.com/blog"
+      />
       <section className="pt-32 pb-12 md:pt-40 md:pb-20">
         <div className="container-custom">
           <div className="max-w-3xl">

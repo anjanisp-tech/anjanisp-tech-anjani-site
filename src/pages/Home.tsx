@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, Search, Layers, Rocket, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
+import SEO from '../components/SEO';
 
 export default function Home() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -79,6 +80,11 @@ export default function Home() {
 
   return (
     <>
+      <SEO 
+        title="Anjani Pandey | Operating Spine & Scaling Specialist"
+        description="I help $1M-$10M ARR businesses diagnose structural bottlenecks and build operating spines that scale. Founder, MetMov LLP. Based in Bengaluru."
+        canonical="https://www.anjanipandey.com/"
+      />
       {/* SECTION 1 – Hero */}
       <section className="bg-white pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="container-custom">

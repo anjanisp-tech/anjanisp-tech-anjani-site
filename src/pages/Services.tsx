@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Target, CheckCircle2, AlertCircle } from 'lucide-react';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
+import SEO from '../components/SEO';
 
 const services = [
   {
@@ -70,6 +71,11 @@ const services = [
 export default function Services() {
   return (
     <div className="bg-white min-h-screen">
+      <SEO 
+        title="Services | Operating Spine & Scaling | Anjani Pandey"
+        description="MetMov's operating spine methodology: we diagnose structural bottlenecks, install scalable systems, and embed them into your team. For $1M-$10M ARR businesses."
+        canonical="https://www.anjanipandey.com/services"
+      />
       {/* ... header ... */}
       <section className="pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="container-custom">

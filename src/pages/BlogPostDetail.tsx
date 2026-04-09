@@ -5,6 +5,7 @@ import remarkBreaks from 'remark-breaks';
 import { useState, useEffect } from 'react';
 import { blogPosts } from '../data/blogData';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
+import SEO from '../components/SEO';
 
 interface Comment {
   id: number;
@@ -162,6 +163,12 @@ export default function BlogPostDetail() {
 
   return (
     <div className="bg-white min-h-screen">
+      <SEO 
+        title={`${post.title} | Anjani Pandey`}
+        description={post.excerpt}
+        canonical={`https://www.anjanipandey.com/blog/${post.id}`}
+        ogType="article"
+      />
       <article className="pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto">

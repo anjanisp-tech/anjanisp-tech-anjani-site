@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calculator, ArrowRight, Info, AlertTriangle, TrendingDown, Clock, Users, DollarSign, Globe } from 'lucide-react';
 import { MINI_DIAGNOSTIC_URL } from '../constants';
+import SEO from '../components/SEO';
 
 type Currency = 'USD' | 'INR';
 
@@ -108,6 +109,11 @@ export default function BottleneckCostCalculator() {
 
   return (
     <div className="bg-muted min-h-screen pb-24">
+      <SEO 
+        title="Bottleneck Cost Calculator | Anjani Pandey"
+        description="Calculate the hidden cost of founder-dependent bottlenecks in your business. Free diagnostic tool by MetMov."
+        canonical="https://www.anjanipandey.com/calculator"
+      />
       {/* Hero Section */}
       <section className="pt-20 pb-12 bg-white border-b border-border">
         <div className="container-custom text-center">

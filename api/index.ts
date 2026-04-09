@@ -109,14 +109,62 @@ router.get("/sitemap.xml", async (req, res) => {
       }
       
       if (!content || !content.includes('<url>')) {
-        content = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        let urls = `
   <url>
     <loc>https://www.anjanipandey.com/</loc>
     <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://www.anjanipandey.com/services</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.anjanipandey.com/calculator</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.anjanipandey.com/blog</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+
+        try {
+          const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+          let posts: any[] = [];
+          if (isPostgres) {
+            const { sql } = await import("@vercel/postgres");
+            const { rows } = await sql`SELECT id, created_at FROM posts ORDER BY created_at DESC`;
+            posts = rows;
+          } else {
+            const db = getSqliteDb();
+            if (db && !useMockDb) {
+              posts = db.prepare("SELECT id, created_at FROM posts ORDER BY created_at DESC").all();
+            }
+          }
+
+          for (const post of posts) {
+            const date = post.created_at ? new Date(post.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+            urls += `
+  <url>
+    <loc>https://www.anjanipandey.com/blog/${post.id}</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+          }
+        } catch (err) {
+          console.error("Error fetching posts for sitemap:", err);
+        }
+
+        content = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}
 </urlset>`;
       }
     }
