@@ -7,7 +7,29 @@ export interface SeoInstruction {
 }
 
 export async function getSeoFolderId(): Promise<string | undefined> {
-  return process.env.GOOGLE_DRIVE_SEO_FOLDER_ID;
+  const envId = process.env.GOOGLE_DRIVE_SEO_FOLDER_ID;
+  if (envId) return envId;
+
+  try {
+    const { getDb } = await import("./db.js");
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_SEO_FOLDER_ID'`;
+      return rows[0]?.value;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_SEO_FOLDER_ID');
+        return row?.value;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to fetch SEO Folder ID from DB", err);
+  }
+  
+  return undefined;
 }
 
 async function getDriveClient() {
