@@ -331,8 +331,11 @@ export default function Admin() {
       if (res.ok) {
         setSeoInstructions(data.instructions || []);
       } else {
-        console.error("SEO Error:", data.error);
-        alert("SEO Error: " + (data.error || "Failed to fetch instructions"));
+        console.error("SEO Error:", data.error, data.details, data.stack);
+        const errorMsg = "SEO Error: " + (data.error || "Failed to fetch instructions") + 
+                        "\n\nDetails: " + (data.details || "No details provided") +
+                        (data.stack ? "\n\nStack: " + data.stack.substring(0, 200) + "..." : "");
+        alert(errorMsg);
         setSeoInstructions([]);
       }
     } catch (err: any) {

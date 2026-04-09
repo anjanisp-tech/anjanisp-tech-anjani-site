@@ -1,4 +1,10 @@
 import { google } from 'googleapis';
+import fs from 'fs';
+
+function logDebug(msg: string) {
+  const timestamp = new Date().toISOString();
+  fs.appendFileSync('seo_debug.log', `[${timestamp}] ${msg}\n`);
+}
 
 export interface SeoInstruction {
   id: string;
@@ -9,7 +15,7 @@ export interface SeoInstruction {
 export async function getSeoFolderId(): Promise<string | undefined> {
   const envId = process.env.GOOGLE_DRIVE_SEO_FOLDER_ID;
   if (envId) {
-    console.log(`[SEO] Using Folder ID from ENV: ${envId}`);
+    logDebug(`Using Folder ID from ENV: ${envId}`);
     return envId;
   }
 
@@ -29,10 +35,10 @@ export async function getSeoFolderId(): Promise<string | undefined> {
         dbId = row?.value;
       }
     }
-    console.log(`[SEO] Using Folder ID from DB: ${dbId}`);
+    logDebug(`Using Folder ID from DB: ${dbId}`);
     return dbId;
-  } catch (err) {
-    console.error("Failed to fetch SEO Folder ID from DB", err);
+  } catch (err: any) {
+    logDebug(`Failed to fetch SEO Folder ID from DB: ${err.message}`);
   }
   
   return undefined;
@@ -68,36 +74,48 @@ async function getDriveClient() {
 }
 
 export async function listPendingInstructions(folderId: string): Promise<SeoInstruction[]> {
+  logDebug(`listPendingInstructions called with folderId: ${folderId}`);
   const drive = await getDriveClient();
   
   let rootFolderId = folderId;
   let pendingFolderId = '';
 
-  // Check if the provided ID is actually the 01_PENDING folder
-  const currentFolder = await drive.files.get({
-    fileId: folderId,
-    fields: 'id, name, parents'
-  });
-
-  if (currentFolder.data.name === '01_PENDING') {
-    pendingFolderId = folderId;
-    rootFolderId = currentFolder.data.parents?.[0] || folderId;
-  } else {
-    // Find the 01_PENDING subfolder
-    const folderRes = await drive.files.list({
-      q: `'${folderId}' in parents and name = '01_PENDING' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-      fields: 'files(id)'
+  try {
+    // Check if the provided ID is actually the 01_PENDING folder
+    const currentFolder = await drive.files.get({
+      fileId: folderId,
+      fields: 'id, name, parents'
     });
-    pendingFolderId = folderRes.data.files?.[0]?.id || '';
+    logDebug(`Current folder name: ${currentFolder.data.name}`);
+
+    if (currentFolder.data.name === '01_PENDING') {
+      pendingFolderId = folderId;
+      rootFolderId = currentFolder.data.parents?.[0] || folderId;
+    } else {
+      // Find the 01_PENDING subfolder
+      const folderRes = await drive.files.list({
+        q: `'${folderId}' in parents and name = '01_PENDING' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+        fields: 'files(id)'
+      });
+      pendingFolderId = folderRes.data.files?.[0]?.id || '';
+      logDebug(`Found 01_PENDING subfolder: ${pendingFolderId}`);
+    }
+  } catch (err: any) {
+    logDebug(`Error finding pending folder: ${err.message}`);
+    throw err;
   }
 
-  if (!pendingFolderId) return [];
+  if (!pendingFolderId) {
+    logDebug(`No pending folder found for ID: ${folderId}`);
+    return [];
+  }
 
   const filesRes = await drive.files.list({
     q: `'${pendingFolderId}' in parents and mimeType = 'application/json' and trashed = false`,
     fields: 'files(id, name)',
     orderBy: 'name'
   });
+  logDebug(`Found ${filesRes.data.files?.length || 0} JSON files in pending folder`);
 
   const instructions: SeoInstruction[] = [];
   try {
@@ -115,7 +133,7 @@ export async function listPendingInstructions(folderId: string): Promise<SeoInst
       }
     }
   } catch (err: any) {
-    console.error("[SEO] Error reading file content", err);
+    logDebug(`Error reading file content: ${err.message}`);
     throw new Error(`Failed to read instruction content: ${err.message}`);
   }
 

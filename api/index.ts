@@ -1,4 +1,10 @@
 import express from "express";
+import fs from "fs";
+
+function logRoute(msg: string) {
+  const timestamp = new Date().toISOString();
+  fs.appendFileSync('seo_debug.log', `[ROUTE][${timestamp}] ${msg}\n`);
+}
 
 const router = express.Router();
 const apiApp = express();
@@ -1196,16 +1202,23 @@ router.get("/admin/seo/pending", async (req, res, next) => {
   adminAuth(req, res, next);
 }, async (req, res) => {
   try {
+    logRoute("Route hit /admin/seo/pending");
     const { listPendingInstructions, getSeoFolderId } = await import("./seoService.js");
+    logRoute("Service imported");
     const folderId = await getSeoFolderId();
-    console.log(`[SEO] Fetching pending instructions for folder: ${folderId}`);
-    if (!folderId) return res.json({ instructions: [], error: "GOOGLE_DRIVE_SEO_FOLDER_ID not configured." });
+    logRoute(`Folder ID: ${folderId}`);
+    if (!folderId) {
+      logRoute("Folder ID not configured");
+      return res.json({ instructions: [], error: "GOOGLE_DRIVE_SEO_FOLDER_ID not configured." });
+    }
     
     const instructions = await listPendingInstructions(folderId);
-    console.log(`[SEO] Found ${instructions.length} instructions`);
+    logRoute(`Instructions found: ${instructions.length}`);
     res.json({ instructions });
   } catch (err: any) {
-    res.status(500).json({ error: "Failed to list SEO instructions", details: err.message });
+    logRoute(`ROUTE ERROR: ${err.message}`);
+    console.error("[SEO ROUTE ERROR]", err);
+    res.status(500).json({ error: "Failed to list SEO instructions", details: err.message, stack: err.stack });
   }
 });
 
