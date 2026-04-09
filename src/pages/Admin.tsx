@@ -25,7 +25,7 @@ export default function Admin() {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [subscribers, setSubscribers] = useState<{ id: number, email: string, created_at: string }[]>([]);
   const [audits, setAudits] = useState<any[]>([]);
-  const [analytics, setAnalytics] = useState<{ chatbotQueries: any[], blogViews: any[], calculatorLeads: any[] }>({ chatbotQueries: [], blogViews: [], calculatorLeads: [] });
+  const [analytics, setAnalytics] = useState<{ chatbotQueries: any[], blogViews: any[], calculatorLeads: any[], chatbotLeads: any[] }>({ chatbotQueries: [], blogViews: [], calculatorLeads: [], chatbotLeads: [] });
   const [isAuditing, setIsAuditing] = useState(false);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
   const [replyTo, setReplyTo] = useState<number | null>(null);
@@ -1425,6 +1425,39 @@ export default function Admin() {
                   </div>
                 ) : (
                   <div className="py-12 text-center text-accent/30 font-bold italic">No calculator data yet.</div>
+                )}
+              </div>
+
+              {/* Chatbot Leads */}
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                  <Mail className="text-accent" size={24} /> Chatbot Leads (Email Capture)
+                </h3>
+                {isLoadingAnalytics ? (
+                  <div className="py-12 flex justify-center"><RefreshCw className="animate-spin text-accent/20" /></div>
+                ) : analytics.chatbotLeads && analytics.chatbotLeads.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="pb-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Date</th>
+                          <th className="pb-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Email</th>
+                          <th className="pb-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Captured From</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {analytics.chatbotLeads.map((lead: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-muted/30 transition-colors">
+                            <td className="py-4 text-xs font-mono">{new Date(lead.created_at).toLocaleDateString()}</td>
+                            <td className="py-4 text-sm font-bold text-accent">{lead.email}</td>
+                            <td className="py-4 text-xs text-accent-light italic line-clamp-1 max-w-md">"{lead.query}"</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="py-12 text-center text-accent/30 font-bold italic">No chatbot leads captured yet.</div>
                 )}
               </div>
 

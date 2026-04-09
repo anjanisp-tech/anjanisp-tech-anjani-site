@@ -109,6 +109,12 @@ export function getSqliteDb() {
         email TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+      CREATE TABLE IF NOT EXISTS chatbot_leads (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL,
+        query TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
     
     return sqliteDb;

@@ -59,6 +59,7 @@ The platform is designed to digitize and scale the MetMov methodology, which foc
 - `settings`: Key-value store for dynamic configuration (e.g., File IDs).
 - `audits`: System health logs.
 - `analytics_chatbot`: History of AI interactions.
+- `chatbot_leads`: Emails collected from the chatbot.
 - `analytics_calculator`: Results from the Bottleneck Calculator.
 
 ## Development Conventions
