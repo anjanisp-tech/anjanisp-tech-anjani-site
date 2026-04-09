@@ -116,12 +116,12 @@ export default function ChatAssistant() {
             <div className="flex-grow overflow-y-auto p-6 space-y-6 bg-slate-50/50">
               {messages.map((m, i) => (
                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex gap-3 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`flex gap-3 max-w-full ${m.role === 'user' ? 'flex-row-reverse ml-12' : 'flex-row mr-12'}`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${m.role === 'user' ? 'bg-accent text-white' : 'bg-white border border-border text-accent'}`}>
                       {m.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                     </div>
-                    <div className={`p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user' ? 'bg-accent text-white font-bold rounded-tr-none' : 'bg-white border border-border text-accent-light rounded-tl-none shadow-sm'}`}>
-                      <div className="prose prose-sm max-w-none prose-p:my-4 prose-ul:my-2 prose-li:my-1">
+                    <div className={`p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user' ? 'bg-accent text-white rounded-tr-none' : 'bg-white border border-border text-accent-light rounded-tl-none shadow-sm'}`}>
+                      <div className={`prose prose-sm max-w-none prose-p:mb-8 prose-ul:my-2 prose-li:my-1 ${m.role === 'user' ? 'prose-invert text-white' : ''}`}>
                         <Markdown remarkPlugins={[remarkBreaks]}>{m.content}</Markdown>
                       </div>
                       
