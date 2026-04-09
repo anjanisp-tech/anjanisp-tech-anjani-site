@@ -121,7 +121,7 @@ export default function ChatAssistant() {
                       {m.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                     </div>
                     <div className={`p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user' ? 'bg-accent text-white rounded-tr-none chat-user-message' : 'bg-white border border-border text-accent-light rounded-tl-none shadow-sm'}`}>
-                      <div className={`prose prose-sm max-w-none prose-p:mb-8 prose-ul:my-2 prose-li:my-1 ${m.role === 'user' ? 'prose-invert !text-white' : ''}`}>
+                      <div className={`prose prose-sm max-w-none prose-p:mb-8 prose-ul:my-2 prose-li:my-1 markdown-body ${m.role === 'user' ? 'prose-invert !text-white' : ''}`}>
                         <Markdown remarkPlugins={[remarkBreaks]}>{m.content}</Markdown>
                       </div>
                       

@@ -101,24 +101,20 @@ h3 { @apply text-xl md:text-2xl font-semibold mb-4 leading-snug; }
 }
 
 .markdown-body ul {
-  @apply list-none ml-0;
+  @apply list-none ml-0 pl-0 !important;
 }
 
 .markdown-body li {
-  @apply pl-0 flex gap-2;
+  @apply pl-0 flex gap-2 items-start !important;
 }
 
 .markdown-body li::before {
-  content: "-";
-  @apply flex-shrink-0 font-bold;
+  content: "-" !important;
+  @apply flex-shrink-0 font-bold !important;
 }
 
 .markdown-body ol {
   @apply list-decimal;
-}
-
-.markdown-body li {
-  @apply pl-2;
 }
 
 .markdown-body blockquote {
