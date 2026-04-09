@@ -153,8 +153,7 @@ async function startServer() {
     const envInfo = [
       `[SERVER][${timestamp}] Full-stack server running on http://localhost:${PORT}`,
       `[SERVER][${timestamp}] Environment Check:`,
-      `[SERVER][${timestamp}] - GEMINI_API_KEY Length: ${process.env.GEMINI_API_KEY?.length || 0}`,
-      `[SERVER][${timestamp}] - GEMINI_API_KEY Preview: ${process.env.GEMINI_API_KEY?.substring(0, 5)}`,
+      ...Object.keys(process.env).filter(k => k.includes('GEMINI')).map(k => `[SERVER][${timestamp}] - ${k}: ${process.env[k]?.length} chars, preview: ${process.env[k]?.substring(0, 5)}`),
       `[SERVER][${timestamp}] - RESEND_API_KEY: ${process.env.RESEND_API_KEY ? "Present" : "MISSING"}`,
       `[SERVER][${timestamp}] - POSTGRES_URL: ${process.env.POSTGRES_URL ? "Present" : "MISSING"}`
     ].join('\n');
