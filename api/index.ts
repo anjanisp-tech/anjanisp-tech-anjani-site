@@ -18,19 +18,19 @@ apiApp.use("/", router);
 // Lazy import helpers to avoid top-level crashes
 let dbModule: any;
 const getDb = async () => {
-  if (!dbModule) dbModule = await import("./db.js");
+  if (!dbModule) dbModule = await import("./db.ts");
   return dbModule;
 };
 
 let utilsModule: any;
 const getUtils = async () => {
-  if (!utilsModule) utilsModule = await import("./utils.js");
+  if (!utilsModule) utilsModule = await import("./utils.ts");
   return utilsModule;
 };
 
 let knowledgeModule: any;
 const getKnowledge = async () => {
-  if (!knowledgeModule) knowledgeModule = await import("./knowledgeService.js");
+  if (!knowledgeModule) knowledgeModule = await import("./knowledgeService.ts");
   return knowledgeModule;
 };
 
@@ -1204,7 +1204,7 @@ router.get("/admin/seo/pending", async (req, res, next) => {
 }, async (req, res) => {
   try {
     logRoute("Route hit /admin/seo/pending");
-    const { listPendingInstructions, getSeoFolderId } = await import("./seoService.js");
+    const { listPendingInstructions, getSeoFolderId } = await import("./seoService.ts");
     logRoute("Service imported");
     const folderId = await getSeoFolderId();
     logRoute(`Folder ID: ${folderId}`);
@@ -1229,8 +1229,8 @@ router.post("/admin/seo/execute", async (req, res, next) => {
 }, async (req, res) => {
   const { instructionId } = req.body;
   try {
-    const { listPendingInstructions, getSeoFolderId, moveInstruction } = await import("./seoService.js");
-    const { executeSeoInstruction } = await import("./seoExecutor.js");
+    const { listPendingInstructions, getSeoFolderId, moveInstruction } = await import("./seoService.ts");
+    const { executeSeoInstruction } = await import("./seoExecutor.ts");
     
     const folderId = await getSeoFolderId();
     if (!folderId) throw new Error("GOOGLE_DRIVE_SEO_FOLDER_ID not configured.");
@@ -1248,7 +1248,7 @@ router.post("/admin/seo/execute", async (req, res, next) => {
   } catch (err: any) {
     console.error("[SEO EXECUTION ERROR]", err);
     try {
-      const { getSeoFolderId, moveInstruction } = await import("./seoService.js");
+      const { getSeoFolderId, moveInstruction } = await import("./seoService.ts");
       const folderId = await getSeoFolderId();
       if (folderId && req.body.instructionId) {
         await moveInstruction(req.body.instructionId, folderId, 'FAILED');

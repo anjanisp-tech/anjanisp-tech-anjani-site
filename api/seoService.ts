@@ -20,7 +20,7 @@ export async function getSeoFolderId(): Promise<string | undefined> {
   }
 
   try {
-    const dbModule = await import("./db.js");
+    const dbModule = await import("./db.ts");
     const { isPostgres, getSqliteDb, useMockDb } = dbModule;
     
     let dbId: string | undefined;
