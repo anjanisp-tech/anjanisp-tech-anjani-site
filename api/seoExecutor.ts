@@ -4,10 +4,26 @@ import { GoogleGenAI } from "@google/genai";
 
 export async function executeSeoInstruction(instruction: any) {
   const { action, target, payload } = instruction;
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is missing.");
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.VITE_GEMINI_API_KEY;
+  
+  if (!apiKey || apiKey === 'MY_GEMINI_API_KEY' || apiKey.includes('TODO')) {
+    const errorMsg = `GEMINI_API_KEY is missing or invalid (current value: ${apiKey || 'empty'}). Please set it in the Settings -> Secrets menu.`;
+    try {
+      const logPath = path.join(process.cwd(), 'seo_debug.log');
+      const timestamp = new Date().toISOString();
+      fs.appendFileSync(logPath, `[SEO EXECUTOR ERROR][${timestamp}] ${errorMsg}\n`);
+    } catch (e) {}
+    throw new Error(errorMsg);
+  }
 
   const ai = new GoogleGenAI({ apiKey });
+
+  try {
+    const logPath = path.join(process.cwd(), 'seo_debug.log');
+    const timestamp = new Date().toISOString();
+    const maskedKey = apiKey.substring(0, 4) + '...' + apiKey.substring(apiKey.length - 4);
+    fs.appendFileSync(logPath, `[SEO EXECUTOR][${timestamp}] Initialized with API Key: ${maskedKey}\n`);
+  } catch (e) {}
 
   if (action === 'UPDATE_ROBOTS') {
     const dbModule = await import("./db.js");
@@ -77,7 +93,7 @@ Return ONLY the updated XML content. No markdown blocks.`;
       model: "gemini-3-flash-preview",
       contents: [{ role: "user", parts: [{ text: prompt }] }]
     });
-    const updatedXml = result.text.trim().replace(/^```xml\n/, '').replace(/\n```$/, '');
+    const updatedXml = result.text.trim().replace(/^```[a-z]*\n/i, '').replace(/\n```$/i, '');
     
     // Save back to database
     if (isPostgres) {
@@ -102,16 +118,11 @@ Return ONLY the updated XML content. No markdown blocks.`;
   }
 
   if (action === 'ADD_PAGE') {
-    // Check if filesystem is writable
-    try {
-      const testFile = path.join(process.cwd(), '.write_test');
-      fs.writeFileSync(testFile, 'test');
-      fs.unlinkSync(testFile);
-    } catch (e) {
-      throw new Error(`Filesystem is read-only. Action 'ADD_PAGE' requires a writable filesystem. Please execute this instruction in the AI Studio environment and then Publish your changes.`);
+    const appPath = path.join(process.cwd(), target);
+    const dir = path.dirname(appPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
     }
-
-    const pagePath = path.join(process.cwd(), target);
     const pageContent = `
 import Layout from '../components/Layout';
 import { motion } from 'motion/react';
@@ -131,11 +142,11 @@ export default function ${path.basename(target, '.tsx')}() {
   );
 }
     `;
-    fs.writeFileSync(pagePath, pageContent);
+    fs.writeFileSync(appPath, pageContent);
 
     // Update App.tsx to add the route
-    const appPath = path.join(process.cwd(), 'src', 'App.tsx');
-    const appContent = fs.readFileSync(appPath, 'utf-8');
+    const appTsxPath = path.join(process.cwd(), 'src', 'App.tsx');
+    const appContent = fs.readFileSync(appTsxPath, 'utf-8');
     const appPrompt = `You are a React expert. Add a new lazy-loaded route to this App.tsx file.
 New Page Component Name: ${path.basename(target, '.tsx')}
 New Page Path: ${target}
@@ -150,8 +161,8 @@ Return ONLY the updated App.tsx code. No markdown blocks.`;
       model: "gemini-3-flash-preview",
       contents: [{ role: "user", parts: [{ text: appPrompt }] }]
     });
-    const updatedApp = appResult.text.trim().replace(/^```tsx\n/, '').replace(/\n```$/, '');
-    fs.writeFileSync(appPath, updatedApp);
+    const updatedApp = appResult.text.trim().replace(/^```[a-z]*\n/i, '').replace(/\n```$/i, '');
+    fs.writeFileSync(appTsxPath, updatedApp);
 
     return { success: true, message: `Created page ${target} and added route ${payload.route}` };
   }
@@ -160,19 +171,46 @@ Return ONLY the updated App.tsx code. No markdown blocks.`;
   if (!target) throw new Error("Target file is required for this action.");
   const absolutePath = path.join(process.cwd(), target);
   
-  // Check if filesystem is writable
   try {
-    const testFile = path.join(process.cwd(), '.write_test');
-    fs.writeFileSync(testFile, 'test');
-    fs.unlinkSync(testFile);
-  } catch (e) {
-    throw new Error(`Filesystem is read-only. Action '${action}' on '${target}' requires a writable filesystem. Please execute this instruction in the AI Studio environment and then Publish your changes.`);
+    const logPath = path.join(process.cwd(), 'seo_debug.log');
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(logPath, `[SEO EXECUTOR][${timestamp}] Executing ${action} on ${absolutePath}\n`);
+  } catch (e) {}
+
+  if (!fs.existsSync(absolutePath)) {
+    const errorMsg = `Target file ${absolutePath} not found. (cwd: ${process.cwd()})`;
+    try {
+      const logPath = path.join(process.cwd(), 'seo_debug.log');
+      fs.appendFileSync(logPath, `[SEO ERROR] ${errorMsg}\n`);
+    } catch (e) {}
+    throw new Error(errorMsg);
   }
 
-  if (!fs.existsSync(absolutePath)) throw new Error(`Target file ${target} not found.`);
-
   const currentCode = fs.readFileSync(absolutePath, 'utf-8');
-  const prompt = `You are a React and SEO expert. Apply the following SEO instruction to the provided React component code.
+  const isHtml = target.endsWith('.html');
+  
+  try {
+    const logPath = path.join(process.cwd(), 'seo_debug.log');
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(logPath, `[SEO EXECUTOR][${timestamp}] Generating prompt for ${target} (isHtml: ${isHtml})\n`);
+  } catch (e) {}
+
+  const prompt = isHtml 
+    ? `You are an SEO expert. Apply the following SEO instruction to the provided HTML code.
+Action: ${action}
+Payload: ${JSON.stringify(payload)}
+
+Current HTML:
+${currentCode}
+
+Instructions for the edit:
+- If UPDATE_METADATA: Update the <title>, <meta name="description">, and <meta name="keywords"> tags in the <head>.
+- If UPDATE_OG_TAGS: Update the og: and twitter: meta tags in the <head>.
+- If ADD_SCHEMA: Inject the <script type="application/ld+json"> block into the <head>.
+- If ADD_CANONICAL: Update or add the <link rel="canonical"> tag in the <head>.
+
+Return ONLY the updated HTML code. No markdown blocks, no explanations.`
+    : `You are a React and SEO expert. Apply the following SEO instruction to the provided React component code.
 Action: ${action}
 Payload: ${JSON.stringify(payload)}
 
@@ -193,15 +231,39 @@ Instructions for the edit:
 
 Return ONLY the updated code. No markdown blocks, no explanations.`;
 
-  const result = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: [{ role: "user", parts: [{ text: prompt }] }]
-  });
-  const updatedCode = result.text.trim().replace(/^```tsx\n/, '').replace(/\n```$/, '');
+  let result;
+  try {
+    const logPath = path.join(process.cwd(), 'seo_debug.log');
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(logPath, `[SEO EXECUTOR][${timestamp}] Calling Gemini API for ${target}...\n`);
+    
+    result = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt
+    });
+    
+    fs.appendFileSync(logPath, `[SEO EXECUTOR][${timestamp}] Gemini API call successful for ${target}\n`);
+  } catch (aiErr: any) {
+    const logPath = path.join(process.cwd(), 'seo_debug.log');
+    const timestamp = new Date().toISOString();
+    const errMsg = aiErr.message || String(aiErr);
+    fs.appendFileSync(logPath, `[SEO EXECUTOR ERROR][${timestamp}] Gemini API failed for ${target}: ${errMsg}\n`);
+    throw aiErr;
+  }
   
+  let updatedCode = result.text.trim();
+  // Remove any markdown code blocks (e.g., ```tsx, ```html, ```javascript, or just ```)
+  updatedCode = updatedCode.replace(/^```[a-z]*\n/i, '').replace(/\n```$/i, '');
+  
+  try {
+    const logPath = path.join(process.cwd(), 'seo_debug.log');
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(logPath, `[SEO EXECUTOR][${timestamp}] AI Response received for ${target}. Length: ${updatedCode.length}\n`);
+  } catch (e) {}
+
   // Basic safety check: ensure it's still valid-ish code
-  if (!updatedCode.includes('export default')) {
-    throw new Error("AI generated invalid code (missing export default). Aborting.");
+  if (!isHtml && !updatedCode.includes('export default')) {
+    throw new Error(`AI generated invalid code for ${target} (missing export default). Response preview: ${updatedCode.substring(0, 100)}`);
   }
 
   fs.writeFileSync(absolutePath, updatedCode);

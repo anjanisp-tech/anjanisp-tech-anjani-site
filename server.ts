@@ -98,16 +98,11 @@ async function startServer() {
     try {
       const timestamp = new Date().toISOString();
       const logMsg = `[SERVER][${timestamp}] ${req.method} ${req.url} (IP: ${req.ip})`;
-      const logPath = process.env.VERCEL ? '/tmp/seo_debug.log' : path.join(process.cwd(), 'seo_debug.log');
+      const logPath = path.join(process.cwd(), 'seo_debug.log');
       fs.appendFileSync(logPath, logMsg + '\n');
       next();
-    } catch (err: any) {
-      console.error("[API MOUNT ERROR]", err);
-      res.status(200).json({ 
-        status: "error",
-        error: "API Mount Error", 
-        details: err.message || "An unknown error occurred during API routing"
-      });
+    } catch (e) {
+      next();
     }
   }, apiApp);
 
@@ -153,13 +148,20 @@ async function startServer() {
   });
 
   app.listen(PORT, "0.0.0.0", () => {
+    const logPath = path.join(process.cwd(), 'seo_debug.log');
+    const timestamp = new Date().toISOString();
+    const envInfo = [
+      `[SERVER][${timestamp}] Full-stack server running on http://localhost:${PORT}`,
+      `[SERVER][${timestamp}] Environment Check:`,
+      `[SERVER][${timestamp}] - GEMINI_API_KEY Length: ${process.env.GEMINI_API_KEY?.length || 0}`,
+      `[SERVER][${timestamp}] - GEMINI_API_KEY Preview: ${process.env.GEMINI_API_KEY?.substring(0, 5)}`,
+      `[SERVER][${timestamp}] - RESEND_API_KEY: ${process.env.RESEND_API_KEY ? "Present" : "MISSING"}`,
+      `[SERVER][${timestamp}] - POSTGRES_URL: ${process.env.POSTGRES_URL ? "Present" : "MISSING"}`
+    ].join('\n');
+    try {
+      fs.appendFileSync(logPath, envInfo + '\n');
+    } catch (e) {}
     console.log(`Full-stack server running on http://localhost:${PORT}`);
-    console.log("Environment Check:");
-    console.log("- GEMINI_API_KEY Length:", process.env.GEMINI_API_KEY?.length || 0);
-    console.log("- GEMINI_API_KEY Preview:", process.env.GEMINI_API_KEY?.substring(0, 5));
-    console.log("- RESEND_API_KEY:", process.env.RESEND_API_KEY ? "Present" : "MISSING");
-    console.log("- RESEND_FROM_EMAIL:", process.env.RESEND_FROM_EMAIL || "Not Set");
-    console.log("- POSTGRES_URL:", process.env.POSTGRES_URL ? "Present" : "MISSING");
   });
 }
 

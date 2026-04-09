@@ -1235,6 +1235,10 @@ router.post("/admin/seo/execute", async (req, res, next) => {
 }, async (req, res) => {
   const { instructionId } = req.body;
   try {
+    const logPath = path.join(process.cwd(), 'seo_debug.log');
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(logPath, `[ROUTE][${timestamp}] POST /admin/seo/execute called with ID: ${instructionId}\n`);
+    
     const { listPendingInstructions, getSeoFolderId, moveInstruction } = await import("./seoService.js");
     const { executeSeoInstruction } = await import("./seoExecutor.js");
     
@@ -1253,6 +1257,12 @@ router.post("/admin/seo/execute", async (req, res, next) => {
     res.json({ success: true, message: result.message });
   } catch (err: any) {
     console.error("[SEO EXECUTION ERROR]", err);
+    try {
+      const logPath = path.join(process.cwd(), 'seo_debug.log');
+      const timestamp = new Date().toISOString();
+      fs.appendFileSync(logPath, `[SEO ERROR][${timestamp}] ${err.message}\nStack: ${err.stack}\n`);
+    } catch (e) {}
+
     try {
       const { getSeoFolderId, moveInstruction } = await import("./seoService.js");
       const folderId = await getSeoFolderId();
