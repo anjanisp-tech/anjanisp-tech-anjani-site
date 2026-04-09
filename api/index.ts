@@ -24,7 +24,7 @@ router.get("/ping", (req, res) => {
 // Diagnostic route - Minimal dependencies to avoid crashes
 router.get("/diagnostic", async (req, res) => {
   try {
-    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.VITE_GEMINI_API_KEY;
     const hasGemini = !!geminiKey && geminiKey.length > 10;
     const geminiMasked = geminiKey ? `${geminiKey.substring(0, 4)}...${geminiKey.substring(geminiKey.length - 4)}` : "missing";
     const hasPostgres = !!process.env.POSTGRES_URL && process.env.POSTGRES_URL.includes('://');
@@ -76,8 +76,8 @@ router.get("/diagnostic", async (req, res) => {
         const genAI = new GoogleGenerativeAI(apiKey);
         
         // Try multiple models to find one that works in this region/account
-        const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
-        let lastErr = "";
+        const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-pro"];
+        let errors: string[] = [];
         
         for (const modelName of models) {
           try {
@@ -89,13 +89,13 @@ router.get("/diagnostic", async (req, res) => {
               break;
             }
           } catch (err: any) {
-            lastErr = err.message;
+            errors.push(`${modelName}: ${err.message}`);
             continue;
           }
         }
         
         if (geminiTest === "Not tested") {
-          geminiTest = "Failed all models. Last error: " + lastErr;
+          geminiTest = "Failed all models: " + errors.join(" | ");
         }
       } catch (err: any) {
         geminiTest = "Setup Failed: " + (err.message || "Unknown error");
@@ -106,7 +106,8 @@ router.get("/diagnostic", async (req, res) => {
       status: "ok",
       isVercel: !!process.env.VERCEL,
       timestamp: new Date().toISOString(),
-      version: "1.0.7",
+      serverStartTime: process.uptime(),
+      version: "1.1.0",
       dbStatus,
       knowledgeStatus,
       geminiTest,
@@ -686,8 +687,8 @@ ${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substri
     }
 
     // Robust model selection
-    const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
-    let lastError: any = null;
+    const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-pro"];
+    let errors: string[] = [];
     let responseText = "";
 
     for (const modelName of models) {
@@ -708,14 +709,18 @@ ${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substri
         responseText = result.response.text();
         if (responseText) break;
       } catch (err: any) {
-        lastError = err;
+        errors.push(`${modelName}: ${err.message}`);
         console.warn(`[CHAT] Model ${modelName} failed:`, err.message);
         continue;
       }
     }
 
     if (!responseText) {
-      throw lastError || new Error("All models failed to generate a response.");
+      return res.status(200).json({ 
+        status: "error", 
+        error: "Chat failed", 
+        details: "All models failed. Errors: " + errors.join(" | ")
+      });
     }
 
     // Log to analytics

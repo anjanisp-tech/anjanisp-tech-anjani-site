@@ -43,10 +43,12 @@ export default function Admin() {
     is_premium: false
   });
 
+  const [diagnostic, setDiagnostic] = useState<any>(null);
   const [knowledgeSettings, setKnowledgeSettings] = useState({
     fileId: '',
     lastSync: '',
-    status: 'idle' as 'idle' | 'syncing' | 'success' | 'error'
+    status: 'idle' as 'idle' | 'syncing' | 'success' | 'error',
+    error: ''
   });
   
   const [status, setStatus] = useState<{ type: 'success' | 'error' | 'idle', message: string }>({ type: 'idle', message: '' });
@@ -114,54 +116,12 @@ export default function Admin() {
     }
     
     if ((activeTab === 'system' || activeTab === 'knowledge') && isAuthenticated) {
-      fetch('/api/diagnostic').then(res => res.json()).then(data => {
-        const resendEl = document.getElementById('resend-status');
-        const dbEl = document.getElementById('db-status');
-        const envEl = document.getElementById('env-debug');
-        const statusEmailEl = document.getElementById('status-email');
-        const statusKeyEl = document.getElementById('status-key');
-        
-        if (resendEl) {
-          resendEl.innerText = data.env?.HAS_RESEND ? 'Configured' : 'Missing or Invalid API Key';
-          resendEl.className = `px-2 py-0.5 rounded ${data.env?.HAS_RESEND ? 'bg-slate-100 text-slate-700' : 'bg-red-100 text-red-700'}`;
-        }
-        if (dbEl) {
-          dbEl.innerText = data.dbStatus;
-          dbEl.className = `px-2 py-0.5 rounded bg-slate-100 text-slate-700`;
-        }
-        if (envEl && data.env) {
-          const envKeysHtml = data.env.ENV_KEYS ? `
-            <div class="mt-4 p-3 bg-black/5 rounded text-[10px] font-mono space-y-1 border border-black/10">
-              <div class="font-bold border-b border-black/10 pb-1 mb-1">Environment Keys (Debug)</div>
-              ${data.env.ENV_KEYS.map((k: any) => `
-                <div class="flex justify-between">
-                  <span class="${k.present ? 'text-green-700 font-bold' : 'text-red-400'}">${k.key}:</span> 
-                  <span>${k.present ? 'PRESENT (' + k.length + ' chars, ' + k.preview + ')' : 'MISSING'}</span>
-                </div>
-              `).join('')}
-            </div>
-          ` : '';
-
-          envEl.innerHTML = `
-            <div class="mt-4 p-3 bg-black/5 rounded text-[10px] font-mono space-y-1">
-              <div class="flex justify-between"><span>GEMINI_KEY:</span> <span>${data.env.HAS_GEMINI ? 'PRESENT (' + data.env.GEMINI_KEY_MASKED + ')' : 'MISSING'}</span></div>
-              <div class="flex justify-between"><span>DB_STATUS:</span> <span>${data.dbStatus}</span></div>
-              <div class="flex justify-between"><span>KNOWLEDGE:</span> <span>${data.knowledgeStatus}</span></div>
-              <div class="flex justify-between"><span>GEMINI_TEST:</span> <span>${data.geminiTest}</span></div>
-              <div class="flex justify-between"><span>VERSION:</span> <span>${data.version}</span></div>
-            </div>
-            ${envKeysHtml}
-          `;
-        }
-        if (statusEmailEl && data.env) {
-          statusEmailEl.innerText = data.env.HAS_GOOGLE_EMAIL ? (data.env.USING_ALT_NAMES ? 'PRESENT (via EMAIL)' : 'PRESENT') : 'MISSING';
-          statusEmailEl.className = `font-mono font-bold ${data.env.HAS_GOOGLE_EMAIL ? 'text-green-600' : 'text-red-600'}`;
-        }
-        if (statusKeyEl && data.env) {
-          statusKeyEl.innerText = data.env.HAS_GOOGLE_KEY ? (data.env.USING_ALT_NAMES ? 'PRESENT (via KEY)' : 'PRESENT') : 'MISSING';
-          statusKeyEl.className = `font-mono font-bold ${data.env.HAS_GOOGLE_KEY ? 'text-green-600' : 'text-red-600'}`;
-        }
-      }).catch(() => {});
+      fetch('/api/diagnostic')
+        .then(res => res.json())
+        .then(data => {
+          setDiagnostic(data);
+        })
+        .catch(err => console.error("Diagnostic fetch failed", err));
     }
     
     return () => window.removeEventListener('error', handleError);
@@ -302,13 +262,14 @@ export default function Admin() {
       if (res.ok) {
         const data = await res.json();
         setKnowledgeSettings(prev => ({ ...prev, status: 'success', lastSync: new Date().toLocaleString() }));
-        alert(`Sync successful! Knowledge base is now ${data.length} characters.`);
+        alert(`Sync successful! Knowledge base is now ${data.knowledge?.length || 0} characters.`);
       } else {
-        setKnowledgeSettings(prev => ({ ...prev, status: 'error' }));
-        alert("Sync failed. Check system logs.");
+        const data = await res.json();
+        setKnowledgeSettings(prev => ({ ...prev, status: 'error', error: data.error || data.details || "Unknown error" }));
+        alert("Sync failed: " + (data.error || "Check credentials."));
       }
-    } catch (err) {
-      setKnowledgeSettings(prev => ({ ...prev, status: 'error' }));
+    } catch (err: any) {
+      setKnowledgeSettings(prev => ({ ...prev, status: 'error', error: err.message }));
       alert("Network error during sync.");
     }
   };
@@ -919,14 +880,18 @@ export default function Admin() {
                   <div className="pt-8 border-t border-border">
                     <div className="mb-8 p-4 bg-muted/30 rounded-2xl border border-border">
                       <h3 className="text-[10px] font-bold uppercase tracking-widest text-accent/40 mb-3">Backend Credentials Status</h3>
-                      <div id="knowledge-env-status" className="space-y-2">
+                      <div className="space-y-2">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-accent-light">Service Account Email:</span>
-                          <span id="status-email" className="font-mono opacity-60">Checking...</span>
+                          <span className={`font-mono font-bold ${diagnostic?.env?.HAS_GOOGLE_EMAIL ? 'text-green-600' : 'text-red-600'}`}>
+                            {diagnostic?.env?.HAS_GOOGLE_EMAIL ? (diagnostic.env.USING_ALT_NAMES ? 'PRESENT (via EMAIL)' : 'PRESENT') : 'MISSING'}
+                          </span>
                         </div>
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-accent-light">Private Key:</span>
-                          <span id="status-key" className="font-mono opacity-60">Checking...</span>
+                          <span className={`font-mono font-bold ${diagnostic?.env?.HAS_GOOGLE_KEY ? 'text-green-600' : 'text-red-600'}`}>
+                            {diagnostic?.env?.HAS_GOOGLE_KEY ? (diagnostic.env.USING_ALT_NAMES ? 'PRESENT (via KEY)' : 'PRESENT') : 'MISSING'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -959,7 +924,7 @@ export default function Admin() {
                         <span className="font-medium">
                           {knowledgeSettings.status === 'syncing' ? 'Sync in progress...' : 
                            knowledgeSettings.status === 'success' ? 'Knowledge base is up to date.' : 
-                           knowledgeSettings.status === 'error' ? 'Last sync failed. Check credentials.' : 'Ready to sync.'}
+                           knowledgeSettings.status === 'error' ? `Last sync failed: ${knowledgeSettings.error || 'Check credentials.'}` : 'Ready to sync.'}
                         </span>
                       </div>
                     </div>
@@ -1278,21 +1243,60 @@ export default function Admin() {
 
                   <div className="p-6 bg-muted/30 rounded-2xl border border-border space-y-4">
                     <h3 className="text-lg font-bold flex items-center gap-2">
-                      <FileText className="text-accent" size={20} /> Content Sync
+                      <FileText className="text-accent" size={20} /> System Health & Env
                     </h3>
+                    
                     <div className="flex items-center gap-2 text-xs mb-2">
                       <span className="font-bold uppercase tracking-wider">Database:</span>
-                      <span id="db-status" className="px-2 py-0.5 rounded bg-muted text-accent/60">Checking...</span>
+                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                        {diagnostic?.dbStatus || 'Checking...'}
+                      </span>
                     </div>
-                    <p className="text-sm text-accent-light">
-                      Force update blog titles and structure across the database to match the latest system standards.
-                    </p>
-                    <button 
-                      id="sync-btn"
-                      onClick={async (e) => {
-                        const btn = e.currentTarget;
-                        btn.disabled = true;
-                        btn.innerText = "Syncing...";
+
+                    <div className="flex items-center gap-2 text-xs mb-4">
+                      <span className="font-bold uppercase tracking-wider">Resend:</span>
+                      <span className={`px-2 py-0.5 rounded ${diagnostic?.env?.HAS_RESEND ? 'bg-slate-100 text-slate-700' : 'bg-red-100 text-red-700'}`}>
+                        {diagnostic?.env?.HAS_RESEND ? 'Configured' : 'Missing or Invalid API Key'}
+                      </span>
+                    </div>
+
+                    {diagnostic?.env && (
+                      <div className="space-y-4">
+                        <div className="p-4 bg-black/5 rounded-2xl border border-black/10 space-y-2">
+                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-accent/40">Status Summary</h4>
+                          <div className="text-[10px] font-mono space-y-1">
+                            <div className="flex justify-between"><span>GEMINI_KEY:</span> <span className={diagnostic.env.HAS_GEMINI ? 'text-green-600 font-bold' : 'text-red-500'}>{diagnostic.env.HAS_GEMINI ? `PRESENT (${diagnostic.env.GEMINI_KEY_MASKED})` : 'MISSING'}</span></div>
+                            <div className="flex justify-between"><span>KNOWLEDGE:</span> <span>{diagnostic.knowledgeStatus}</span></div>
+                            <div className="flex justify-between"><span>GEMINI_TEST:</span> <span className={diagnostic.geminiTest.includes('Success') ? 'text-green-600' : 'text-amber-600'}>{diagnostic.geminiTest}</span></div>
+                            <div className="flex justify-between"><span>VERSION:</span> <span>{diagnostic.version}</span></div>
+                            <div className="flex justify-between"><span>UPTIME:</span> <span>{Math.floor(diagnostic.serverStartTime / 60)}m {Math.floor(diagnostic.serverStartTime % 60)}s</span></div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 bg-black/5 rounded-2xl border border-black/10 space-y-2">
+                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-accent/40">Environment Keys (Debug)</h4>
+                          <div className="text-[10px] font-mono space-y-1 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                            {diagnostic.env.ENV_KEYS.map((k: any) => (
+                              <div key={k.key} className="flex justify-between gap-4">
+                                <span className={k.present ? 'text-green-700 font-bold' : 'text-red-400'}>{k.key}:</span> 
+                                <span className="text-right">{k.present ? `PRESENT (${k.length} chars, ${k.preview})` : 'MISSING'}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="pt-4 border-t border-border/50">
+                      <p className="text-[10px] text-accent-light mb-4">
+                        Force update blog titles and structure across the database to match the latest system standards.
+                      </p>
+                      <button 
+                        id="sync-btn"
+                        onClick={async (e) => {
+                          const btn = e.currentTarget;
+                          btn.disabled = true;
+                          btn.innerText = "Syncing...";
                         const secret = password || localStorage.getItem('admin_pwd') || '';
                         try {
                           const res = await fetch('/api/diagnostic?force=true', {
