@@ -56,7 +56,7 @@
 
 /* Chatbot Specific Overrides */
 .chat-user-message p {
-  @apply text-white !important;
+  @apply !text-white;
 }
 
 .container-custom {
@@ -101,16 +101,11 @@ h3 { @apply text-xl md:text-2xl font-semibold mb-4 leading-snug; }
 }
 
 .markdown-body ul {
-  @apply list-none ml-0 pl-0 !important;
+  @apply !list-none !ml-0 !pl-0;
 }
 
 .markdown-body li {
-  @apply pl-0 flex gap-2 items-start !important;
-}
-
-.markdown-body li::before {
-  content: "-" !important;
-  @apply flex-shrink-0 font-bold !important;
+  @apply !pl-0 flex gap-2 items-start;
 }
 
 .markdown-body ol {

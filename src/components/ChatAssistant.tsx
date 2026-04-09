@@ -121,8 +121,22 @@ export default function ChatAssistant() {
                       {m.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                     </div>
                     <div className={`p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user' ? 'bg-accent text-white rounded-tr-none chat-user-message' : 'bg-white border border-border text-accent-light rounded-tl-none shadow-sm'}`}>
-                      <div className={`prose prose-sm max-w-none prose-p:mb-8 prose-ul:my-2 prose-li:my-1 markdown-body ${m.role === 'user' ? 'prose-invert !text-white' : ''}`}>
-                        <Markdown remarkPlugins={[remarkBreaks]}>{m.content}</Markdown>
+                      <div className={`max-w-none markdown-body ${m.role === 'user' ? '!text-white' : ''}`}>
+                        <Markdown 
+                          remarkPlugins={[remarkBreaks]}
+                          components={{
+                            p: ({ children }) => <p className="mb-8 last:mb-0">{children}</p>,
+                            ul: ({ children }) => <ul className="list-none p-0 m-0 mb-8 last:mb-0 space-y-2">{children}</ul>,
+                            li: ({ children }) => (
+                              <li className="flex gap-2 items-start mb-2 last:mb-0">
+                                <span className="flex-shrink-0 font-bold text-accent">-</span>
+                                <div className="flex-grow">{children}</div>
+                              </li>
+                            )
+                          }}
+                        >
+                          {m.content}
+                        </Markdown>
                       </div>
                       
                       {m.suggestions && m.suggestions.length > 0 && (
