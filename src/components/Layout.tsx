@@ -44,9 +44,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-10">
-            {showAdminLink && (
-              <Link to="/admin" className="text-sm font-semibold text-accent transition-colors">Admin</Link>
-            )}
             <Link to="/" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Home</Link>
             <Link to="/services" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Services</Link>
             <Link to="/calculator" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Bottleneck Cost</Link>
@@ -63,9 +60,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {/* Mobile Nav */}
         {isMenuOpen && (
           <div className="md:hidden bg-white border-b border-border p-6 flex flex-col gap-4 animate-in fade-in slide-in-from-top-5">
-            {showAdminLink && (
-              <Link to="/admin" className="text-lg font-medium py-2 text-accent">Admin</Link>
-            )}
             <Link to="/" className="text-lg font-medium py-2">Home</Link>
             <Link to="/services" className="text-lg font-medium py-2">Services</Link>
             <Link to="/calculator" className="text-lg font-medium py-2">Bottleneck Cost</Link>

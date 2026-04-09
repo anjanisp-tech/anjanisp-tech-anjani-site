@@ -100,16 +100,8 @@ router.get("/sitemap.xml", async (req, res) => {
     }
 
     if (!content || !content.includes('<url>')) {
-      const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
-      if (fs.existsSync(sitemapPath)) {
-        const fileContent = fs.readFileSync(sitemapPath, 'utf-8');
-        if (fileContent.includes('<url>')) {
-          content = fileContent;
-        }
-      }
-      
-      if (!content || !content.includes('<url>')) {
-        let urls = `
+      // Try dynamic generation first to include blog posts
+      let urls = `
   <url>
     <loc>https://www.anjanipandey.com/</loc>
     <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
@@ -135,37 +127,47 @@ router.get("/sitemap.xml", async (req, res) => {
     <priority>0.8</priority>
   </url>`;
 
-        try {
-          const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-          let posts: any[] = [];
-          if (isPostgres) {
-            const { sql } = await import("@vercel/postgres");
-            const { rows } = await sql`SELECT id, created_at FROM posts ORDER BY created_at DESC`;
-            posts = rows;
-          } else {
-            const db = getSqliteDb();
-            if (db && !useMockDb) {
-              posts = db.prepare("SELECT id, created_at FROM posts ORDER BY created_at DESC").all();
-            }
+      try {
+        const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+        let posts: any[] = [];
+        if (isPostgres) {
+          const { sql } = await import("@vercel/postgres");
+          const { rows } = await sql`SELECT id, created_at FROM posts ORDER BY created_at DESC`;
+          posts = rows;
+        } else {
+          const db = getSqliteDb();
+          if (db && !useMockDb) {
+            posts = db.prepare("SELECT id, created_at FROM posts ORDER BY created_at DESC").all();
           }
+        }
 
-          for (const post of posts) {
-            const date = post.created_at ? new Date(post.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-            urls += `
+        for (const post of posts) {
+          const date = post.created_at ? new Date(post.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+          urls += `
   <url>
     <loc>https://www.anjanipandey.com/blog/${post.id}</loc>
     <lastmod>${date}</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>`;
-          }
-        } catch (err) {
-          console.error("Error fetching posts for sitemap:", err);
         }
+      } catch (err) {
+        console.error("Error fetching posts for sitemap:", err);
+      }
 
-        content = `<?xml version="1.0" encoding="UTF-8"?>
+      content = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}
 </urlset>`;
+
+      // If dynamic generation failed to produce any URLs (shouldn't happen with the hardcoded ones), fallback to static file
+      if (!content || !content.includes('<url>')) {
+        const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+        if (fs.existsSync(sitemapPath)) {
+          const fileContent = fs.readFileSync(sitemapPath, 'utf-8');
+          if (fileContent.includes('<url>')) {
+            content = fileContent;
+          }
+        }
       }
     }
 

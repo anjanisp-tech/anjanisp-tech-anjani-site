@@ -31,22 +31,22 @@ export default function SEO({
     <Helmet>
       {/* Basic Meta Tags */}
       <title>{fullTitle}</title>
-      <meta name="description" content={fullDescription} />
-      <link rel="canonical" href={fullCanonical} />
+      <meta name="description" content={fullDescription} data-rh="true" />
+      <link rel="canonical" href={fullCanonical} data-rh="true" />
 
       {/* Open Graph / Facebook */}
-      <meta property="og:type" content={ogType} />
-      <meta property="og:url" content={fullCanonical} />
-      <meta property="og:title" content={ogTitle || fullTitle} />
-      <meta property="og:description" content={ogDescription || fullDescription} />
-      <meta property="og:image" content={ogImage} />
+      <meta property="og:type" content={ogType} data-rh="true" />
+      <meta property="og:url" content={fullCanonical} data-rh="true" />
+      <meta property="og:title" content={ogTitle || fullTitle} data-rh="true" />
+      <meta property="og:description" content={ogDescription || fullDescription} data-rh="true" />
+      <meta property="og:image" content={ogImage} data-rh="true" />
 
       {/* Twitter */}
-      <meta property="twitter:card" content={twitterCard} />
-      <meta property="twitter:url" content={fullCanonical} />
-      <meta property="twitter:title" content={ogTitle || fullTitle} />
-      <meta property="twitter:description" content={ogDescription || fullDescription} />
-      <meta property="twitter:image" content={ogImage} />
+      <meta name="twitter:card" content={twitterCard} data-rh="true" />
+      <meta name="twitter:url" content={fullCanonical} data-rh="true" />
+      <meta name="twitter:title" content={ogTitle || fullTitle} data-rh="true" />
+      <meta name="twitter:description" content={ogDescription || fullDescription} data-rh="true" />
+      <meta name="twitter:image" content={ogImage} data-rh="true" />
     </Helmet>
   );
 }
