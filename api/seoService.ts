@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import fs from 'fs';
+import path from 'path';
 
 function logDebug(msg: string) {
   try {

@@ -1,11 +1,11 @@
 import express from "express";
 import fs from "fs";
+import path from "path";
 
 function logRoute(msg: string) {
   try {
     const timestamp = new Date().toISOString();
-    // Use /tmp for logging on serverless environments
-    const logPath = process.env.VERCEL ? '/tmp/seo_debug.log' : 'seo_debug.log';
+    const logPath = path.join(process.cwd(), 'seo_debug.log');
     fs.appendFileSync(logPath, `[ROUTE][${timestamp}] ${msg}\n`);
   } catch (e) {
     console.error("Logging failed:", e);

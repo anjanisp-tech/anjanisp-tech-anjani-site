@@ -40,7 +40,7 @@ export const adminAuth = (req: any, res: any, next: any) => {
     const timestamp = new Date().toISOString();
     const logMsg = `[AUTH][${timestamp}] Unauthorized access attempt. Header: ${authHeader ? 'Present' : 'Missing'}`;
     try {
-      const logPath = process.env.VERCEL ? '/tmp/seo_debug.log' : 'seo_debug.log';
+      const logPath = path.join(process.cwd(), 'seo_debug.log');
       fs.appendFileSync(logPath, logMsg + '\n');
     } catch (e) {}
     res.status(401).json({ error: "Unauthorized" });
