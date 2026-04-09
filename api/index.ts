@@ -71,19 +71,21 @@ router.get("/diagnostic", async (req, res) => {
     let geminiTest = "Not tested";
     if (hasGemini) {
       try {
-        const { GoogleGenerativeAI } = await import("@google/generative-ai");
+        const { GoogleGenAI } = await import("@google/genai");
         const apiKey = geminiKey!.trim().replace(/^["']|["']$/g, '');
-        const genAI = new GoogleGenerativeAI(apiKey);
+        const ai = new GoogleGenAI({ apiKey });
         
         // Try multiple models to find one that works in this region/account
-        const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-pro"];
+        const models = ["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview", "gemini-2.5-flash-image"];
         let errors: string[] = [];
         
         for (const modelName of models) {
           try {
-            const model = genAI.getGenerativeModel({ model: modelName });
-            const testResponse = await model.generateContent("hi");
-            const text = testResponse.response.text();
+            const testResponse = await ai.models.generateContent({
+              model: modelName,
+              contents: "hi"
+            });
+            const text = testResponse.text;
             if (text) {
               geminiTest = `Success (${modelName}): ` + text.substring(0, 20);
               break;
@@ -107,7 +109,7 @@ router.get("/diagnostic", async (req, res) => {
       isVercel: !!process.env.VERCEL,
       timestamp: new Date().toISOString(),
       serverStartTime: process.uptime(),
-      version: "1.1.0",
+      version: "1.1.1",
       dbStatus,
       knowledgeStatus,
       geminiTest,
@@ -644,8 +646,8 @@ router.post("/chat", async (req, res) => {
     }
 
     const knowledge = await getKnowledgeBase(false, fileIdOverride);
-    const { GoogleGenerativeAI } = await import("@google/generative-ai");
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const { GoogleGenAI } = await import("@google/genai");
+    const ai = new GoogleGenAI({ apiKey });
     
     // Core Project Goals: Personal Brand Moat & Metmov Monetisation
     const systemInstruction = `You are "The Scaling Architect," a digital proxy for Anjani Pandey, founder of Metmov. 
@@ -687,26 +689,25 @@ ${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substri
     }
 
     // Robust model selection
-    const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-pro"];
+    const models = ["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview"];
     let errors: string[] = [];
     let responseText = "";
 
     for (const modelName of models) {
       try {
-        const model = genAI.getGenerativeModel({ 
+        const result = await ai.models.generateContent({
           model: modelName,
-          systemInstruction: systemInstruction
-        });
-        
-        const result = await model.generateContent({
           contents: [
             ...chatHistory,
             { role: "user", parts: [{ text: message }] }
           ],
-          generationConfig: { temperature: 0.7 }
+          config: {
+            systemInstruction,
+            temperature: 0.7
+          }
         });
 
-        responseText = result.response.text();
+        responseText = result.text || "";
         if (responseText) break;
       } catch (err: any) {
         errors.push(`${modelName}: ${err.message}`);
@@ -788,23 +789,22 @@ router.post("/admin/ai-debug", async (req, res, next) => {
 
     if (!apiKey) throw new Error("GEMINI_API_KEY missing");
 
-    const { GoogleGenerativeAI } = await import("@google/generative-ai");
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const { GoogleGenAI } = await import("@google/genai");
+    const ai = new GoogleGenAI({ apiKey });
     
     const systemInstruction = `You are "The Scaling Architect" (Anjani Pandey). Use the provided context to answer.
     Context: ${knowledge.substring(0, 15000)}`;
 
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      systemInstruction: systemInstruction
+    const result = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: message,
+      config: { 
+        systemInstruction,
+        temperature: 0.1
+      }
     });
 
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: message }] }],
-      generationConfig: { temperature: 0.1 } // Low temp for debugging
-    });
-
-    const responseText = result.response.text();
+    const responseText = result.text || "";
 
     res.json({ 
       response: responseText, 

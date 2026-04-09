@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config({ override: true });
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
@@ -82,6 +84,8 @@ async function startServer() {
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Full-stack server running on http://localhost:${PORT}`);
     console.log("Environment Check:");
+    console.log("- GEMINI_API_KEY Length:", process.env.GEMINI_API_KEY?.length || 0);
+    console.log("- GEMINI_API_KEY Preview:", process.env.GEMINI_API_KEY?.substring(0, 5));
     console.log("- RESEND_API_KEY:", process.env.RESEND_API_KEY ? "Present" : "MISSING");
     console.log("- RESEND_FROM_EMAIL:", process.env.RESEND_FROM_EMAIL || "Not Set");
     console.log("- POSTGRES_URL:", process.env.POSTGRES_URL ? "Present" : "MISSING");

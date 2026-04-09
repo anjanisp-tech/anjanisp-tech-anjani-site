@@ -1322,8 +1322,9 @@ export default function Admin() {
                     </button>
                   </div>
                 </div>
+              </div>
 
-                <div className="mt-8 p-6 bg-slate-50 border border-slate-100 rounded-2xl">
+              <div className="mt-8 p-6 bg-slate-50 border border-slate-100 rounded-2xl">
                   <h3 className="text-slate-800 font-bold mb-2">SEO & Sitemap</h3>
                   <p className="text-sm text-slate-700 mb-4">
                     Your sitemap is automatically generated and updated. You can view it here:

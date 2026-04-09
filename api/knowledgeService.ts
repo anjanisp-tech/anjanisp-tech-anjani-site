@@ -21,7 +21,24 @@ export async function getKnowledgeBase(force: boolean = false, fileIdOverride?: 
       
       const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || process.env.EMAIL;
       const rawKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || process.env.KEY;
-      const privateKey = rawKey?.replace(/\\n/g, '\n');
+      let privateKey = rawKey?.replace(/\\n/g, '\n');
+      
+      // If the key is a single line (no newlines), it's likely missing them from secrets
+      if (privateKey && !privateKey.includes('\n')) {
+        console.log("[KNOWLEDGE] Detected single-line private key. Attempting to reformat...");
+        // Remove header and footer temporarily to wrap the base64 content
+        const header = "-----BEGIN PRIVATE KEY-----";
+        const footer = "-----END PRIVATE KEY-----";
+        if (privateKey.startsWith(header) && privateKey.endsWith(footer)) {
+          let content = privateKey.substring(header.length, privateKey.length - footer.length).trim();
+          // Remove any existing spaces
+          content = content.replace(/\s/g, '');
+          // Wrap every 64 chars
+          const wrapped = content.match(/.{1,64}/g)?.join('\n');
+          privateKey = `${header}\n${wrapped}\n${footer}\n`;
+        }
+      }
+      
       const fileId = fileIdOverride || process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID || process.env.DOC_ID;
 
       if (!email || !privateKey || !fileId) {
@@ -56,6 +73,10 @@ export async function getKnowledgeBase(force: boolean = false, fileIdOverride?: 
       const mimeType = metadata.data.mimeType;
       const fileName = metadata.data.name;
       console.log(`[KNOWLEDGE] Found file: "${fileName}" (${mimeType})`);
+      
+      if (mimeType !== 'application/vnd.google-apps.document' && mimeType !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        throw new Error(`Unsupported file type: ${mimeType}. Please use a Google Doc or .docx file.`);
+      }
       
       let buffer: Buffer;
     
@@ -98,6 +119,9 @@ export async function getKnowledgeBase(force: boolean = false, fileIdOverride?: 
     return cachedKnowledge;
   } catch (error: any) {
     console.error("[KNOWLEDGE] Error syncing knowledge base:", error.message);
-    return cachedKnowledge || ""; // Return old cache if sync fails
+    if (error.response && error.response.data) {
+      console.error("[KNOWLEDGE] API Error Details:", JSON.stringify(error.response.data));
+    }
+    throw error;
   }
 }
