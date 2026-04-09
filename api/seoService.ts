@@ -64,13 +64,27 @@ async function getDriveClient() {
 export async function listPendingInstructions(folderId: string): Promise<SeoInstruction[]> {
   const drive = await getDriveClient();
   
-  // Find the 01_PENDING subfolder
-  const folderRes = await drive.files.list({
-    q: `'${folderId}' in parents and name = '01_PENDING' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-    fields: 'files(id)'
+  let rootFolderId = folderId;
+  let pendingFolderId = '';
+
+  // Check if the provided ID is actually the 01_PENDING folder
+  const currentFolder = await drive.files.get({
+    fileId: folderId,
+    fields: 'id, name, parents'
   });
 
-  const pendingFolderId = folderRes.data.files?.[0]?.id;
+  if (currentFolder.data.name === '01_PENDING') {
+    pendingFolderId = folderId;
+    rootFolderId = currentFolder.data.parents?.[0] || folderId;
+  } else {
+    // Find the 01_PENDING subfolder
+    const folderRes = await drive.files.list({
+      q: `'${folderId}' in parents and name = '01_PENDING' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+      fields: 'files(id)'
+    });
+    pendingFolderId = folderRes.data.files?.[0]?.id || '';
+  }
+
   if (!pendingFolderId) return [];
 
   const filesRes = await drive.files.list({
@@ -100,9 +114,21 @@ export async function listPendingInstructions(folderId: string): Promise<SeoInst
 export async function moveInstruction(fileId: string, folderId: string, status: 'PROCESSED' | 'FAILED') {
   const drive = await getDriveClient();
   
+  let rootFolderId = folderId;
+
+  // Check if the provided ID is actually the 01_PENDING folder
+  const currentFolder = await drive.files.get({
+    fileId: folderId,
+    fields: 'id, name, parents'
+  });
+
+  if (currentFolder.data.name === '01_PENDING') {
+    rootFolderId = currentFolder.data.parents?.[0] || folderId;
+  }
+
   const targetFolderName = status === 'PROCESSED' ? '02_PROCESSED' : '03_FAILED';
   const folderRes = await drive.files.list({
-    q: `'${folderId}' in parents and name = '${targetFolderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+    q: `'${rootFolderId}' in parents and name = '${targetFolderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
     fields: 'files(id)'
   });
 
