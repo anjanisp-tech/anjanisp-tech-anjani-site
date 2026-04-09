@@ -8,6 +8,7 @@ function logRoute(msg: string) {
 
 const router = express.Router();
 const apiApp = express();
+logRoute("api/index.ts module loaded");
 apiApp.use(express.json());
 
 // Mount router at both /api and root to handle Vercel rewrites vs local mounting
@@ -38,7 +39,7 @@ const getKnowledge = async () => {
 
 // 1. Simple Ping Route for testing
 router.get("/ping", (req, res) => {
-  res.json({ status: "ok", message: "API is reachable", version: "1.0.3" });
+  res.json({ status: "ok", message: "API is reachable", version: "1.0.4" });
 });
 
 // Diagnostic route - Minimal dependencies to avoid crashes

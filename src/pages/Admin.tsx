@@ -327,15 +327,24 @@ export default function Admin() {
       const res = await fetch('/api/admin/seo/pending', {
         headers: { 'Authorization': `Bearer ${secret}` }
       });
-      const data = await res.json();
-      if (res.ok) {
-        setSeoInstructions(data.instructions || []);
+      
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
+        if (res.ok) {
+          setSeoInstructions(data.instructions || []);
+        } else {
+          console.error("SEO Error:", data.error, data.details, data.stack);
+          const errorMsg = "SEO Error: " + (data.error || "Failed to fetch instructions") + 
+                          "\n\nDetails: " + (data.details || "No details provided") +
+                          (data.stack ? "\n\nStack: " + data.stack.substring(0, 200) + "..." : "");
+          alert(errorMsg);
+          setSeoInstructions([]);
+        }
       } else {
-        console.error("SEO Error:", data.error, data.details, data.stack);
-        const errorMsg = "SEO Error: " + (data.error || "Failed to fetch instructions") + 
-                        "\n\nDetails: " + (data.details || "No details provided") +
-                        (data.stack ? "\n\nStack: " + data.stack.substring(0, 200) + "..." : "");
-        alert(errorMsg);
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        alert("Server returned non-JSON response. \n\nStatus: " + res.status + "\n\nBody: " + text.substring(0, 300));
         setSeoInstructions([]);
       }
     } catch (err: any) {

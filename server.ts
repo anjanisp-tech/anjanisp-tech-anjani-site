@@ -13,8 +13,19 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  const fs = await import('fs');
+  const logFile = path.join(process.cwd(), 'seo_debug.log');
+  fs.appendFileSync(logFile, `[SERVER] Starting at ${new Date().toISOString()}\n`);
+
   // Middleware to parse JSON bodies
   app.use(express.json());
+
+  app.use((req, res, next) => {
+    const timestamp = new Date().toISOString();
+    const logMsg = `[REQ][${timestamp}] ${req.method} ${req.url} (Host: ${req.headers.host})`;
+    fs.appendFileSync(logFile, logMsg + '\n');
+    next();
+  });
 
   // Direct test route to bypass apiApp router entirely
   app.get("/api-test-ping", (req, res) => {
@@ -28,7 +39,9 @@ async function startServer() {
   // Use the API app for /api routes
   app.use("/api", (req, res, next) => {
     try {
-      console.log(`[API REQUEST] ${req.method} ${req.url}`);
+      const timestamp = new Date().toISOString();
+      const logMsg = `[SERVER][${timestamp}] ${req.method} ${req.url} (IP: ${req.ip})`;
+      fs.appendFileSync(path.join(process.cwd(), 'seo_debug.log'), logMsg + '\n');
       next();
     } catch (err: any) {
       console.error("[API MOUNT ERROR]", err);

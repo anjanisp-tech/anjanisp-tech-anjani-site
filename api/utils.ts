@@ -33,9 +33,15 @@ export function getResendKey() {
 export const adminAuth = (req: any, res: any, next: any) => {
   const authHeader = req.headers.authorization;
   const adminPassword = process.env.ADMIN_PASSWORD || "scaling2024";
+  
   if (authHeader === `Bearer ${adminPassword}`) {
     next();
   } else {
+    const timestamp = new Date().toISOString();
+    const logMsg = `[AUTH][${timestamp}] Unauthorized access attempt. Header: ${authHeader ? 'Present' : 'Missing'}`;
+    try {
+      fs.appendFileSync(path.join(process.cwd(), 'seo_debug.log'), logMsg + '\n');
+    } catch (e) {}
     res.status(401).json({ error: "Unauthorized" });
   }
 };
