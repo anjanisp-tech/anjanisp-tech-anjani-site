@@ -327,12 +327,17 @@ export default function Admin() {
       const res = await fetch('/api/admin/seo/pending', {
         headers: { 'Authorization': `Bearer ${secret}` }
       });
+      const data = await res.json();
       if (res.ok) {
-        const data = await res.json();
         setSeoInstructions(data.instructions || []);
+      } else {
+        console.error("SEO Error:", data.error);
+        alert("SEO Error: " + (data.error || "Failed to fetch instructions"));
+        setSeoInstructions([]);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to fetch SEO instructions", err);
+      alert("Network Error: " + err.message);
     } finally {
       setIsSeoLoading(false);
     }

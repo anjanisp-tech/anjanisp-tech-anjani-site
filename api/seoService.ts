@@ -14,8 +14,8 @@ export async function getSeoFolderId(): Promise<string | undefined> {
   }
 
   try {
-    const { getDb } = await import("./db.js");
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    const dbModule = await import("./db.js");
+    const { isPostgres, getSqliteDb, useMockDb } = dbModule;
     
     let dbId: string | undefined;
     if (isPostgres) {
@@ -100,18 +100,23 @@ export async function listPendingInstructions(folderId: string): Promise<SeoInst
   });
 
   const instructions: SeoInstruction[] = [];
-  for (const file of filesRes.data.files || []) {
-    if (file.id && file.name) {
-      const contentRes = await drive.files.get({
-        fileId: file.id,
-        alt: 'media'
-      });
-      instructions.push({
-        id: file.id,
-        name: file.name,
-        content: contentRes.data
-      });
+  try {
+    for (const file of filesRes.data.files || []) {
+      if (file.id && file.name) {
+        const contentRes = await drive.files.get({
+          fileId: file.id,
+          alt: 'media'
+        });
+        instructions.push({
+          id: file.id,
+          name: file.name,
+          content: contentRes.data
+        });
+      }
     }
+  } catch (err: any) {
+    console.error("[SEO] Error reading file content", err);
+    throw new Error(`Failed to read instruction content: ${err.message}`);
   }
 
   return instructions;
