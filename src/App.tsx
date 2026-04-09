@@ -1,16 +1,18 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import Layout from './components/Layout';
-import Home from './pages/Home';
-import Services from './pages/Services';
-import Blog from './pages/Blog';
-import BlogPostDetail from './pages/BlogPostDetail';
-import BookCall from './pages/BookCall';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import Admin from './pages/Admin';
-import Sitemap from './pages/Sitemap';
-import BottleneckCostCalculator from './pages/BottleneckCostCalculator';
+
+// Lazy load pages to reduce initial bundle size
+const Home = lazy(() => import('./pages/Home'));
+const Services = lazy(() => import('./pages/Services'));
+const Blog = lazy(() => import('./pages/Blog'));
+const BlogPostDetail = lazy(() => import('./pages/BlogPostDetail'));
+const BookCall = lazy(() => import('./pages/BookCall'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const Admin = lazy(() => import('./pages/Admin'));
+const Sitemap = lazy(() => import('./pages/Sitemap'));
+const BottleneckCostCalculator = lazy(() => import('./pages/BottleneckCostCalculator'));
 
 function Analytics() {
   const location = useLocation();
@@ -30,23 +32,32 @@ function Analytics() {
   return null;
 }
 
+// Loading fallback
+const PageLoader = () => (
+  <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-accent/20 border-t-accent rounded-full animate-spin"></div>
+  </div>
+);
+
 export default function App() {
   return (
     <Router>
       <Analytics />
       <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:id" element={<BlogPostDetail />} />
-          <Route path="/book" element={<BookCall />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/sitemap" element={<Sitemap />} />
-          <Route path="/calculator" element={<BottleneckCostCalculator />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:id" element={<BlogPostDetail />} />
+            <Route path="/book" element={<BookCall />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/sitemap" element={<Sitemap />} />
+            <Route path="/calculator" element={<BottleneckCostCalculator />} />
+          </Routes>
+        </Suspense>
       </Layout>
     </Router>
   );

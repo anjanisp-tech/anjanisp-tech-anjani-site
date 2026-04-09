@@ -641,26 +641,6 @@ router.post("/chat", async (req, res) => {
     const { getKnowledgeBase } = await getKnowledge();
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     
-    // Email extraction and lead capture
-    const emailMatch = message.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-    if (emailMatch) {
-      const email = emailMatch[0];
-      try {
-        if (isPostgres) {
-          const { sql } = await import("@vercel/postgres");
-          await sql`INSERT INTO chatbot_leads (email, query) VALUES (${email}, ${message})`;
-        } else {
-          const db = getSqliteDb();
-          if (db && !useMockDb) {
-            db.prepare("INSERT INTO chatbot_leads (email, query) VALUES (?, ?)").run(email, message);
-          }
-        }
-        console.log(`[CHAT] Lead captured: ${email}`);
-      } catch (leadErr: any) {
-        console.warn("[CHAT] Failed to save lead:", leadErr.message);
-      }
-    }
-    
     let fileIdOverride: string | undefined;
     try {
       if (isPostgres) {
@@ -679,11 +659,11 @@ router.post("/chat", async (req, res) => {
     }
 
     const knowledge = await getKnowledgeBase(false, fileIdOverride);
-    const { GoogleGenAI } = await import("@google/genai");
+    const { GoogleGenAI, ThinkingLevel } = await import("@google/genai");
     const ai = new GoogleGenAI({ apiKey });
     
-    // Primary model is 3-flash for speed, fallback to others
-    const models = ["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview"];
+    // Primary model is 3.1-flash-lite for lowest latency
+    const models = ["gemini-3.1-flash-lite-preview", "gemini-3-flash-preview"];
     
     // Core Project Goals: Personal Brand Moat & Metmov Monetisation
     const systemInstruction = `You are "The Scaling Architect," a digital proxy for Anjani Pandey, founder of Metmov. 
@@ -697,11 +677,10 @@ STRICT CONSTRAINTS:
 4. HYPHENATED LISTS ONLY: Every line MUST start with a literal hyphen followed by a space (- ). Phrases and keywords are preferred over full sentences. No introductory text.
 5. HIGH-STATUS TONE: No-nonsense, authoritative, structural. No "I think" or "Maybe".
 6. ENGAGEMENT LOOP: Always end with exactly 2-3 relevant follow-up questions as "bait" in this format: [SUGGESTIONS: Question 1?, Question 2?]
-7. EMAIL COLLECTION: Before suggesting a "Fit Call" or providing deep insights, ask for their business email to "send the structural diagnostic brief".
-8. MONETIZATION HOOKS: 
+7. MONETIZATION HOOKS: 
    - If high intent, prioritize [SUGGESTIONS: Book a Fit Call, Take the Free Diagnostic].
    - After 3-4 turns, suggest: [SUGGESTIONS: Bottleneck Cost Calculator, Book a Fit Call]
-9. NO ANALYSIS: Direct diagnostic mentions to a Fit Call.
+8. NO ANALYSIS: Direct diagnostic mentions to a Fit Call.
 
 KEY KNOWLEDGE:
 - Operating Spine: Structural architecture replacing heroics with systems.
@@ -709,7 +688,7 @@ KEY KNOWLEDGE:
 - Difference from COO: COO manages people; Spine manages architecture.
 - Timeline: 12-week Diagnostic & Installation sprints.
 
-${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substring(0, 15000)}` : ""}`;
+${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substring(0, 10000)}` : ""}`;
 
     // Clean history: Gemini expects alternating user/model turns starting with user.
     const chatHistory = (history || [])
@@ -740,6 +719,7 @@ ${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substri
           config: {
             systemInstruction,
             temperature: 0.7,
+            thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL }
           }
         });
 
@@ -1060,7 +1040,6 @@ router.get("/admin/analytics", async (req, res, next) => {
     let chatbotQueries = [];
     let blogViews = [];
     let calculatorLeads = [];
-    let chatbotLeads = [];
 
     if (isPostgres) {
       const { sql } = await import("@vercel/postgres");
@@ -1073,11 +1052,9 @@ router.get("/admin/analytics", async (req, res, next) => {
         ORDER BY views DESC
       `;
       const calcRes = await sql`SELECT * FROM analytics_calculator ORDER BY created_at DESC LIMIT 100`;
-      const leadsRes = await sql`SELECT * FROM chatbot_leads ORDER BY created_at DESC LIMIT 100`;
       chatbotQueries = chatRes.rows;
       blogViews = blogRes.rows;
       calculatorLeads = calcRes.rows;
-      chatbotLeads = leadsRes.rows;
     } else {
       const db = getSqliteDb();
       if (db && !useMockDb) {
@@ -1090,11 +1067,10 @@ router.get("/admin/analytics", async (req, res, next) => {
           ORDER BY views DESC
         `).all();
         calculatorLeads = db.prepare("SELECT * FROM analytics_calculator ORDER BY created_at DESC LIMIT 100").all();
-        chatbotLeads = db.prepare("SELECT * FROM chatbot_leads ORDER BY created_at DESC LIMIT 100").all();
       }
     }
 
-    res.json({ chatbotQueries, blogViews, calculatorLeads, chatbotLeads });
+    res.json({ chatbotQueries, blogViews, calculatorLeads });
   } catch (err: any) {
     res.status(500).json({ error: "Failed to fetch analytics", details: err.message });
   }
