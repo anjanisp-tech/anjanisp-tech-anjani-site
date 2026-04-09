@@ -9,9 +9,9 @@ apiApp.use("/api", router);
 apiApp.use("/", router);
 
 // Lazy import helpers to avoid top-level crashes
-const getDb = async () => import("./db");
-const getUtils = async () => import("./utils");
-const getKnowledge = async () => import("./knowledgeService");
+const getDb = async () => import("./db.js");
+const getUtils = async () => import("./utils.js");
+const getKnowledge = async () => import("./knowledgeService.js");
 
 // Error handler for apiApp itself
 // Moved to the end of the file
