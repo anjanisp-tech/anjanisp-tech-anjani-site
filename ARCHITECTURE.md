@@ -14,6 +14,9 @@ The platform is designed to digitize and scale the MetMov methodology, which foc
   - **Model**: `gemini-3.1-flash-lite-preview` (Primary for speed), `gemini-3-flash-preview` (Fallback).
   - **Knowledge Base**: RAG (Retrieval-Augmented Generation) using Google Drive as the source.
 - **Email**: Resend API for notifications and diagnostics.
+- **Domain Management**: 
+  - Primary Domain: `https://www.anjanipandey.com`
+  - Redirects: `anjanipandey.com` (non-www) is configured to 301/308 redirect to the primary www domain via `vercel.json` to preserve SEO equity.
 
 ## Key Features & Services
 

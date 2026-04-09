@@ -1190,6 +1190,60 @@ router.delete("/admin/comments/:id", async (req, res, next) => {
   }
 });
 
+// 8. SEO Pipeline Routes
+router.get("/admin/seo/pending", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  try {
+    const { listPendingInstructions, getSeoFolderId } = await import("./seoService");
+    const folderId = await getSeoFolderId();
+    if (!folderId) return res.json({ instructions: [], error: "GOOGLE_DRIVE_SEO_FOLDER_ID not configured." });
+    
+    const instructions = await listPendingInstructions(folderId);
+    res.json({ instructions });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to list SEO instructions", details: err.message });
+  }
+});
+
+router.post("/admin/seo/execute", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  const { instructionId } = req.body;
+  try {
+    const { listPendingInstructions, getSeoFolderId, moveInstruction } = await import("./seoService");
+    const { executeSeoInstruction } = await import("./seoExecutor");
+    
+    const folderId = await getSeoFolderId();
+    if (!folderId) throw new Error("GOOGLE_DRIVE_SEO_FOLDER_ID not configured.");
+
+    const instructions = await listPendingInstructions(folderId);
+    const instruction = instructions.find(i => i.id === instructionId);
+    
+    if (!instruction) throw new Error("Instruction not found.");
+
+    const result = await executeSeoInstruction(instruction.content);
+    
+    await moveInstruction(instructionId, folderId, 'PROCESSED');
+    
+    res.json({ success: true, message: result.message });
+  } catch (err: any) {
+    console.error("[SEO EXECUTION ERROR]", err);
+    try {
+      const { getSeoFolderId, moveInstruction } = await import("./seoService");
+      const folderId = await getSeoFolderId();
+      if (folderId && req.body.instructionId) {
+        await moveInstruction(req.body.instructionId, folderId, 'FAILED');
+      }
+    } catch (moveErr) {
+      console.error("[SEO MOVE ERROR]", moveErr);
+    }
+    res.status(500).json({ error: "SEO Execution failed", details: err.message });
+  }
+});
+
 router.get("/admin/subscriptions", async (req, res, next) => {
   const { adminAuth } = await getUtils();
   adminAuth(req, res, next);

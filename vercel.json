@@ -1,5 +1,18 @@
 {
   "version": 2,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "anjanipandey.com"
+        }
+      ],
+      "destination": "https://www.anjanipandey.com/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",

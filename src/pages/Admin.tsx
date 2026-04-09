@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket, Eye, EyeOff, RefreshCw, Database, BarChart3, Calculator, Info } from 'lucide-react';
+import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket, Eye, EyeOff, RefreshCw, Database, BarChart3, Calculator, Info, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 
@@ -20,12 +20,15 @@ export default function Admin() {
     return typeof window !== 'undefined' && localStorage.getItem('admin_auth') === 'true';
   });
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers' | 'system' | 'manage' | 'knowledge' | 'analytics' | 'ai-debug'>('comments');
+  const [activeTab, setActiveTab] = useState<'comments' | 'upload' | 'subscribers' | 'system' | 'manage' | 'knowledge' | 'analytics' | 'ai-debug' | 'seo'>('comments');
   const [comments, setComments] = useState<Comment[]>([]);
   const [blogs, setBlogs] = useState<any[]>([]);
   const [subscribers, setSubscribers] = useState<{ id: number, email: string, created_at: string }[]>([]);
   const [audits, setAudits] = useState<any[]>([]);
   const [analytics, setAnalytics] = useState<{ chatbotQueries: any[], blogViews: any[], calculatorLeads: any[], chatbotLeads: any[] }>({ chatbotQueries: [], blogViews: [], calculatorLeads: [], chatbotLeads: [] });
+  const [seoInstructions, setSeoInstructions] = useState<any[]>([]);
+  const [isSeoLoading, setIsSeoLoading] = useState(false);
+  const [seoFolderId, setSeoFolderId] = useState('');
   const [isAuditing, setIsAuditing] = useState(false);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
   const [replyTo, setReplyTo] = useState<number | null>(null);
@@ -114,8 +117,13 @@ export default function Admin() {
     if (activeTab === 'analytics' && isAuthenticated) {
       fetchAnalytics();
     }
+
+    if (activeTab === 'seo' && isAuthenticated) {
+      fetchSeoInstructions();
+      fetchSeoSettings();
+    }
     
-    if ((activeTab === 'system' || activeTab === 'knowledge') && isAuthenticated) {
+    if ((activeTab === 'system' || activeTab === 'knowledge' || activeTab === 'seo') && isAuthenticated) {
       fetch('/api/diagnostic')
         .then(res => res.json())
         .then(data => {
@@ -309,6 +317,88 @@ export default function Admin() {
       }
     } catch (err) {
       console.error("Failed to fetch audits:", err);
+    }
+  };
+
+  const fetchSeoInstructions = async () => {
+    setIsSeoLoading(true);
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    try {
+      const res = await fetch('/api/admin/seo/pending', {
+        headers: { 'Authorization': `Bearer ${secret}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSeoInstructions(data.instructions || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch SEO instructions", err);
+    } finally {
+      setIsSeoLoading(false);
+    }
+  };
+
+  const fetchSeoSettings = async () => {
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    try {
+      const res = await fetch('/api/admin/settings', {
+        headers: { 'Authorization': `Bearer ${secret}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSeoFolderId(data.GOOGLE_DRIVE_SEO_FOLDER_ID || '');
+      }
+    } catch (err) {
+      console.error("Failed to fetch SEO settings", err);
+    }
+  };
+
+  const handleSaveSeoFolderId = async () => {
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${secret}`
+        },
+        body: JSON.stringify({ 
+          key: 'GOOGLE_DRIVE_SEO_FOLDER_ID', 
+          value: seoFolderId 
+        })
+      });
+      if (res.ok) {
+        alert("SEO Folder ID saved.");
+      }
+    } catch (err) {
+      alert("Failed to save SEO Folder ID.");
+    }
+  };
+
+  const handleExecuteSeo = async (instructionId: string) => {
+    if (!confirm("Are you sure you want to execute this SEO instruction? This will modify your website code.")) return;
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    setStatus({ type: 'idle', message: 'Executing SEO instruction...' });
+    try {
+      const res = await fetch('/api/admin/seo/execute', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${secret}`
+        },
+        body: JSON.stringify({ instructionId })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("SEO execution successful: " + data.message);
+        fetchSeoInstructions();
+      } else {
+        alert("SEO execution failed: " + (data.error || data.details));
+      }
+    } catch (err: any) {
+      alert("Network error during SEO execution: " + err.message);
+    } finally {
+      setStatus({ type: 'idle', message: '' });
     }
   };
 
@@ -559,6 +649,12 @@ export default function Admin() {
                 className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'analytics' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
               >
                 <BarChart3 size={18} /> Analytics
+              </button>
+              <button 
+                onClick={() => setActiveTab('seo')}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'seo' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
+              >
+                <Globe size={18} /> SEO Pipeline
               </button>
               <button 
                 onClick={() => setActiveTab('ai-debug')}
@@ -1460,6 +1556,117 @@ export default function Admin() {
                   </div>
                 </div>
                 <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+              </div>
+            </div>
+          ) : activeTab === 'seo' ? (
+            <div className="space-y-8">
+              {/* SEO Settings */}
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                  <Globe className="text-accent" size={24} /> SEO Pipeline Configuration
+                </h3>
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-grow">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-accent/40 mb-2 block">Google Drive SEO Folder ID</label>
+                    <input 
+                      type="text" 
+                      value={seoFolderId}
+                      onChange={(e) => setSeoFolderId(e.target.value)}
+                      placeholder="Enter Folder ID from Google Drive"
+                      className="w-full px-6 py-4 rounded-xl bg-muted border border-border outline-none focus:border-accent transition-all text-sm font-mono"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button 
+                      onClick={handleSaveSeoFolderId}
+                      className="btn-primary py-4 px-8"
+                    >
+                      Save Configuration
+                    </button>
+                  </div>
+                </div>
+                <p className="text-xs text-accent-light/50 mt-4 italic">
+                  Drop JSON instruction files into the <code className="bg-muted px-1 rounded">01_PENDING</code> subfolder within this Drive folder.
+                </p>
+              </div>
+
+              {/* Pending Instructions */}
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold flex items-center gap-3">
+                    <FileText className="text-accent" size={24} /> Pending SEO Instructions
+                  </h3>
+                  <button 
+                    onClick={fetchSeoInstructions}
+                    disabled={isSeoLoading}
+                    className="p-2 text-accent/40 hover:text-accent transition-colors"
+                    title="Refresh Instructions"
+                  >
+                    <RefreshCw className={isSeoLoading ? 'animate-spin' : ''} size={20} />
+                  </button>
+                </div>
+
+                {isSeoLoading ? (
+                  <div className="py-20 flex flex-col items-center justify-center text-accent/20">
+                    <RefreshCw className="animate-spin mb-4" size={48} />
+                    <p className="font-bold animate-pulse">Scanning Google Drive...</p>
+                  </div>
+                ) : seoInstructions.length > 0 ? (
+                  <div className="space-y-4">
+                    {seoInstructions.map((instruction) => (
+                      <div key={instruction.id} className="p-6 bg-muted/30 rounded-2xl border border-border/50 hover:border-accent/30 transition-all group">
+                        <div className="flex flex-col md:flex-row justify-between gap-6">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs font-mono font-bold px-2 py-1 bg-accent/10 text-accent rounded uppercase tracking-widest">
+                                {instruction.content.action}
+                              </span>
+                              <h4 className="font-bold text-lg">{instruction.name}</h4>
+                            </div>
+                            <div className="text-sm text-accent-light/70">
+                              Target: <code className="bg-white px-1 rounded border border-border/50">{instruction.content.target || 'Global'}</code>
+                            </div>
+                            <div className="mt-4 p-4 bg-white rounded-xl border border-border/30 text-[11px] font-mono overflow-x-auto">
+                              <pre>{JSON.stringify(instruction.content.payload, null, 2)}</pre>
+                            </div>
+                          </div>
+                          <div className="flex items-start">
+                            <button 
+                              onClick={() => handleExecuteSeo(instruction.id)}
+                              className="btn-primary py-3 px-6 text-sm flex items-center gap-2 w-full md:w-auto"
+                            >
+                              <CheckCircle size={18} /> Execute Action
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-20 text-center border-2 border-dashed border-border rounded-3xl">
+                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 text-accent/10">
+                      <FileText size={32} />
+                    </div>
+                    <h3 className="text-xl font-bold text-accent/30 mb-2">No pending instructions found.</h3>
+                    <p className="text-sm text-accent-light/40 max-w-xs mx-auto">
+                      Drop a JSON file into your Drive folder's <code className="bg-muted px-1 rounded">01_PENDING</code> directory to see it here.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Documentation Link */}
+              <div className="bg-muted/50 p-8 rounded-3xl border border-border/50 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                  <h4 className="font-bold mb-1">Need the JSON Format?</h4>
+                  <p className="text-sm text-accent-light/60">View the full specification for all supported SEO actions and their required payloads.</p>
+                </div>
+                <button 
+                  onClick={() => window.open('/SEO_PIPELINE_SPEC.md', '_blank')}
+                  className="btn-outline py-3 px-8 text-sm whitespace-nowrap"
+                >
+                  View SEO Spec
+                </button>
               </div>
             </div>
           ) : activeTab === 'ai-debug' ? (
