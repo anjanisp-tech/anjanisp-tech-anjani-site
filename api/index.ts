@@ -48,6 +48,73 @@ router.get("/ping", (req, res) => {
   res.json({ status: "ok", message: "API is reachable", version: "1.0.4" });
 });
 
+// SEO Routes: robots.txt and sitemap.xml
+router.get("/robots.txt", async (req, res) => {
+  try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    let content = "";
+    
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      const { rows } = await sql`SELECT value FROM settings WHERE key = 'robots_txt'`;
+      content = rows[0]?.value;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        const row: any = db.prepare("SELECT value FROM settings WHERE key = ?").get('robots_txt');
+        content = row?.value;
+      }
+    }
+
+    if (!content) {
+      const robotsPath = path.join(process.cwd(), 'public', 'robots.txt');
+      if (fs.existsSync(robotsPath)) {
+        content = fs.readFileSync(robotsPath, 'utf-8');
+      } else {
+        content = "User-agent: *\nAllow: /";
+      }
+    }
+
+    res.setHeader('Content-Type', 'text/plain');
+    res.send(content);
+  } catch (err: any) {
+    res.status(500).send("Error generating robots.txt");
+  }
+});
+
+router.get("/sitemap.xml", async (req, res) => {
+  try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    let content = "";
+    
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      const { rows } = await sql`SELECT value FROM settings WHERE key = 'sitemap_xml'`;
+      content = rows[0]?.value;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        const row: any = db.prepare("SELECT value FROM settings WHERE key = ?").get('sitemap_xml');
+        content = row?.value;
+      }
+    }
+
+    if (!content) {
+      const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+      if (fs.existsSync(sitemapPath)) {
+        content = fs.readFileSync(sitemapPath, 'utf-8');
+      } else {
+        content = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://www.anjanipandey.com/</loc>\n    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>1.0</priority>\n  </url>\n</urlset>`;
+      }
+    }
+
+    res.setHeader('Content-Type', 'application/xml');
+    res.send(content);
+  } catch (err: any) {
+    res.status(500).send("Error generating sitemap.xml");
+  }
+});
+
 // Diagnostic route - Minimal dependencies to avoid crashes
 router.get("/diagnostic", async (req, res) => {
   try {
