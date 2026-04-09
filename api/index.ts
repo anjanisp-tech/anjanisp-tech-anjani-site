@@ -71,7 +71,7 @@ router.get("/robots.txt", async (req, res) => {
       if (fs.existsSync(robotsPath)) {
         content = fs.readFileSync(robotsPath, 'utf-8');
       } else {
-        content = "User-agent: *\nAllow: /";
+        content = "User-agent: *\nAllow: /\n\nSitemap: https://www.anjanipandey.com/sitemap.xml";
       }
     }
 
@@ -99,12 +99,25 @@ router.get("/sitemap.xml", async (req, res) => {
       }
     }
 
-    if (!content) {
+    if (!content || !content.includes('<url>')) {
       const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
       if (fs.existsSync(sitemapPath)) {
-        content = fs.readFileSync(sitemapPath, 'utf-8');
-      } else {
-        content = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://www.anjanipandey.com/</loc>\n    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>1.0</priority>\n  </url>\n</urlset>`;
+        const fileContent = fs.readFileSync(sitemapPath, 'utf-8');
+        if (fileContent.includes('<url>')) {
+          content = fileContent;
+        }
+      }
+      
+      if (!content || !content.includes('<url>')) {
+        content = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.anjanipandey.com/</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`;
       }
     }
 

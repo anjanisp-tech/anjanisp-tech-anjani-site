@@ -77,6 +77,7 @@ The platform is designed to digitize and scale the MetMov methodology, which foc
 - **Service**: `/api/seoService.ts` & `/api/seoExecutor.ts`
 - **Mechanism**: Lists JSON instructions from a Google Drive folder (`01_PENDING`) and executes them.
 - **Dynamic Assets**: `robots.txt` and `sitemap.xml` are served dynamically from the `settings` table in the database to allow updates on read-only filesystems (Vercel).
+- **Fallback Logic**: If the database is empty or missing valid entries, the system falls back to physical files in the `public/` directory, ensuring that critical SEO assets are never served empty.
 - **Structural Edits**: Actions that modify `.tsx` files (like `UPDATE_METADATA` or `ADD_PAGE`) must be executed in the AI Studio environment and then Published to the live site.
 
 ## Development Conventions
