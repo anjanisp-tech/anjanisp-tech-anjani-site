@@ -8,23 +8,29 @@ export interface SeoInstruction {
 
 export async function getSeoFolderId(): Promise<string | undefined> {
   const envId = process.env.GOOGLE_DRIVE_SEO_FOLDER_ID;
-  if (envId) return envId;
+  if (envId) {
+    console.log(`[SEO] Using Folder ID from ENV: ${envId}`);
+    return envId;
+  }
 
   try {
     const { getDb } = await import("./db.js");
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     
+    let dbId: string | undefined;
     if (isPostgres) {
       const { sql } = await import("@vercel/postgres");
       const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_SEO_FOLDER_ID'`;
-      return rows[0]?.value;
+      dbId = rows[0]?.value;
     } else {
       const db = getSqliteDb();
       if (db && !useMockDb) {
         const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_SEO_FOLDER_ID');
-        return row?.value;
+        dbId = row?.value;
       }
     }
+    console.log(`[SEO] Using Folder ID from DB: ${dbId}`);
+    return dbId;
   } catch (err) {
     console.error("Failed to fetch SEO Folder ID from DB", err);
   }

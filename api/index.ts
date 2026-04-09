@@ -1196,11 +1196,13 @@ router.get("/admin/seo/pending", async (req, res, next) => {
   adminAuth(req, res, next);
 }, async (req, res) => {
   try {
-    const { listPendingInstructions, getSeoFolderId } = await import("./seoService");
+    const { listPendingInstructions, getSeoFolderId } = await import("./seoService.js");
     const folderId = await getSeoFolderId();
+    console.log(`[SEO] Fetching pending instructions for folder: ${folderId}`);
     if (!folderId) return res.json({ instructions: [], error: "GOOGLE_DRIVE_SEO_FOLDER_ID not configured." });
     
     const instructions = await listPendingInstructions(folderId);
+    console.log(`[SEO] Found ${instructions.length} instructions`);
     res.json({ instructions });
   } catch (err: any) {
     res.status(500).json({ error: "Failed to list SEO instructions", details: err.message });
@@ -1213,8 +1215,8 @@ router.post("/admin/seo/execute", async (req, res, next) => {
 }, async (req, res) => {
   const { instructionId } = req.body;
   try {
-    const { listPendingInstructions, getSeoFolderId, moveInstruction } = await import("./seoService");
-    const { executeSeoInstruction } = await import("./seoExecutor");
+    const { listPendingInstructions, getSeoFolderId, moveInstruction } = await import("./seoService.js");
+    const { executeSeoInstruction } = await import("./seoExecutor.js");
     
     const folderId = await getSeoFolderId();
     if (!folderId) throw new Error("GOOGLE_DRIVE_SEO_FOLDER_ID not configured.");
@@ -1232,7 +1234,7 @@ router.post("/admin/seo/execute", async (req, res, next) => {
   } catch (err: any) {
     console.error("[SEO EXECUTION ERROR]", err);
     try {
-      const { getSeoFolderId, moveInstruction } = await import("./seoService");
+      const { getSeoFolderId, moveInstruction } = await import("./seoService.js");
       const folderId = await getSeoFolderId();
       if (folderId && req.body.instructionId) {
         await moveInstruction(req.body.instructionId, folderId, 'FAILED');
