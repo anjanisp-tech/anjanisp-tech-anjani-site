@@ -9,9 +9,23 @@ apiApp.use("/api", router);
 apiApp.use("/", router);
 
 // Lazy import helpers to avoid top-level crashes
-const getDb = async () => import("./db.js");
-const getUtils = async () => import("./utils.js");
-const getKnowledge = async () => import("./knowledgeService.js");
+let dbModule: any;
+const getDb = async () => {
+  if (!dbModule) dbModule = await import("./db.js");
+  return dbModule;
+};
+
+let utilsModule: any;
+const getUtils = async () => {
+  if (!utilsModule) utilsModule = await import("./utils.js");
+  return utilsModule;
+};
+
+let knowledgeModule: any;
+const getKnowledge = async () => {
+  if (!knowledgeModule) knowledgeModule = await import("./knowledgeService.js");
+  return knowledgeModule;
+};
 
 // Error handler for apiApp itself
 // Moved to the end of the file
@@ -662,12 +676,14 @@ router.post("/chat", async (req, res) => {
       }
     } catch (dbErr: any) {
       console.warn("[CHAT] Settings table check failed (likely missing):", dbErr.message);
-      // Fallback to env var if table doesn't exist
     }
 
     const knowledge = await getKnowledgeBase(false, fileIdOverride);
     const { GoogleGenAI } = await import("@google/genai");
     const ai = new GoogleGenAI({ apiKey });
+    
+    // Primary model is 3-flash for speed, fallback to others
+    const models = ["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview"];
     
     // Core Project Goals: Personal Brand Moat & Metmov Monetisation
     const systemInstruction = `You are "The Scaling Architect," a digital proxy for Anjani Pandey, founder of Metmov. 
@@ -708,67 +724,68 @@ ${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substri
       chatHistory.shift(); 
     }
 
-    // Robust model selection
-    const models = ["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview"];
-    let errors: string[] = [];
+    // Set up streaming response
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
     let responseText = "";
+    let success = false;
 
     for (const modelName of models) {
       try {
-        const result = await ai.models.generateContent({
+        const result = await ai.models.generateContentStream({
           model: modelName,
-          contents: [
-            ...chatHistory,
-            { role: "user", parts: [{ text: message }] }
-          ],
+          contents: chatHistory.concat([{ role: "user", parts: [{ text: message }] }]),
           config: {
             systemInstruction,
-            temperature: 0.7
+            temperature: 0.7,
           }
         });
 
-        responseText = result.text || "";
-        if (responseText) break;
+        for await (const chunk of result) {
+          const chunkText = chunk.text || "";
+          responseText += chunkText;
+          res.write(`data: ${JSON.stringify({ text: chunkText })}\n\n`);
+        }
+        
+        success = true;
+        break;
       } catch (err: any) {
-        errors.push(`${modelName}: ${err.message}`);
         console.warn(`[CHAT] Model ${modelName} failed:`, err.message);
         continue;
       }
     }
 
-    if (!responseText) {
-      return res.status(200).json({ 
-        status: "error", 
-        error: "Chat failed", 
-        details: "All models failed. Errors: " + errors.join(" | ")
-      });
+    if (!success) {
+      res.write(`data: ${JSON.stringify({ error: "All models failed to respond." })}\n\n`);
     }
 
-    // Log to analytics
-    try {
-      if (isPostgres) {
-        const { sql } = await import("@vercel/postgres");
-        await sql`INSERT INTO analytics_chatbot (query, response) VALUES (${message}, ${responseText})`;
-      } else {
-        const db = getSqliteDb();
-        if (db && !useMockDb) {
-          db.prepare("INSERT INTO analytics_chatbot (query, response) VALUES (?, ?)").run(message, responseText);
+    res.write('data: [DONE]\n\n');
+    res.end();
+
+    // Async logging
+    if (success && responseText) {
+      try {
+        if (isPostgres) {
+          const { sql } = await import("@vercel/postgres");
+          await sql`INSERT INTO analytics_chatbot (query, response) VALUES (${message}, ${responseText})`;
+        } else {
+          const db = getSqliteDb();
+          if (db && !useMockDb) {
+            db.prepare("INSERT INTO analytics_chatbot (query, response) VALUES (?, ?)").run(message, responseText);
+          }
         }
+      } catch (logErr) {
+        console.error("[ANALYTICS LOG ERROR] Chatbot:", logErr);
       }
-    } catch (logErr) {
-      console.error("[ANALYTICS LOG ERROR] Chatbot:", logErr);
     }
-
-    res.json({ text: responseText });
+    return;
   } catch (err: any) {
     console.error("[CHAT ERROR]", err);
-    // If it's a Gemini error, it often has a specific structure
-    const errorDetails = err.message || "Unknown error";
-    res.status(200).json({ 
-      status: "error", 
-      error: "Chat failed", 
-      details: errorDetails 
-    });
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error", details: err.message });
+    }
   }
 });
 

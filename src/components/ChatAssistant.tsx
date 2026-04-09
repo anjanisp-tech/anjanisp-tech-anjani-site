@@ -52,24 +52,63 @@ export default function ChatAssistant() {
         })
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error('Failed to connect to the assistant');
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
       
-      if (data.status === 'error') {
-        const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || "Failed to get response from AI");
-        throw new Error(errorMsg);
-      }
+      if (!reader) throw new Error('No reader available');
 
-      let text = data.text || "I'm sorry, I couldn't generate a response.";
+      let assistantContent = "";
       let suggestions: string[] = [];
+      
+      // Add initial empty assistant message
+      setMessages(prev => [...prev, { role: 'assistant', content: '', suggestions: [] }]);
 
-      // Parse [SUGGESTIONS: Q1, Q2]
-      const suggestionMatch = text.match(/\[SUGGESTIONS:\s*(.*?)\]/);
-      if (suggestionMatch) {
-        suggestions = suggestionMatch[1].split(',').map((s: string) => s.trim());
-        text = text.replace(/\[SUGGESTIONS:\s*.*?\]/, '').trim();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataStr = line.slice(6).trim();
+            if (dataStr === '[DONE]') continue;
+            
+            try {
+              const data = JSON.parse(dataStr);
+              if (data.error) throw new Error(data.error);
+              if (data.text) {
+                assistantContent += data.text;
+                
+                // Update the last message in the list
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  const lastMessage = newMessages[newMessages.length - 1];
+                  
+                  // Parse suggestions if they appear in the content
+                  let displayContent = assistantContent;
+                  const suggestionMatch = displayContent.match(/\[SUGGESTIONS:\s*(.*?)\]/);
+                  if (suggestionMatch) {
+                    suggestions = suggestionMatch[1].split(',').map((s: string) => s.trim());
+                    displayContent = displayContent.replace(/\[SUGGESTIONS:\s*.*?\]/, '').trim();
+                  }
+
+                  lastMessage.content = displayContent;
+                  lastMessage.suggestions = suggestions;
+                  return newMessages;
+                });
+              }
+            } catch (e) {
+              console.warn("Error parsing stream chunk:", e);
+            }
+          }
+        }
       }
-
-      setMessages(prev => [...prev, { role: 'assistant', content: text, suggestions }]);
     } catch (error: any) {
       console.error('Chat error:', error);
       setMessages(prev => [...prev, { 
