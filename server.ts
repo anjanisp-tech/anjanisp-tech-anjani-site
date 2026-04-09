@@ -4,7 +4,7 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import apiApp from "./api/index.ts";
+import apiApp from "./api/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,8 +14,10 @@ async function startServer() {
   const PORT = 3000;
 
   const fs = await import('fs');
-  const logFile = path.join(process.cwd(), 'seo_debug.log');
-  fs.appendFileSync(logFile, `[SERVER] Starting at ${new Date().toISOString()}\n`);
+  const logFile = process.env.VERCEL ? '/tmp/seo_debug.log' : path.join(process.cwd(), 'seo_debug.log');
+  try {
+    fs.appendFileSync(logFile, `[SERVER] Starting at ${new Date().toISOString()}\n`);
+  } catch (e) {}
 
   // Middleware to parse JSON bodies
   app.use(express.json());
@@ -23,7 +25,9 @@ async function startServer() {
   app.use((req, res, next) => {
     const timestamp = new Date().toISOString();
     const logMsg = `[REQ][${timestamp}] ${req.method} ${req.url} (Host: ${req.headers.host})`;
-    fs.appendFileSync(logFile, logMsg + '\n');
+    try {
+      fs.appendFileSync(logFile, logMsg + '\n');
+    } catch (e) {}
     next();
   });
 

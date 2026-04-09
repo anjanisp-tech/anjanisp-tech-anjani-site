@@ -2,8 +2,14 @@ import express from "express";
 import fs from "fs";
 
 function logRoute(msg: string) {
-  const timestamp = new Date().toISOString();
-  fs.appendFileSync('seo_debug.log', `[ROUTE][${timestamp}] ${msg}\n`);
+  try {
+    const timestamp = new Date().toISOString();
+    // Use /tmp for logging on serverless environments
+    const logPath = process.env.VERCEL ? '/tmp/seo_debug.log' : 'seo_debug.log';
+    fs.appendFileSync(logPath, `[ROUTE][${timestamp}] ${msg}\n`);
+  } catch (e) {
+    console.error("Logging failed:", e);
+  }
 }
 
 const router = express.Router();
@@ -18,19 +24,19 @@ apiApp.use("/", router);
 // Lazy import helpers to avoid top-level crashes
 let dbModule: any;
 const getDb = async () => {
-  if (!dbModule) dbModule = await import("./db.ts");
+  if (!dbModule) dbModule = await import("./db.js");
   return dbModule;
 };
 
 let utilsModule: any;
 const getUtils = async () => {
-  if (!utilsModule) utilsModule = await import("./utils.ts");
+  if (!utilsModule) utilsModule = await import("./utils.js");
   return utilsModule;
 };
 
 let knowledgeModule: any;
 const getKnowledge = async () => {
-  if (!knowledgeModule) knowledgeModule = await import("./knowledgeService.ts");
+  if (!knowledgeModule) knowledgeModule = await import("./knowledgeService.js");
   return knowledgeModule;
 };
 
@@ -1204,7 +1210,7 @@ router.get("/admin/seo/pending", async (req, res, next) => {
 }, async (req, res) => {
   try {
     logRoute("Route hit /admin/seo/pending");
-    const { listPendingInstructions, getSeoFolderId } = await import("./seoService.ts");
+    const { listPendingInstructions, getSeoFolderId } = await import("./seoService.js");
     logRoute("Service imported");
     const folderId = await getSeoFolderId();
     logRoute(`Folder ID: ${folderId}`);
@@ -1229,8 +1235,8 @@ router.post("/admin/seo/execute", async (req, res, next) => {
 }, async (req, res) => {
   const { instructionId } = req.body;
   try {
-    const { listPendingInstructions, getSeoFolderId, moveInstruction } = await import("./seoService.ts");
-    const { executeSeoInstruction } = await import("./seoExecutor.ts");
+    const { listPendingInstructions, getSeoFolderId, moveInstruction } = await import("./seoService.js");
+    const { executeSeoInstruction } = await import("./seoExecutor.js");
     
     const folderId = await getSeoFolderId();
     if (!folderId) throw new Error("GOOGLE_DRIVE_SEO_FOLDER_ID not configured.");
@@ -1248,7 +1254,7 @@ router.post("/admin/seo/execute", async (req, res, next) => {
   } catch (err: any) {
     console.error("[SEO EXECUTION ERROR]", err);
     try {
-      const { getSeoFolderId, moveInstruction } = await import("./seoService.ts");
+      const { getSeoFolderId, moveInstruction } = await import("./seoService.js");
       const folderId = await getSeoFolderId();
       if (folderId && req.body.instructionId) {
         await moveInstruction(req.body.instructionId, folderId, 'FAILED');
