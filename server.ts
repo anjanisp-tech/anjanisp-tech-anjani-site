@@ -40,6 +40,59 @@ async function startServer() {
     res.json({ status: "ok", message: "Server process is alive", timestamp: new Date().toISOString() });
   });
 
+  // Dynamic robots.txt and sitemap.xml from database
+  app.get("/robots.txt", async (req, res, next) => {
+    try {
+      const dbModule = await import("./api/db.js");
+      const { isPostgres, getSqliteDb } = dbModule;
+      let content = "";
+      if (isPostgres) {
+        const { sql } = await import("@vercel/postgres");
+        const { rows } = await sql`SELECT value FROM settings WHERE key = 'robots_txt'`;
+        content = rows[0]?.value;
+      } else {
+        const db = getSqliteDb();
+        if (db) {
+          const row: any = db.prepare("SELECT value FROM settings WHERE key = ?").get('robots_txt');
+          content = row?.value;
+        }
+      }
+      if (content) {
+        res.header('Content-Type', 'text/plain');
+        return res.send(content);
+      }
+      next(); // Fallback to static file
+    } catch (e) {
+      next();
+    }
+  });
+
+  app.get("/sitemap.xml", async (req, res, next) => {
+    try {
+      const dbModule = await import("./api/db.js");
+      const { isPostgres, getSqliteDb } = dbModule;
+      let content = "";
+      if (isPostgres) {
+        const { sql } = await import("@vercel/postgres");
+        const { rows } = await sql`SELECT value FROM settings WHERE key = 'sitemap_xml'`;
+        content = rows[0]?.value;
+      } else {
+        const db = getSqliteDb();
+        if (db) {
+          const row: any = db.prepare("SELECT value FROM settings WHERE key = ?").get('sitemap_xml');
+          content = row?.value;
+        }
+      }
+      if (content) {
+        res.header('Content-Type', 'application/xml');
+        return res.send(content);
+      }
+      next(); // Fallback to static file
+    } catch (e) {
+      next();
+    }
+  });
+
   // Use the API app for /api routes
   app.use("/api", (req, res, next) => {
     try {

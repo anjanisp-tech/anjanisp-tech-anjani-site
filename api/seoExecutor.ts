@@ -10,19 +10,57 @@ export async function executeSeoInstruction(instruction: any) {
   const ai = new GoogleGenAI({ apiKey });
 
   if (action === 'UPDATE_ROBOTS') {
-    const robotsPath = path.join(process.cwd(), 'public', 'robots.txt');
-    fs.writeFileSync(robotsPath, payload.content);
-    return { success: true, message: "Updated robots.txt" };
+    const dbModule = await import("./db.js");
+    const { isPostgres, getSqliteDb } = dbModule;
+    
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      await sql`INSERT INTO settings (key, value) VALUES ('robots_txt', ${payload.content}) 
+                ON CONFLICT (key) DO UPDATE SET value = ${payload.content}, updated_at = CURRENT_TIMESTAMP`;
+    } else {
+      const db = getSqliteDb();
+      if (db) {
+        db.prepare("INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)")
+          .run('robots_txt', payload.content);
+      }
+    }
+
+    // Also try to write to filesystem for local dev/persistence if possible
+    try {
+      const robotsPath = path.join(process.cwd(), 'public', 'robots.txt');
+      fs.writeFileSync(robotsPath, payload.content);
+    } catch (e) {}
+
+    return { success: true, message: "Updated robots.txt (saved to database)" };
   }
 
   if (action === 'UPDATE_SITEMAP') {
-    const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
-    // Simple sitemap update logic (can be expanded)
-    let content = "";
-    if (fs.existsSync(sitemapPath)) {
-      content = fs.readFileSync(sitemapPath, 'utf-8');
+    const dbModule = await import("./db.js");
+    const { isPostgres, getSqliteDb } = dbModule;
+    
+    let currentXml = "";
+    
+    // Try database first
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      const { rows } = await sql`SELECT value FROM settings WHERE key = 'sitemap_xml'`;
+      currentXml = rows[0]?.value;
     } else {
-      content = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n</urlset>`;
+      const db = getSqliteDb();
+      if (db) {
+        const row: any = db.prepare("SELECT value FROM settings WHERE key = ?").get('sitemap_xml');
+        currentXml = row?.value;
+      }
+    }
+
+    // Fallback to filesystem
+    if (!currentXml) {
+      const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+      if (fs.existsSync(sitemapPath)) {
+        currentXml = fs.readFileSync(sitemapPath, 'utf-8');
+      } else {
+        currentXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n</urlset>`;
+      }
     }
     
     // Use AI to surgically add/remove URLs from XML
@@ -31,7 +69,7 @@ Add URLs: ${JSON.stringify(payload.add || [])}
 Remove URLs: ${JSON.stringify(payload.remove || [])}
 
 Current Sitemap:
-${content}
+${currentXml}
 
 Return ONLY the updated XML content. No markdown blocks.`;
 
@@ -40,11 +78,39 @@ Return ONLY the updated XML content. No markdown blocks.`;
       contents: [{ role: "user", parts: [{ text: prompt }] }]
     });
     const updatedXml = result.text.trim().replace(/^```xml\n/, '').replace(/\n```$/, '');
-    fs.writeFileSync(sitemapPath, updatedXml);
-    return { success: true, message: "Updated sitemap.xml" };
+    
+    // Save back to database
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      await sql`INSERT INTO settings (key, value) VALUES ('sitemap_xml', ${updatedXml}) 
+                ON CONFLICT (key) DO UPDATE SET value = ${updatedXml}, updated_at = CURRENT_TIMESTAMP`;
+    } else {
+      const db = getSqliteDb();
+      if (db) {
+        db.prepare("INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)")
+          .run('sitemap_xml', updatedXml);
+      }
+    }
+
+    // Also try to write to filesystem
+    try {
+      const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+      fs.writeFileSync(sitemapPath, updatedXml);
+    } catch (e) {}
+
+    return { success: true, message: "Updated sitemap.xml (saved to database)" };
   }
 
   if (action === 'ADD_PAGE') {
+    // Check if filesystem is writable
+    try {
+      const testFile = path.join(process.cwd(), '.write_test');
+      fs.writeFileSync(testFile, 'test');
+      fs.unlinkSync(testFile);
+    } catch (e) {
+      throw new Error(`Filesystem is read-only. Action 'ADD_PAGE' requires a writable filesystem. Please execute this instruction in the AI Studio environment and then Publish your changes.`);
+    }
+
     const pagePath = path.join(process.cwd(), target);
     const pageContent = `
 import Layout from '../components/Layout';
@@ -93,6 +159,16 @@ Return ONLY the updated App.tsx code. No markdown blocks.`;
   // Surgical edits for existing pages
   if (!target) throw new Error("Target file is required for this action.");
   const absolutePath = path.join(process.cwd(), target);
+  
+  // Check if filesystem is writable
+  try {
+    const testFile = path.join(process.cwd(), '.write_test');
+    fs.writeFileSync(testFile, 'test');
+    fs.unlinkSync(testFile);
+  } catch (e) {
+    throw new Error(`Filesystem is read-only. Action '${action}' on '${target}' requires a writable filesystem. Please execute this instruction in the AI Studio environment and then Publish your changes.`);
+  }
+
   if (!fs.existsSync(absolutePath)) throw new Error(`Target file ${target} not found.`);
 
   const currentCode = fs.readFileSync(absolutePath, 'utf-8');

@@ -70,6 +70,14 @@ The platform is designed to digitize and scale the MetMov methodology, which foc
 - `analytics_chatbot`: History of AI interactions.
 - `analytics_calculator`: Results from the Bottleneck Calculator.
 - `chatbot_leads`: (Deprecated) Historical email leads.
+- `robots_txt`: (In `settings`) Dynamic robots.txt content.
+- `sitemap_xml`: (In `settings`) Dynamic sitemap.xml content.
+
+### 6. SEO Pipeline
+- **Service**: `/api/seoService.ts` & `/api/seoExecutor.ts`
+- **Mechanism**: Lists JSON instructions from a Google Drive folder (`01_PENDING`) and executes them.
+- **Dynamic Assets**: `robots.txt` and `sitemap.xml` are served dynamically from the `settings` table in the database to allow updates on read-only filesystems (Vercel).
+- **Structural Edits**: Actions that modify `.tsx` files (like `UPDATE_METADATA` or `ADD_PAGE`) must be executed in the AI Studio environment and then Published to the live site.
 
 ## Development Conventions
 - Use `node --import tsx server.ts` to run the dev server.
