@@ -89,12 +89,12 @@ router.get("/sitemap.xml", async (req, res) => {
     
     if (isPostgres) {
       const { sql } = await import("@vercel/postgres");
-      const { rows } = await sql`SELECT value FROM settings WHERE key = 'sitemap_xml'`;
+      const { rows } = await sql`SELECT value FROM settings WHERE key = 'sitemap_xml_override'`;
       content = rows[0]?.value;
     } else {
       const db = getSqliteDb();
       if (db && !useMockDb) {
-        const row: any = db.prepare("SELECT value FROM settings WHERE key = ?").get('sitemap_xml');
+        const row: any = db.prepare("SELECT value FROM settings WHERE key = ?").get('sitemap_xml_override');
         content = row?.value;
       }
     }
