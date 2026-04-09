@@ -128,7 +128,7 @@ router.get("/sitemap.xml", async (req, res) => {
   </url>`;
 
       try {
-        const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+        const { isPostgres, getSqliteDb, useMockDb, initialPosts } = await getDb();
         let posts: any[] = [];
         if (isPostgres) {
           const { sql } = await import("@vercel/postgres");
@@ -141,8 +141,13 @@ router.get("/sitemap.xml", async (req, res) => {
           }
         }
 
+        // Fallback to initialPosts if no posts found in DB (e.g. mock DB or empty)
+        if (posts.length === 0 && initialPosts) {
+          posts = initialPosts;
+        }
+
         for (const post of posts) {
-          const date = post.created_at ? new Date(post.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+          const date = post.created_at ? new Date(post.created_at).toISOString().split('T')[0] : (post.date || new Date().toISOString().split('T')[0]);
           urls += `
   <url>
     <loc>https://www.anjanipandey.com/blog/${post.id}</loc>
