@@ -2,8 +2,11 @@ import { google } from 'googleapis';
 import fs from 'fs';
 
 function logDebug(msg: string) {
-  const timestamp = new Date().toISOString();
-  fs.appendFileSync('seo_debug.log', `[${timestamp}] ${msg}\n`);
+  try {
+    const timestamp = new Date().toISOString();
+    const logPath = process.env.VERCEL ? '/tmp/seo_debug.log' : 'seo_debug.log';
+    fs.appendFileSync(logPath, `[${timestamp}] ${msg}\n`);
+  } catch (e) {}
 }
 
 export interface SeoInstruction {

@@ -45,7 +45,8 @@ async function startServer() {
     try {
       const timestamp = new Date().toISOString();
       const logMsg = `[SERVER][${timestamp}] ${req.method} ${req.url} (IP: ${req.ip})`;
-      fs.appendFileSync(path.join(process.cwd(), 'seo_debug.log'), logMsg + '\n');
+      const logPath = process.env.VERCEL ? '/tmp/seo_debug.log' : path.join(process.cwd(), 'seo_debug.log');
+      fs.appendFileSync(logPath, logMsg + '\n');
       next();
     } catch (err: any) {
       console.error("[API MOUNT ERROR]", err);
