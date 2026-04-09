@@ -101,7 +101,16 @@ h3 { @apply text-xl md:text-2xl font-semibold mb-4 leading-snug; }
 }
 
 .markdown-body ul {
-  @apply list-disc;
+  @apply list-none ml-0;
+}
+
+.markdown-body li {
+  @apply pl-0 flex gap-2;
+}
+
+.markdown-body li::before {
+  content: "-";
+  @apply flex-shrink-0 font-bold;
 }
 
 .markdown-body ol {

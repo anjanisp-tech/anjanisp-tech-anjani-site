@@ -16,7 +16,7 @@ export default function ChatAssistant() {
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: 'assistant', 
-      content: "* Hello! I'm The Scaling Architect.\n* I help founders identify structural gaps and install the 'Operating Spine'.\n* How can I assist you today?" 
+      content: "- Hello! I'm The Scaling Architect.\n\n- I help founders identify structural gaps and install the 'Operating Spine'.\n\n- How can I assist you today?" 
     }
   ]);
   const [input, setInput] = useState('');
