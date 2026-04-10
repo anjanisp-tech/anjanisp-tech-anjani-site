@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Calendar, Mail, Building, User, MessageSquare, Send, ShieldCheck, Zap, Coffee } from 'lucide-react';
 import { FIT_CALL_URL } from '../constants';
+import SEO from '../components/SEO';
 
 export default function BookCall() {
   const [submitted, setSubmitted] = useState(false);
@@ -12,6 +13,11 @@ export default function BookCall() {
 
   return (
     <div className="bg-white min-h-screen">
+      <SEO
+        title="Book a Fit Call | Anjani Pandey"
+        description="Book a 20-30 minute fit call with Anjani Pandey to discuss your scaling challenges. No sales pressure, clear next steps."
+        canonical="https://www.anjanipandey.com/book"
+      />
       <section className="pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto text-center">

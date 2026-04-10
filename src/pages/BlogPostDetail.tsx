@@ -3,6 +3,7 @@ import { ArrowLeft, Calendar, Tag, MessageSquare, User, Mail, Globe, Send, Phone
 import Markdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { blogPosts } from '../data/blogData';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 import SEO from '../components/SEO';
@@ -163,12 +164,32 @@ export default function BlogPostDetail() {
 
   return (
     <div className="bg-white min-h-screen">
-      <SEO 
+      <SEO
         title={`${post.title} | Anjani Pandey`}
         description={post.excerpt}
         canonical={`https://www.anjanipandey.com/blog/${post.id}`}
         ogType="article"
       />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": post.title,
+          "description": post.excerpt,
+          "author": {
+            "@type": "Person",
+            "name": "Anjani Pandey",
+            "url": "https://www.anjanipandey.com"
+          },
+          "publisher": {
+            "@type": "Person",
+            "name": "Anjani Pandey"
+          },
+          "datePublished": post.date,
+          "url": `https://www.anjanipandey.com/blog/${post.id}`,
+          "mainEntityOfPage": `https://www.anjanipandey.com/blog/${post.id}`
+        })}</script>
+      </Helmet>
       <article className="pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto">

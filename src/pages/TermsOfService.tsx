@@ -1,9 +1,15 @@
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 export default function TermsOfService() {
   return (
     <div className="bg-white min-h-screen">
+      <SEO
+        title="Terms of Service | Anjani Pandey"
+        description="Terms of service for anjanipandey.com. Read our terms and conditions for using the website."
+        canonical="https://www.anjanipandey.com/terms"
+      />
       <section className="pt-48 pb-32 md:pt-60 md:pb-48">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto">

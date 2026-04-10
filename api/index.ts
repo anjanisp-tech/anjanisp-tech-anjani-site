@@ -86,21 +86,9 @@ router.get("/sitemap.xml", async (req, res) => {
   try {
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     let content = "";
-    
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      const { rows } = await sql`SELECT value FROM settings WHERE key = 'sitemap_xml_override'`;
-      content = rows[0]?.value;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        const row: any = db.prepare("SELECT value FROM settings WHERE key = ?").get('sitemap_xml_override');
-        content = row?.value;
-      }
-    }
 
-    if (!content || !content.includes('<url>')) {
-      // Try dynamic generation first to include blog posts
+    // Always generate dynamically to include blog posts
+    {
       let urls = `
   <url>
     <loc>https://www.anjanipandey.com/</loc>
@@ -125,19 +113,25 @@ router.get("/sitemap.xml", async (req, res) => {
     <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.anjanipandey.com/book</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>`;
 
       try {
-        const { isPostgres, getSqliteDb, useMockDb, initialPosts } = await getDb();
+        const { isPostgres: isPg2, getSqliteDb: getDb2, useMockDb: useMock2, initialPosts } = await getDb();
         let posts: any[] = [];
-        if (isPostgres) {
-          const { sql } = await import("@vercel/postgres");
-          const { rows } = await sql`SELECT id, created_at FROM posts ORDER BY created_at DESC`;
+        if (isPg2) {
+          const { sql: sql2 } = await import("@vercel/postgres");
+          const { rows } = await sql2`SELECT id, created_at FROM posts ORDER BY created_at DESC`;
           posts = rows;
         } else {
-          const db = getSqliteDb();
-          if (db && !useMockDb) {
-            posts = db.prepare("SELECT id, created_at FROM posts ORDER BY created_at DESC").all();
+          const db2 = getDb2();
+          if (db2 && !useMock2) {
+            posts = db2.prepare("SELECT id, created_at FROM posts ORDER BY created_at DESC").all();
           }
         }
 
@@ -164,7 +158,7 @@ router.get("/sitemap.xml", async (req, res) => {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}
 </urlset>`;
 
-      // If dynamic generation failed to produce any URLs (shouldn't happen with the hardcoded ones), fallback to static file
+      // Fallback to static file if dynamic generation produced nothing
       if (!content || !content.includes('<url>')) {
         const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
         if (fs.existsSync(sitemapPath)) {
