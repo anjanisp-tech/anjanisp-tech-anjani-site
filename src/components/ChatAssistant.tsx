@@ -236,10 +236,10 @@ export default function ChatAssistant() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-24 right-8 w-[90vw] md:w-[400px] h-[600px] bg-white rounded-3xl shadow-2xl border border-border flex flex-col z-50 overflow-hidden"
+            className="fixed bottom-24 right-4 w-[92vw] md:w-[480px] h-[600px] bg-white rounded-3xl shadow-2xl border border-border flex flex-col z-50 overflow-hidden"
           >
             {/* Header */}
-            <div className="bg-accent p-6 text-white">
+            <div className="bg-accent px-5 py-4 text-white">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center font-bold">SA</div>
                 <div>
@@ -250,10 +250,10 @@ export default function ChatAssistant() {
             </div>
 
             {/* Messages */}
-            <div className="flex-grow overflow-y-auto p-6 space-y-6 bg-slate-50/50">
+            <div className="flex-grow overflow-y-auto px-4 py-4 space-y-4 bg-slate-50/50">
               {messages.map((m, i) => (
                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex gap-3 max-w-full ${m.role === 'user' ? 'flex-row-reverse ml-12' : 'flex-row mr-12'}`}>
+                  <div className={`flex gap-2.5 max-w-full ${m.role === 'user' ? 'flex-row-reverse ml-4' : 'flex-row mr-4'}`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${m.role === 'user' ? 'bg-accent text-white' : 'bg-white border border-border text-accent'}`}>
                       {m.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                     </div>
@@ -262,8 +262,8 @@ export default function ChatAssistant() {
                         <Markdown 
                           remarkPlugins={[remarkBreaks]}
                           components={{
-                            p: ({ children }) => <p className="mb-8 last:mb-0">{children}</p>,
-                            ul: ({ children }) => <ul className="list-none p-0 m-0 mb-8 last:mb-0 space-y-2">{children}</ul>,
+                            p: ({ children }) => <p className="mb-2.5 last:mb-0">{children}</p>,
+                            ul: ({ children }) => <ul className="list-none p-0 m-0 mb-2.5 last:mb-0 space-y-1.5">{children}</ul>,
                             li: ({ children }) => (
                               <li className="flex gap-2 items-start mb-2 last:mb-0">
                                 <span className="flex-shrink-0 font-bold text-accent">-</span>
@@ -319,7 +319,7 @@ export default function ChatAssistant() {
             </div>
 
             {/* Quick Actions */}
-            <div className="px-6 py-4 border-t border-border bg-white flex gap-2 overflow-x-auto custom-scrollbar pb-6">
+            <div className="px-4 py-3 border-t border-border bg-white flex gap-2 overflow-x-auto custom-scrollbar pb-4">
               <button 
                 onClick={() => handleSend(undefined, "What is the Operating Spine?")}
                 className="whitespace-nowrap px-4 py-2 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all border border-transparent hover:border-accent/20"
@@ -390,7 +390,7 @@ export default function ChatAssistant() {
             )}
 
             {/* Input */}
-            <form onSubmit={handleSend} className="p-6 bg-white border-t border-border">
+            <form onSubmit={handleSend} className="px-4 py-3 bg-white border-t border-border">
               <div className="relative">
                 <input
                   type="text"

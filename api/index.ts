@@ -801,7 +801,7 @@ router.post("/chat", async (req, res) => {
     }
 
     const knowledge = await getKnowledgeBase(false, fileIdOverride);
-    const { GoogleGenAI, ThinkingLevel } = await import("@google/genai");
+    const { GoogleGenAI } = await import("@google/genai");
     const ai = new GoogleGenAI({ apiKey });
     
     // Primary model is 3.1-flash-lite for lowest latency
@@ -861,8 +861,8 @@ ${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substri
           contents: chatHistory.concat([{ role: "user", parts: [{ text: message }] }]),
           config: {
             systemInstruction,
-            temperature: 0.7,
-            thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL }
+            temperature: 0.5,
+            maxOutputTokens: 256
           }
         });
 
