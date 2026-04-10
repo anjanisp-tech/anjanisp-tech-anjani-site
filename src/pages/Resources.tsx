@@ -10,6 +10,7 @@ interface Resource {
   formatIcon: React.ReactNode;
   cta: string;
   href?: string;
+  downloadUrl?: string;
   gated: boolean;
   available: boolean;
   tag?: string;
@@ -33,9 +34,10 @@ const freeResources: Resource[] = [
     format: 'PDF Guide',
     formatIcon: <FileText size={16} />,
     cta: 'Get Free Access',
+    downloadUrl: '/resources/AI_for_Consultants_Starter_Guide.pdf',
     gated: true,
-    available: false,
-    tag: 'COMING SOON',
+    available: true,
+    tag: 'FREE',
   },
   {
     title: 'Structural Health Quick-Check',
@@ -43,16 +45,18 @@ const freeResources: Resource[] = [
     format: 'PDF Checklist',
     formatIcon: <FileText size={16} />,
     cta: 'Get Free Access',
+    downloadUrl: '/resources/Structural_Health_Quick_Check.pdf',
     gated: true,
-    available: false,
-    tag: 'COMING SOON',
+    available: true,
+    tag: 'FREE',
   },
 ];
 
 export default function Resources() {
-  const [emailModal, setEmailModal] = useState<{ open: boolean; resourceName: string }>({
+  const [emailModal, setEmailModal] = useState<{ open: boolean; resourceName: string; downloadUrl: string }>({
     open: false,
     resourceName: '',
+    downloadUrl: '',
   });
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -60,7 +64,7 @@ export default function Resources() {
 
   const handleGatedClick = (resource: Resource) => {
     if (!resource.available) return;
-    setEmailModal({ open: true, resourceName: resource.title });
+    setEmailModal({ open: true, resourceName: resource.title, downloadUrl: resource.downloadUrl || '' });
     setEmail('');
     setSubmitted(false);
   };
@@ -129,6 +133,8 @@ export default function Resources() {
                     className={`absolute top-4 right-4 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full ${
                       resource.tag === 'LIVE'
                         ? 'bg-green-50 text-green-700 border border-green-200'
+                        : resource.tag === 'FREE'
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
                         : 'bg-amber-50 text-amber-700 border border-amber-200'
                     }`}
                   >
@@ -213,7 +219,7 @@ export default function Resources() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-in fade-in zoom-in-95">
             <button
-              onClick={() => setEmailModal({ open: false, resourceName: '' })}
+              onClick={() => setEmailModal({ open: false, resourceName: '', downloadUrl: '' })}
               className="absolute top-4 right-4 p-2 text-accent/40 hover:text-accent transition-colors"
             >
               <X size={20} />
@@ -248,13 +254,26 @@ export default function Resources() {
                 <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Download size={24} />
                 </div>
-                <h3 className="text-xl font-bold mb-2">Check your inbox</h3>
-                <p className="text-sm text-accent-light">
-                  I've sent {emailModal.resourceName} to {email}. If you don't see it, check spam.
+                <h3 className="text-xl font-bold mb-2">Your download is ready</h3>
+                <p className="text-sm text-accent-light mb-6">
+                  Click below to download {emailModal.resourceName}.
                 </p>
+                <a
+                  href={emailModal.downloadUrl}
+                  download
+                  onClick={() => {
+                    if (typeof window.gtag === 'function') {
+                      window.gtag('event', 'resource_download', { resource_name: emailModal.resourceName });
+                    }
+                  }}
+                  className="btn-primary w-full justify-center py-3 text-sm gap-2 inline-flex"
+                >
+                  <Download size={16} />
+                  Download PDF
+                </a>
                 <button
-                  onClick={() => setEmailModal({ open: false, resourceName: '' })}
-                  className="mt-6 text-sm font-semibold text-accent hover:underline"
+                  onClick={() => setEmailModal({ open: false, resourceName: '', downloadUrl: '' })}
+                  className="mt-4 text-sm font-semibold text-accent/50 hover:text-accent hover:underline"
                 >
                   Close
                 </button>
