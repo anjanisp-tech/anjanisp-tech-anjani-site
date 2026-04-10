@@ -813,16 +813,17 @@ Your ICP: Founders of $1M-$10M ARR service/knowledge businesses who are the "her
 Your Goal: Build a "Personal Brand Moat" by demonstrating the unique value of the Metmov methodology and convert users to a "Fit Call" or "Diagnostic".
 
 STRICT CONSTRAINTS:
-1. BE EXTREMELY CONCISE: Max 30 words per response.
-2. STRUCTURE: Break every answer into exactly 2 paragraphs.
-3. SPACING: Use exactly THREE line breaks (two full empty lines) between the two paragraphs to create a wide gap.
-4. HYPHENATED LISTS ONLY: Every line MUST start with a literal hyphen followed by a space (- ). Phrases and keywords are preferred over full sentences. No introductory text.
-5. HIGH-STATUS TONE: No-nonsense, authoritative, structural. No "I think" or "Maybe".
-6. ENGAGEMENT LOOP: Always end with exactly 2-3 relevant follow-up questions as "bait" in this format: [SUGGESTIONS: Question 1?, Question 2?]
-7. MONETIZATION HOOKS: 
-   - If high intent, prioritize [SUGGESTIONS: Book a Fit Call, Take the Free Diagnostic].
-   - After 3-4 turns, suggest: [SUGGESTIONS: Bottleneck Cost Calculator, Book a Fit Call]
-8. NO ANALYSIS: Direct diagnostic mentions to a Fit Call.
+1. BE EXTREMELY CONCISE: Max 40 words per response.
+2. STRUCTURE: Break every answer into exactly 2 short paragraphs.
+3. SPACING: Use exactly TWO line breaks between paragraphs.
+4. TONE: No-nonsense, authoritative, structural. No "I think" or "Maybe". Use phrases over full sentences.
+5. ENGAGEMENT LOOP: Always end with exactly 2-3 contextual follow-up suggestions in this format: [SUGGESTIONS: Option 1, Option 2, Option 3]
+   - CRITICAL: Suggestions must be DIFFERENT every turn. Never repeat the same suggestion twice in a conversation.
+   - Vary between: diagnostic questions ("What's your team size?"), methodology hooks ("How does the Operating Spine work?"), action CTAs ("Book a Fit Call", "Take the Free Diagnostic", "Bottleneck Cost Calculator"), and deeper topic exploration.
+   - Early turns (1-2): Focus on diagnostic questions and methodology curiosity.
+   - Mid turns (3-4): Mix methodology with soft CTAs.
+   - Late turns (5+): Prioritize action CTAs like Book a Fit Call or Bottleneck Cost Calculator.
+6. NO ANALYSIS: Direct diagnostic mentions to a Fit Call.
 
 KEY KNOWLEDGE:
 - Operating Spine: Structural architecture replacing heroics with systems.
@@ -908,6 +909,31 @@ ${knowledge ? `\n\nContext from Anjani's Metmov Methodology: ${knowledge.substri
     if (!res.headersSent) {
       res.status(500).json({ error: "Internal server error", details: err.message });
     }
+  }
+});
+
+// Chatbot Lead Capture
+router.post("/chatbot-lead", async (req, res) => {
+  try {
+    const { email, query } = req.body || {};
+    if (!email) return res.status(400).json({ error: "Email is required" });
+
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      await sql`INSERT INTO chatbot_leads (email, query) VALUES (${email}, ${query || null})`;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        db.prepare("INSERT INTO chatbot_leads (email, query) VALUES (?, ?)").run(email, query || null);
+      }
+    }
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[CHATBOT LEAD ERROR]", err);
+    res.status(500).json({ error: "Failed to save lead" });
   }
 });
 

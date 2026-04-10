@@ -16,11 +16,17 @@ export default function ChatAssistant() {
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: 'assistant', 
-      content: "- Hello! I'm The Scaling Architect.\n\n- I help founders identify structural gaps and install the 'Operating Spine'.\n\n- How can I assist you today?" 
+      content: "Hello! I'm The Scaling Architect, Anjani's AI strategy assistant.\n\nI help founders of $1M-$10M businesses identify structural bottlenecks and build systems that replace heroics.\n\nWhat's your biggest scaling challenge right now?",
+      suggestions: ["What is the Operating Spine?", "Diagnose my bottlenecks", "How do I fix Founder Overload?"]
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [userTurnCount, setUserTurnCount] = useState(0);
+  const [leadEmail, setLeadEmail] = useState('');
+  const [leadCaptured, setLeadCaptured] = useState(false);
+  const [showLeadGate, setShowLeadGate] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -38,7 +44,17 @@ export default function ChatAssistant() {
 
     const userMessage = messageToSend.trim();
     if (!overrideMessage) setInput('');
-    
+
+    const newTurnCount = userTurnCount + 1;
+    setUserTurnCount(newTurnCount);
+
+    // Show lead gate after 3 user turns (if not already captured)
+    if (newTurnCount >= 3 && !leadCaptured) {
+      setPendingMessage(userMessage);
+      setShowLeadGate(true);
+      return;
+    }
+
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
@@ -120,6 +136,88 @@ export default function ChatAssistant() {
     }
   };
 
+  const handleLeadSubmit = async (skip = false) => {
+    if (!skip && leadEmail.trim()) {
+      // Send lead to backend
+      try {
+        await fetch('/api/chatbot-lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: leadEmail.trim(), query: pendingMessage })
+        });
+      } catch (err) {
+        console.warn('Lead capture failed:', err);
+      }
+    }
+    setLeadCaptured(true);
+    setShowLeadGate(false);
+
+    // Continue with the pending message
+    if (pendingMessage) {
+      setMessages(prev => [...prev, { role: 'user', content: pendingMessage }]);
+      setIsLoading(true);
+      setPendingMessage('');
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: pendingMessage,
+            history: messages.map(m => ({ role: m.role, content: m.content }))
+          })
+        });
+
+        if (!response.ok) throw new Error('Failed to connect');
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        if (!reader) throw new Error('No reader');
+
+        let assistantContent = "";
+        let suggestions: string[] = [];
+        setMessages(prev => [...prev, { role: 'assistant', content: '', suggestions: [] }]);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const dataStr = line.slice(6).trim();
+              if (dataStr === '[DONE]') continue;
+              try {
+                const data = JSON.parse(dataStr);
+                if (data.error) throw new Error(data.error);
+                if (data.text) {
+                  assistantContent += data.text;
+                  setMessages(prev => {
+                    const newMessages = [...prev];
+                    const lastMessage = newMessages[newMessages.length - 1];
+                    let displayContent = assistantContent;
+                    const suggestionMatch = displayContent.match(/\[SUGGESTIONS:\s*(.*?)\]/);
+                    if (suggestionMatch) {
+                      suggestions = suggestionMatch[1].split(',').map((s: string) => s.trim());
+                      displayContent = displayContent.replace(/\[SUGGESTIONS:\s*.*?\]/, '').trim();
+                    }
+                    lastMessage.content = displayContent;
+                    lastMessage.suggestions = suggestions;
+                    return newMessages;
+                  });
+                }
+              } catch (e) { console.warn("Stream parse error:", e); }
+            }
+          }
+        }
+      } catch (error: any) {
+        setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${error.message || "Something went wrong."}` }]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
   return (
     <>
       {/* Floating Button */}
@@ -143,10 +241,10 @@ export default function ChatAssistant() {
             {/* Header */}
             <div className="bg-accent p-6 text-white">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center font-bold">FS</div>
+                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center font-bold">SA</div>
                 <div>
                   <h3 className="font-bold text-lg leading-none mb-1">The Scaling Architect</h3>
-                  <p className="text-xs text-white/60">FounderScale Intelligence</p>
+                  <p className="text-xs text-white/60">by Anjani Pandey &middot; Metmov</p>
                 </div>
               </div>
             </div>
@@ -254,6 +352,43 @@ export default function ChatAssistant() {
               </a>
             </div>
 
+            {/* Lead Capture Gate */}
+            {showLeadGate && (
+              <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-10 flex items-center justify-center p-6">
+                <div className="text-center max-w-xs">
+                  <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MessageSquare size={20} className="text-accent" />
+                  </div>
+                  <h4 className="font-bold text-lg mb-2">You're asking great questions.</h4>
+                  <p className="text-sm text-accent-light mb-6">Drop your email to continue the conversation and get Anjani's scaling insights delivered to you.</p>
+                  <form onSubmit={(e) => { e.preventDefault(); handleLeadSubmit(); }} className="space-y-3">
+                    <input
+                      type="email"
+                      value={leadEmail}
+                      onChange={(e) => setLeadEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      className="w-full px-4 py-3 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-sm text-center"
+                      autoFocus
+                    />
+                    <button
+                      type="submit"
+                      disabled={!leadEmail.trim()}
+                      className="w-full py-3 bg-accent text-white rounded-xl font-bold text-sm hover:bg-accent/90 transition-all disabled:opacity-40"
+                    >
+                      Continue Conversation
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleLeadSubmit(true)}
+                      className="text-xs text-accent/40 hover:text-accent/60 transition-colors"
+                    >
+                      Skip for now
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
             {/* Input */}
             <form onSubmit={handleSend} className="p-6 bg-white border-t border-border">
               <div className="relative">
@@ -263,11 +398,11 @@ export default function ChatAssistant() {
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask about scaling..."
                   className="w-full pl-4 pr-12 py-3 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-sm"
-                  disabled={isLoading}
+                  disabled={isLoading || showLeadGate}
                 />
                 <button
                   type="submit"
-                  disabled={!input.trim() || isLoading}
+                  disabled={!input.trim() || isLoading || showLeadGate}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-accent hover:text-accent-light disabled:opacity-30 transition-all"
                 >
                   <Send size={20} />
