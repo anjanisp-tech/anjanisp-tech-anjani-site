@@ -109,6 +109,12 @@ router.get("/sitemap.xml", async (req, res) => {
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.anjanipandey.com/resources</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.anjanipandey.com/blog</loc>
     <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
     <changefreq>weekly</changefreq>
@@ -933,6 +939,33 @@ router.post("/chatbot-lead", async (req, res) => {
     res.json({ success: true });
   } catch (err: any) {
     console.error("[CHATBOT LEAD ERROR]", err);
+    res.status(500).json({ error: "Failed to save lead" });
+  }
+});
+
+// Resource Lead Capture (email-gated downloads on /resources)
+router.post("/resource-lead", async (req, res) => {
+  try {
+    const { email, resource_name } = req.body || {};
+    if (!email) return res.status(400).json({ error: "Email is required" });
+
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      await sql`CREATE TABLE IF NOT EXISTS resource_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, resource_name TEXT, created_at TIMESTAMP DEFAULT NOW())`;
+      await sql`INSERT INTO resource_leads (email, resource_name) VALUES (${email}, ${resource_name || null})`;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        db.exec("CREATE TABLE IF NOT EXISTS resource_leads (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL, resource_name TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+        db.prepare("INSERT INTO resource_leads (email, resource_name) VALUES (?, ?)").run(email, resource_name || null);
+      }
+    }
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[RESOURCE LEAD ERROR]", err);
     res.status(500).json({ error: "Failed to save lead" });
   }
 });

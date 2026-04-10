@@ -8,6 +8,8 @@ export default function Sitemap() {
     { name: 'Home', path: '/' },
     { name: 'Services', path: '/services' },
     { name: 'Blog', path: '/blog' },
+    { name: 'Resources', path: '/resources' },
+    { name: 'Bottleneck Cost Calculator', path: '/calculator' },
     { name: 'Book a Call', path: '/book' },
     { name: 'Privacy Policy', path: '/privacy' },
     { name: 'Terms of Service', path: '/terms' },
