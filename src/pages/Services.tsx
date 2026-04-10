@@ -6,7 +6,6 @@ import SEO from '../components/SEO';
 const services = [
   {
     title: 'Diagnostic Sprint',
-    price: '₹3-5L / ~$3.5-6k',
     problem: 'You sense something is structurally wrong but can\'t name it precisely. Growth has created friction that you can\'t pinpoint.',
     whatWeDo: [
       'Deep structural diagnosis using our 25-disease taxonomy',
@@ -26,7 +25,6 @@ const services = [
   },
   {
     title: 'Operating Spine Install',
-    price: '₹8-20L / ~$10-25k',
     problem: 'You\'ve diagnosed the issues. Now you need the structural backbone installed. You need a system that runs without your constant intervention.',
     whatWeDo: [
       'Custom design and installation of your Operating Spine',
@@ -47,7 +45,6 @@ const services = [
   },
   {
     title: 'Fractional COO',
-    price: '₹4-6L/mo / ~$5-7.5k/mo',
     problem: 'You need embedded operating leadership but aren\'t ready for a full-time COO hire. You need someone to run the rhythm while you build internal capability.',
     whatWeDo: [
       'One of our partners sits inside your business',
@@ -99,9 +96,8 @@ export default function Services() {
               <div className="grid lg:grid-cols-12 gap-12 lg:gap-24">
                 {/* Left Column: Title & Problem */}
                 <div className="lg:col-span-5">
-                  <div className="flex justify-between items-start mb-4">
+                  <div className="mb-4">
                     <h2 className="text-3xl md:text-4xl mb-0">{service.title}</h2>
-                    <span className="text-lg font-bold text-accent whitespace-nowrap">{service.price}</span>
                   </div>
                   <div className="bg-muted p-8 rounded-2xl border border-border/50 mb-8">
                     <div className="flex items-start gap-3 text-accent/60 mb-4">
@@ -169,12 +165,6 @@ export default function Services() {
           ))}
         </div>
 
-        {/* Pricing Note */}
-        <div className="mt-20 pt-10 border-t border-border/50 text-center">
-          <p className="text-sm text-accent-light/60 max-w-2xl mx-auto italic">
-            * All prices are exclusive of applicable GST/taxes. USD equivalents are provided for international clients; final billing for foreign entities will be in USD based on prevailing exchange rates and include international processing fees.
-          </p>
-        </div>
       </div>
 
       {/* Final CTA */}
