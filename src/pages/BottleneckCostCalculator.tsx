@@ -52,26 +52,35 @@ export default function BottleneckCostCalculator() {
   }, [currency]);
 
   const calculateTax = () => {
-    // Founder's effective hourly rate (Revenue / 2000 hours)
+    // Founder's effective hourly rate (Revenue / 2000 working hours per year)
     const hourlyRate = revenue / 2000;
-    
-    // Replacement cost for "heroic" tasks
+
+    // Replacement cost for delegable tasks (market rate for ops/admin help)
     const replacementCost = currency === 'USD' ? 50 : 4000;
-    
-    // 1. Time Loss: Founder doing low-value work instead of strategic work
-    const timeLoss = heroicHours * 52 * (hourlyRate - replacementCost);
-    
-    // 2. Growth Loss: 20% of revenue lost due to bottlenecking
-    const growthLoss = revenue * 0.20;
-    
-    // 3. Friction Cost: Inefficiency per team member
-    const frictionCostPerPerson = currency === 'USD' ? 5000 : 400000;
-    const frictionCost = teamSize * frictionCostPerPerson;
-    
+
+    // 1. Time Drain: Opportunity cost of founder doing low-leverage work
+    //    Every heroic hour = (founder rate - replacement rate) * 52 weeks
+    const timeLoss = Math.max(0, heroicHours * 52 * (hourlyRate - replacementCost));
+
+    // 2. Growth Cap: Revenue left on table due to founder bottleneck
+    //    Base: 8% of revenue (missed opportunities from capacity constraint)
+    //    Scales up with heroic hours (more firefighting = more missed growth)
+    //    Scales up with team size (larger team waiting on founder = more blocked deals)
+    const bottleneckIntensity = Math.min(1, (heroicHours / 40) * 0.6 + (Math.min(teamSize, 30) / 30) * 0.4);
+    const growthLossRate = 0.08 + (bottleneckIntensity * 0.17); // 8% to 25% range
+    const growthLoss = revenue * growthLossRate;
+
+    // 3. Team Friction: Inefficiency cost per team member
+    //    Scales with revenue-per-person (higher-value teams lose more to friction)
+    //    Scales with heroic hours (more founder bottleneck = more team idle time)
+    const revenuePerPerson = revenue / Math.max(teamSize, 1);
+    const frictionRate = 0.05 + (Math.min(heroicHours, 40) / 40) * 0.10; // 5-15% of rev/person
+    const frictionCost = teamSize * revenuePerPerson * frictionRate;
+
     const totalTax = timeLoss + growthLoss + frictionCost;
-    
+
     const newResults = {
-      timeLoss: Math.max(0, timeLoss),
+      timeLoss,
       growthLoss,
       frictionCost,
       totalTax,
@@ -80,11 +89,10 @@ export default function BottleneckCostCalculator() {
 
     setResults(newResults);
     setShowResult(true);
-    
-    // Log initial calculation (anonymous)
+
+    // Log calculation (anonymous)
     logResults();
-    
-    // Scroll to results
+
     setTimeout(() => {
       document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
@@ -298,12 +306,14 @@ export default function BottleneckCostCalculator() {
                       </div>
                       <div className="flex flex-wrap gap-4 pt-6 border-t border-white/10">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono opacity-40 uppercase">Status:</span>
-                          <span className="text-[10px] font-mono text-red-400 uppercase font-bold tracking-widest">Critical Drain</span>
+                          <span className="text-[10px] font-mono opacity-40 uppercase">Severity:</span>
+                          <span className={`text-[10px] font-mono uppercase font-bold tracking-widest ${results.totalTax > revenue * 0.3 ? 'text-red-400' : results.totalTax > revenue * 0.15 ? 'text-yellow-400' : 'text-green-400'}`}>
+                            {results.totalTax > revenue * 0.3 ? 'Critical' : results.totalTax > revenue * 0.15 ? 'Moderate' : 'Manageable'}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono opacity-40 uppercase">Impact:</span>
-                          <span className="text-[10px] font-mono text-white uppercase font-bold tracking-widest">20% Growth Cap</span>
+                          <span className="text-[10px] font-mono opacity-40 uppercase">Bottleneck Tax:</span>
+                          <span className="text-[10px] font-mono text-white uppercase font-bold tracking-widest">{Math.round(results.totalTax / revenue * 100)}% of Revenue</span>
                         </div>
                       </div>
                     </div>
@@ -333,29 +343,29 @@ export default function BottleneckCostCalculator() {
                     <div className="relative z-10">
                       {!hasSubmittedLead ? (
                         <>
-                          <h3 className="text-2xl font-bold mb-3">Get the Full Analysis Report</h3>
+                          <h3 className="text-2xl font-bold mb-3">Want to fix this?</h3>
                           <p className="text-sm text-accent-light/70 mb-8 max-w-md">
-                            We'll send you a detailed breakdown of these numbers plus a 3-step plan to install your Operating Spine and reclaim your time.
+                            Drop your email and we'll reach out with a custom diagnosis of your bottleneck structure and a clear next step.
                           </p>
                           <form onSubmit={handleLeadSubmit} className="flex flex-col sm:flex-row gap-3">
-                            <input 
-                              type="email" 
+                            <input
+                              type="email"
                               required
                               value={email}
                               onChange={(e) => setEmail(e.target.value)}
-                              placeholder="Enter your professional email" 
+                              placeholder="Enter your professional email"
                               className="flex-1 px-6 py-4 rounded-xl bg-white border border-border outline-none focus:border-accent transition-all text-sm"
                             />
-                            <button 
-                              type="submit" 
+                            <button
+                              type="submit"
                               disabled={isSubmitting}
                               className="bg-accent text-white px-8 py-4 rounded-xl font-bold hover:bg-accent-light transition-all disabled:opacity-50 whitespace-nowrap"
                             >
-                              {isSubmitting ? 'Sending...' : 'Send My Report'}
+                              {isSubmitting ? 'Saving...' : 'Get My Diagnosis'}
                             </button>
                           </form>
                           <p className="text-[10px] text-accent/30 mt-4 font-mono uppercase tracking-widest">
-                            Privacy Guaranteed. No Spam.
+                            No spam. We'll personally review your numbers.
                           </p>
                         </>
                       ) : (
@@ -363,8 +373,26 @@ export default function BottleneckCostCalculator() {
                           <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
                             <ArrowRight size={24} />
                           </div>
-                          <h3 className="text-2xl font-bold mb-2">Report Sent!</h3>
-                          <p className="text-accent-light/70">Check your inbox for the full Bottleneck Analysis and your custom Operating Spine roadmap.</p>
+                          <h3 className="text-2xl font-bold mb-2">We've got your details.</h3>
+                          <p className="text-accent-light/70 mb-6">Anjani will personally review your numbers. In the meantime, take the next step:</p>
+                          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                            <a
+                              href={MINI_DIAGNOSTIC_URL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn-primary py-3 px-6"
+                            >
+                              Take the Free Diagnostic
+                            </a>
+                            <a
+                              href={FIT_CALL_URL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn-outline py-3 px-6"
+                            >
+                              Book a Fit Call
+                            </a>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -374,26 +402,33 @@ export default function BottleneckCostCalculator() {
                   <div className="bg-white p-8 rounded-3xl border border-border shadow-sm">
                     <h3 className="text-xl font-bold mb-4">Stop Paying the Tax.</h3>
                     <p className="text-sm text-accent-light/70 mb-6">
-                      The Bottleneck Cost isn't a cost of doing business—it's a symptom of a structural disease. 
-                      Take the next step to install the Operating Spine and reclaim your time.
+                      This isn't a cost of doing business. It's a structural disease with a known cure: the Operating Spine. Take the next step.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <a 
-                        href={MINI_DIAGNOSTIC_URL} 
-                        target="_blank" 
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <a
+                        href={FIT_CALL_URL}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="btn-primary flex-1 py-4"
                       >
-                        Take the Free Diagnostic
+                        Book a Fit Call
                       </a>
-                      <button 
+                      <a
+                        href={MINI_DIAGNOSTIC_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-outline flex-1 py-4"
+                      >
+                        Free Diagnostic
+                      </a>
+                      <button
                         onClick={() => {
                           setShowResult(false);
                           setHasSubmittedLead(false);
                           setEmail('');
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
-                        className="btn-outline flex-1 py-4"
+                        className="btn-outline flex-1 py-4 !text-accent/40"
                       >
                         Recalculate
                       </button>
@@ -423,14 +458,14 @@ export default function BottleneckCostCalculator() {
                 <div className="w-12 h-12 bg-white rounded-xl border border-border flex items-center justify-center shrink-0 font-bold text-accent">02</div>
                 <div>
                   <h4 className="font-bold text-accent mb-2">The Growth Cap (Bottleneck Tax)</h4>
-                  <p>Research shows that founder-led businesses without systems typically leave 15-25% of their potential revenue on the table due to missed opportunities, poor follow-up, and scaling friction. We use a conservative 20%.</p>
+                  <p>Founder-led businesses without systems leave 8-25% of potential revenue on the table through missed opportunities and scaling friction. The rate scales with your bottleneck intensity: more heroic hours and a larger team waiting on you means a higher cap.</p>
                 </div>
               </div>
               <div className="flex gap-6">
                 <div className="w-12 h-12 bg-white rounded-xl border border-border flex items-center justify-center shrink-0 font-bold text-accent">03</div>
                 <div>
                   <h4 className="font-bold text-accent mb-2">Systemic Inefficiency</h4>
-                  <p>Without an Operating Spine, team members spend 15-20% of their time clarifying tasks, searching for information, or re-doing work. We estimate this cost based on standard operational overhead per team member.</p>
+                  <p>Without an Operating Spine, team members spend 5-15% of their productive value on friction: clarifying tasks, waiting for approvals, searching for information, or re-doing work. The rate increases with founder bottleneck severity.</p>
                 </div>
               </div>
             </div>
