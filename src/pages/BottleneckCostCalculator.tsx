@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calculator, ArrowRight, Info, AlertTriangle, TrendingDown, Clock, Users, DollarSign, Globe } from 'lucide-react';
-import { MINI_DIAGNOSTIC_URL } from '../constants';
+import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 import SEO from '../components/SEO';
 
 type Currency = 'USD' | 'INR';

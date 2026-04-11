@@ -50,6 +50,17 @@ const freeResources: Resource[] = [
     available: true,
     tag: 'FREE',
   },
+  {
+    title: 'Why Your Rs.50 Cr Business Still Runs on You (Preview)',
+    description: 'Free 3-chapter preview: The Dependency Trap, The Bottleneck Tax, and Why Hiring Doesn\'t Fix It. Diagnose before you solve.',
+    format: 'PDF Preview (12 pages)',
+    formatIcon: <BookOpen size={16} />,
+    cta: 'Get Free Preview',
+    downloadUrl: '/resources/Why_Your_50Cr_Business_Free_Preview.pdf',
+    gated: true,
+    available: true,
+    tag: 'FREE',
+  },
 ];
 
 const paidResources: Resource[] = [
