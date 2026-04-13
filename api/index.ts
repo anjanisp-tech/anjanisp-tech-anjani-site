@@ -386,7 +386,10 @@ router.post("/admin/init-db", async (req, res, next) => {
         );
       `;
       
-      return res.json({ success: true, message: "Postgres tables initialized" });
+      // Schema migrations - add columns missing from older schemas
+      await sql`ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_premium INTEGER DEFAULT 0`;
+
+      return res.json({ success: true, message: "Postgres tables initialized (with migrations)" });
     } else {
       const db = getSqliteDb();
       if (db && !useMockDb) {
