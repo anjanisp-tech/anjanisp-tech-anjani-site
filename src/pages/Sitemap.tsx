@@ -6,14 +6,14 @@ export default function Sitemap() {
   
   const pages = [
     { name: 'Home', path: '/' },
-    { name: 'Services', path: '/services' },
-    { name: 'Blog', path: '/blog' },
+    { name: 'About', path: '/about' },
+    { name: 'Work With Me', path: '/services' },
+    { name: 'Writing', path: '/writing' },
     { name: 'Resources', path: '/resources' },
     { name: 'Bottleneck Cost Calculator', path: '/calculator' },
     { name: 'Book a Call', path: '/book' },
     { name: 'Privacy Policy', path: '/privacy' },
     { name: 'Terms of Service', path: '/terms' },
-    { name: 'Admin Dashboard', path: '/admin' },
   ];
 
   return (

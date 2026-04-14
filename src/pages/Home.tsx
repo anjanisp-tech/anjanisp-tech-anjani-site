@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Search, Layers, Rocket, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Search, Layers, Rocket, ChevronLeft, ChevronRight, Quote, PenLine, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 import SEO from '../components/SEO';
@@ -80,46 +80,81 @@ export default function Home() {
 
   return (
     <>
-      <SEO 
-        title="Anjani Pandey | Operating Spine & Scaling Specialist"
-        description="I help $1M-$10M ARR businesses diagnose structural bottlenecks and build operating spines that scale. Founder, MetMov LLP. Based in Bengaluru."
+      <SEO
+        title="Anjani Pandey | Operations Leader, Builder, Writer"
+        description="Operations leader. Builder. Writing about systems, scale, and what AI changes about both. Founder, MetMov LLP. Based in Bengaluru."
         canonical="https://www.anjanipandey.com/"
       />
-      {/* SECTION 1 – Hero */}
-      <section className="bg-white pt-32 pb-20 md:pt-40 md:pb-32">
+
+      {/* SECTION 1 - Personal Hero */}
+      <section className="bg-white pt-32 pb-16 md:pt-40 md:pb-24">
         <div className="container-custom">
           <div className="max-w-3xl">
             <h1 className="text-5xl md:text-7xl mb-6">
-              The Founder Trap is the Ceiling of Your Scale
+              Anjani Pandey
             </h1>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent/40 mb-4">
-              MetMov LLP — Structural Diagnostics for Founder-Led Businesses
+            <p className="text-xl md:text-2xl text-accent-light mb-6 leading-relaxed">
+              Operations leader. Builder. Writing about systems, scale, and what AI changes about both.
             </p>
-            <p className="text-xl md:text-2xl text-accent-light mb-8 leading-relaxed">
-              If you stepped away for 72 hours, what would stall? <br />
-              We diagnose structural diseases and install the <strong>Operating Spine</strong> that lets your business run itself.
+            <p className="text-base text-accent-light/60 leading-relaxed">
+              14+ years designing execution systems inside high-growth companies. Now building <a href="https://metmov.com" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov</a> to help founder-led businesses install the structural backbone they're missing. ISB alumnus. Based in Bengaluru.
             </p>
-            <p className="text-sm md:text-base font-bold uppercase tracking-widest text-accent/40 mb-12">
-              Diagnostic Sprints. Operating Spine Installs. Fractional COO.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-12 py-5 gap-3 shadow-xl shadow-accent/10">
-                Take the Free Diagnostic
-                <ArrowRight size={22} />
-              </a>
-              <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-outline text-lg px-12 py-5 gap-3">
-                Or talk to us directly
-              </a>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION 2 – Problem Recognition */}
-      <section className="bg-muted border-y border-border/50">
+      {/* SECTION 2 - Two Cards: Writing + Building */}
+      <section className="bg-muted border-y border-border/50 py-20">
+        <div className="container-custom">
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Card 1: What I'm Writing */}
+            <Link to="/writing" className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm flex flex-col">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-accent">
+                  <PenLine size={20} />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest text-accent/40">What I'm Writing</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">Systems, Scale, and AI</h2>
+              <p className="text-accent-light leading-relaxed mb-8 flex-grow">
+                Frameworks and observations from 14 years of operating experience. How businesses break, how they scale, and what changes when AI enters the picture.
+              </p>
+              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">
+                Read latest <ArrowRight size={16} />
+              </span>
+            </Link>
+
+            {/* Card 2: What I'm Building */}
+            <Link to="/services" className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm flex flex-col">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-accent">
+                  <Briefcase size={20} />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest text-accent/40">What I'm Building</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">MetMov LLP</h2>
+              <p className="text-accent-light leading-relaxed mb-8 flex-grow">
+                We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale without the founder being the system.
+              </p>
+              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">
+                See how we work <ArrowRight size={16} />
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 3 - Problem Recognition (MetMov context) */}
+      <section className="bg-white">
         <div className="container-custom">
           <div className="max-w-4xl">
-            <h2 className="mb-16">Does This Sound Familiar?</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent/40 mb-4">
+              MetMov LLP
+            </p>
+            <h2 className="mb-6">The Problem We Solve</h2>
+            <p className="text-xl text-accent-light mb-16 leading-relaxed max-w-2xl">
+              If you stepped away for 72 hours, what would stall? These are the structural diseases we diagnose and fix.
+            </p>
             <div className="grid md:grid-cols-1 gap-y-8">
               {[
                 { symptom: "You are the escalation layer. Every decision routes back to you.", disease: "The Founder Trap" },
@@ -143,20 +178,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* NEW SECTION – Bottleneck Cost Lead Magnet */}
+      {/* Bottleneck Cost Lead Magnet */}
       <section className="bg-accent text-white py-24 overflow-hidden relative">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 -skew-x-12 translate-x-1/2" />
         <div className="container-custom relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-[10px] font-bold uppercase tracking-widest mb-6 border border-white/10">
-                Lead Magnet
+                Interactive Tool
               </div>
               <h2 className="text-4xl md:text-5xl text-white mb-6 leading-tight">
                 What is your <span className="text-white/60 italic">Bottleneck Cost?</span>
               </h2>
               <p className="text-xl text-white/70 mb-8 leading-relaxed">
-                Being the "Hero" of your company isn't just exhausting—it's expensive. 
+                Being the "Hero" of your company isn't just exhausting -- it's expensive.
                 Our interactive calculator quantifies the specific financial loss caused by structural gaps.
               </p>
               <Link to="/calculator" className="bg-white text-accent hover:bg-muted px-10 py-4 rounded-md font-bold text-lg transition-all inline-flex items-center gap-3 shadow-xl">
@@ -189,10 +224,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECTION 3 – Approach */}
+      {/* Approach */}
       <section className="bg-white">
         <div className="container-custom">
-          <h2 className="mb-20">Our Approach</h2>
+          <h2 className="mb-20">How We Work</h2>
           <div className="grid md:grid-cols-3 gap-12">
             {[
               {
@@ -203,7 +238,7 @@ export default function Home() {
               {
                 title: 'Install',
                 icon: Layers,
-                desc: 'We design and install the Operating Spine — cadence, accountability, decision rights, KPIs, escalation protocols. Not a report. A working system.'
+                desc: 'We design and install the Operating Spine -- cadence, accountability, decision rights, KPIs, escalation protocols. Not a report. A working system.'
               },
               {
                 title: 'Embed',
@@ -225,12 +260,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECTION 4 – Proof & Metrics */}
+      {/* Proof & Metrics */}
       <section className="bg-muted border-y border-border/50">
         <div className="container-custom">
           <h2 className="mb-8">Practitioner Credibility</h2>
           <p className="text-xl text-accent-light mb-16 max-w-2xl">
-            Before MetMov, we built these systems inside companies. Here's what that looks like at scale.
+            Before MetMov, I built these systems inside companies. Here's what that looks like at scale.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
             {[
@@ -244,8 +279,8 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <p className="text-center text-lg font-bold text-accent mb-20">Now we install these systems in yours.</p>
-          
+          <p className="text-center text-lg font-bold text-accent mb-20">Now I install these systems in yours.</p>
+
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
               <h3 className="text-2xl font-bold">Three Partners. 45+ Years of Operating Experience.</h3>
@@ -270,7 +305,7 @@ export default function Home() {
             </div>
             <div className="bg-white p-8 rounded-2xl border border-border shadow-sm">
               <p className="text-lg text-accent-light italic mb-6">
-                "We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale without the founder being the system."
+                "Businesses don't fail from lack of vision. They fail from absence of structural support. Diagnose before prescribing. Install, don't advise."
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-white font-bold">AP</div>
@@ -295,14 +330,14 @@ export default function Home() {
               </p>
             </div>
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={prevTestimonial}
                 className="p-3 rounded-full border border-border bg-white hover:bg-accent hover:text-white transition-all shadow-sm"
                 aria-label="Previous testimonial"
               >
                 <ChevronLeft size={20} />
               </button>
-              <button 
+              <button
                 onClick={nextTestimonial}
                 className="p-3 rounded-full border border-border bg-white hover:bg-accent hover:text-white transition-all shadow-sm"
                 aria-label="Next testimonial"
@@ -314,7 +349,7 @@ export default function Home() {
 
           <div className="relative min-h-[400px]">
             <AnimatePresence mode="wait">
-              <motion.div 
+              <motion.div
                 key={testimonialIndex}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -361,78 +396,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Meet the Expert Section */}
-      <section className="bg-white">
-        <div className="container-custom">
-          <div className="grid md:grid-cols-2 gap-16 items-start">
-            <div>
-              <h2 className="mb-8">Meet Anjani</h2>
-              <p className="text-lg text-accent-light mb-6 leading-relaxed">
-                I am an operations and transformation leader with 14+ years of experience designing execution systems for global supply chains, manufacturing giants, and high-growth platforms.
-              </p>
-              <p className="text-lg text-accent-light mb-8 leading-relaxed">
-                With an MBA from the <strong>Indian School of Business (ISB)</strong> and a background in Manufacturing Engineering, I combine strategic design with hands-on implementation discipline. I co-founded <strong><a href="https://metmov.com/" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov LLP</a></strong> with Chaitanya Eswarapragada and Antriksh Kumar to help founder-led companies transition from reactive execution to system-driven performance.
-              </p>
-              <p className="text-lg text-accent-light mb-8 leading-relaxed font-medium italic border-l-4 border-accent pl-6">
-                That experience taught me one thing: businesses don't fail from lack of vision. They fail from absence of structural support. That conviction is why I built MetMov.
-              </p>
-              <div className="mb-8">
-                <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="text-accent font-bold hover:underline flex items-center gap-2">
-                  Want to talk? Book a Fit Call <ArrowRight size={16} />
-                </a>
-              </div>
-              <div className="flex flex-wrap gap-4">
-                <div className="px-4 py-2 bg-muted rounded-lg text-sm font-bold text-accent/60 border border-border/50">Y-NOT</div>
-                <div className="px-4 py-2 bg-muted rounded-lg text-sm font-bold text-accent/60 border border-border/50">UDAAN</div>
-                <div className="px-4 py-2 bg-muted rounded-lg text-sm font-bold text-accent/60 border border-border/50">BHEL</div>
-              </div>
-            </div>
-            <div className="space-y-8">
-              <div className="p-8 bg-accent text-white rounded-3xl shadow-2xl">
-                <h3 className="text-white mb-4">MetMov Mini Diagnostic</h3>
-                <p className="text-white/70 mb-6">
-                  15 questions. 5 minutes. Find out which of the 25 structural diseases may be present in your business. Get a score, a severity snapshot, and clarity on what to fix first.
-                </p>
-                <div className="mb-8">
-                  <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="block w-full bg-white text-accent py-4 rounded-xl font-bold hover:bg-muted transition-colors text-center">
-                    Take the Free Diagnostic
-                  </a>
-                  <p className="text-white/50 text-[10px] mt-2 text-center uppercase tracking-widest font-bold">
-                    Free through March 2026. No email required to start.
-                  </p>
-                </div>
-              </div>
-              <div className="p-8 border border-border rounded-3xl">
-                <h3 className="mb-4">Core Philosophy</h3>
-                <p className="text-accent-light">
-                  "Businesses don't fail from lack of vision. They fail from absence of internal structural support. Diagnose before prescribing. Install, don't advise. Build genuine value, not billable hours."
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Blog Preview Section - Carousel */}
+      {/* Latest Writing Section - Carousel */}
       <section className="bg-muted border-y border-border/50">
         <div className="container-custom">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div className="max-w-2xl">
-              <h2 className="mb-4">Latest Insights</h2>
+              <h2 className="mb-4">Latest Writing</h2>
               <p className="text-lg text-accent-light">
-                Frameworks and observations on operations, scaling, and leadership.
+                Frameworks and observations on operations, scaling, and what AI changes about both.
               </p>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex gap-2">
-                <button 
+                <button
                   onClick={prevSlide}
                   className="p-3 rounded-full border border-border bg-white hover:bg-accent hover:text-white transition-all shadow-sm"
                   aria-label="Previous post"
                 >
                   <ChevronLeft size={20} />
                 </button>
-                <button 
+                <button
                   onClick={nextSlide}
                   className="p-3 rounded-full border border-border bg-white hover:bg-accent hover:text-white transition-all shadow-sm"
                   aria-label="Next post"
@@ -440,7 +423,7 @@ export default function Home() {
                   <ChevronRight size={20} />
                 </button>
               </div>
-              <Link to="/blog" className="btn-outline py-3 px-6 text-sm gap-2">
+              <Link to="/writing" className="btn-outline py-3 px-6 text-sm gap-2">
                 View All
                 <ArrowRight size={16} />
               </Link>
@@ -450,7 +433,7 @@ export default function Home() {
           <div className="relative overflow-hidden min-h-[320px]">
             <AnimatePresence mode="wait">
               {posts.length > 0 ? (
-                <motion.div 
+                <motion.div
                   key={currentIndex}
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -459,12 +442,12 @@ export default function Home() {
                   className="grid md:grid-cols-2 gap-8"
                 >
                   {/* Current Post */}
-                  <Link 
-                    to={`/blog/${posts[currentIndex].id}`} 
+                  <Link
+                    to={`/blog/${posts[currentIndex].id}`}
                     className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm"
                   >
                     <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">
-                      {posts[currentIndex].date} • {posts[currentIndex].category}
+                      {posts[currentIndex].date} {posts[currentIndex].category && `\u2022 ${posts[currentIndex].category}`}
                     </div>
                     <h3 className="text-2xl font-bold mb-6 group-hover:text-accent-light transition-colors line-clamp-2">
                       {posts[currentIndex].title}
@@ -473,17 +456,17 @@ export default function Home() {
                       {posts[currentIndex].excerpt}
                     </p>
                     <span className="text-sm font-bold flex items-center gap-2 text-accent">
-                      Read Framework <ArrowRight size={16} />
+                      Read more <ArrowRight size={16} />
                     </span>
                   </Link>
 
                   {/* Next Post (Preview) */}
-                  <Link 
-                    to={`/blog/${posts[(currentIndex + 1) % posts.length].id}`} 
+                  <Link
+                    to={`/blog/${posts[(currentIndex + 1) % posts.length].id}`}
                     className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm hidden md:block opacity-60 hover:opacity-100"
                   >
                     <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">
-                      {posts[(currentIndex + 1) % posts.length].date} • {posts[(currentIndex + 1) % posts.length].category}
+                      {posts[(currentIndex + 1) % posts.length].date} {posts[(currentIndex + 1) % posts.length].category && `\u2022 ${posts[(currentIndex + 1) % posts.length].category}`}
                     </div>
                     <h3 className="text-2xl font-bold mb-6 group-hover:text-accent-light transition-colors line-clamp-2">
                       {posts[(currentIndex + 1) % posts.length].title}
@@ -492,13 +475,13 @@ export default function Home() {
                       {posts[(currentIndex + 1) % posts.length].excerpt}
                     </p>
                     <span className="text-sm font-bold flex items-center gap-2 text-accent">
-                      Read Framework <ArrowRight size={16} />
+                      Read more <ArrowRight size={16} />
                     </span>
                   </Link>
                 </motion.div>
               ) : (
                 <div className="text-center py-20 text-accent-light/50 font-medium">
-                  Loading latest insights...
+                  Loading latest writing...
                 </div>
               )}
             </AnimatePresence>
@@ -506,22 +489,22 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECTION 5 – Final CTA */}
+      {/* Final CTA */}
       <section className="bg-accent text-white py-24">
         <div className="container-custom text-center">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-4xl md:text-6xl mb-10 text-white">
-              Ready to Install Your Operating Spine?
+              Want to Work Together?
             </h2>
             <p className="text-xl text-white/70 mb-12">
-              Stop being the bottleneck. Start leading a high-performance organization.
+              If your business has outgrown its structure, we should talk.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="bg-white text-accent hover:bg-muted px-14 py-5 rounded-md font-bold text-lg transition-all inline-block shadow-2xl shadow-black/20">
                 Take the Free Diagnostic
               </a>
               <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="bg-transparent border border-white/30 text-white hover:bg-white/10 px-14 py-5 rounded-md font-bold text-lg transition-all inline-block">
-                Talk to Us
+                Book a Call
               </a>
             </div>
           </div>

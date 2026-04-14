@@ -144,14 +144,14 @@ export default function Blog() {
   return (
     <div className="bg-white min-h-screen">
       <SEO 
-        title="Blog | Scaling, Leadership & Operations | Anjani Pandey"
+        title="Writing | Systems, Scale & AI | Anjani Pandey"
         description="Insights on scaling operations, building systems, and breaking free from the founder trap. By Anjani Pandey."
-        canonical="https://www.anjanipandey.com/blog"
+        canonical="https://www.anjanipandey.com/writing"
       />
       <section className="pt-32 pb-12 md:pt-40 md:pb-20">
         <div className="container-custom">
           <div className="max-w-3xl">
-            <h1 className="mb-6">Personal Blog</h1>
+            <h1 className="mb-6">Writing</h1>
             <p className="text-xl md:text-2xl text-accent-light leading-relaxed">
               My learnings, observations, and frameworks on operations, scaling, and leadership.
             </p>

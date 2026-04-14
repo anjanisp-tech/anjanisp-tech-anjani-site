@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Linkedin, Globe, BookOpen, ArrowLeft, MessageCircle } from 'lucide-react';
-import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, LINKEDIN_URL, WHATSAPP_URL, METMOV_URL } from '../constants';
+import { FIT_CALL_URL, LINKEDIN_URL, WHATSAPP_URL, METMOV_URL } from '../constants';
 import ChatAssistant from './ChatAssistant';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -45,11 +45,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-10">
             <Link to="/" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Home</Link>
-            <Link to="/services" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Services</Link>
-            <Link to="/calculator" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Bottleneck Cost</Link>
-            <Link to="/blog" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Blog</Link>
+            <Link to="/about" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">About</Link>
+            <Link to="/services" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Work With Me</Link>
+            <Link to="/writing" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Writing</Link>
             <Link to="/resources" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Resources</Link>
-            <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary py-2.5 px-6 text-sm">Take the Free Diagnostic</a>
+            <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary py-2.5 px-6 text-sm">Book a Call</a>
           </nav>
 
           {/* Mobile Toggle */}
@@ -62,11 +62,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {isMenuOpen && (
           <div className="md:hidden bg-white border-b border-border p-6 flex flex-col gap-4 animate-in fade-in slide-in-from-top-5">
             <Link to="/" className="text-lg font-medium py-2">Home</Link>
-            <Link to="/services" className="text-lg font-medium py-2">Services</Link>
-            <Link to="/calculator" className="text-lg font-medium py-2">Bottleneck Cost</Link>
-            <Link to="/blog" className="text-lg font-medium py-2">Blog</Link>
+            <Link to="/about" className="text-lg font-medium py-2">About</Link>
+            <Link to="/services" className="text-lg font-medium py-2">Work With Me</Link>
+            <Link to="/writing" className="text-lg font-medium py-2">Writing</Link>
             <Link to="/resources" className="text-lg font-medium py-2">Resources</Link>
-            <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary w-full">Take the Free Diagnostic</a>
+            <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary w-full">Book a Call</a>
           </div>
         )}
       </header>
@@ -92,11 +92,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div>
               <div className="text-xl font-bold tracking-tighter mb-4">ANJANI PANDEY</div>
               <p className="text-sm text-accent-light/70 max-w-xs mb-8">
-                CEO, MetMov LLP. We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale.
+                Operations leader. Builder. Writing about systems, scale, and what AI changes about both. Co-founder, MetMov LLP.
               </p>
               <div className="mb-8">
-                <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary py-3 px-8 text-sm inline-block">
-                  Take the Free Diagnostic
+                <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary py-3 px-8 text-sm inline-block">
+                  Book a Call
                 </a>
               </div>
               <div className="flex gap-4">
@@ -112,11 +112,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <h4 className="text-xs font-bold uppercase tracking-widest text-accent/40">Navigation</h4>
                 <nav className="flex flex-col gap-2 text-sm font-medium">
                   <Link to="/" className="hover:text-accent transition-colors">Home</Link>
-                  <Link to="/services" className="hover:text-accent transition-colors">Services</Link>
-                  <Link to="/calculator" className="hover:text-accent transition-colors">Bottleneck Cost Calculator</Link>
-                  <Link to="/blog" className="hover:text-accent transition-colors">Blog</Link>
+                  <Link to="/about" className="hover:text-accent transition-colors">About</Link>
+                  <Link to="/services" className="hover:text-accent transition-colors">Work With Me</Link>
+                  <Link to="/writing" className="hover:text-accent transition-colors">Writing</Link>
                   <Link to="/resources" className="hover:text-accent transition-colors">Resources</Link>
-                  <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Book a Fit Call</a>
+                  <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Book a Call</a>
                 </nav>
               </div>
               <div className="space-y-4">
@@ -134,7 +134,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <p>© 2026 Anjani Pandey. All rights reserved.</p>
               <p className="opacity-30 font-mono">v1.1.4-db-url-fix</p>
             </div>
-            <p>CEO & Co-founder, MetMov LLP</p>
+            <p>Co-founder, MetMov LLP | Bengaluru</p>
           </div>
         </div>
       </footer>

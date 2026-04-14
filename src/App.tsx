@@ -14,6 +14,7 @@ const Admin = lazy(() => import('./pages/Admin'));
 const Sitemap = lazy(() => import('./pages/Sitemap'));
 const BottleneckCostCalculator = lazy(() => import('./pages/BottleneckCostCalculator'));
 const Resources = lazy(() => import('./pages/Resources'));
+const About = lazy(() => import('./pages/About'));
 
 function Analytics() {
   const location = useLocation();
@@ -48,8 +49,10 @@ export default function App() {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
             <Route path="/services" element={<Services />} />
-            <Route path="/blog" element={<Blog />} />
+            <Route path="/writing" element={<Blog />} />
+            <Route path="/blog" element={<Navigate to="/writing" replace />} />
             <Route path="/blog/:id" element={<BlogPostDetail />} />
             <Route path="/book" element={<BookCall />} />
             <Route path="/book-call" element={<Navigate to="/book" replace />} />
