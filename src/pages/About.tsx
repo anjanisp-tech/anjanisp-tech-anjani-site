@@ -138,7 +138,7 @@ export default function About() {
               <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" className="btn-outline gap-3 px-8">
                 <Linkedin size={18} /> LinkedIn
               </a>
-              <a href="mailto:contact@anjanipandey.com" className="btn-outline gap-3 px-8">
+              <a href="https://mail.google.com/mail/?view=cm&to=contact@anjanipandey.com" target="_blank" rel="noopener noreferrer" className="btn-outline gap-3 px-8">
                 <Mail size={18} /> Email
               </a>
             </div>
