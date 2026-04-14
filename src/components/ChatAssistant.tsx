@@ -3,7 +3,7 @@ import { MessageSquare, X, Send, Loader2, User, Bot, ArrowRight } from 'lucide-r
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
-import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
+import { FIT_CALL_URL } from '../constants';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -15,9 +15,9 @@ export default function ChatAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { 
-      role: 'assistant', 
-      content: "Hello! I'm The Scaling Architect, Anjani's AI strategy assistant.\n\nI help founders of $1M-$10M businesses identify structural bottlenecks and build systems that replace heroics.\n\nWhat's your biggest scaling challenge right now?",
-      suggestions: ["What is the Operating Spine?", "Diagnose my bottlenecks", "How do I fix Founder Overload?"]
+      role: 'assistant',
+      content: "Hi! I'm Anjani's AI assistant.\n\nAsk me about his work in operations and business structure, what he's writing about, or how MetMov helps founder-led businesses scale.",
+      suggestions: ["What does Anjani write about?", "What is MetMov?", "How does the Operating Spine work?"]
     }
   ]);
   const [input, setInput] = useState('');
@@ -224,7 +224,7 @@ export default function ChatAssistant() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-8 right-8 w-14 h-14 bg-accent text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all z-50"
-        title="Chat with AI Strategy Assistant"
+        title="Chat with Anjani's AI Assistant"
       >
         {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
       </button>
@@ -241,10 +241,10 @@ export default function ChatAssistant() {
             {/* Header */}
             <div className="bg-accent px-5 py-4 text-white">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center font-bold">SA</div>
+                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center font-bold">AP</div>
                 <div>
-                  <h3 className="font-bold text-lg leading-none mb-1">The Scaling Architect</h3>
-                  <p className="text-xs text-white/60">by Anjani Pandey &middot; Metmov</p>
+                  <h3 className="font-bold text-lg leading-none mb-1">Anjani's Assistant</h3>
+                  <p className="text-xs text-white/60">Ask about my work, writing & MetMov</p>
                 </div>
               </div>
             </div>
@@ -282,12 +282,10 @@ export default function ChatAssistant() {
                             <button
                               key={si}
                               onClick={() => {
-                                if (s.toLowerCase().includes('book a fit call')) {
+                                if (s.toLowerCase().includes('book a call')) {
                                   window.open(FIT_CALL_URL, '_blank');
-                                } else if (s.toLowerCase().includes('take the free diagnostic')) {
-                                  window.open(MINI_DIAGNOSTIC_URL, '_blank');
-                                } else if (s.toLowerCase().includes('bottleneck cost calculator')) {
-                                  window.location.href = '/calculator';
+                                } else if (s.toLowerCase().includes('read his writing') || s.toLowerCase().includes('read writing')) {
+                                  window.location.href = '/writing';
                                 } else {
                                   handleSend(undefined, s);
                                 }
@@ -320,35 +318,32 @@ export default function ChatAssistant() {
 
             {/* Quick Actions */}
             <div className="px-4 py-3 border-t border-border bg-white flex gap-2 overflow-x-auto custom-scrollbar pb-4">
-              <button 
-                onClick={() => handleSend(undefined, "What is the Operating Spine?")}
+              <button
+                onClick={() => handleSend(undefined, "What does Anjani write about?")}
                 className="whitespace-nowrap px-4 py-2 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all border border-transparent hover:border-accent/20"
               >
-                What is the Operating Spine?
+                What does Anjani write about?
               </button>
-              <button 
-                onClick={() => handleSend(undefined, "Can you diagnose my business bottlenecks?")}
+              <button
+                onClick={() => handleSend(undefined, "What is MetMov and the Operating Spine?")}
                 className="whitespace-nowrap px-4 py-2 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all border border-transparent hover:border-accent/20"
               >
-                Diagnose Bottlenecks
+                What is MetMov?
               </button>
-              <button 
-                onClick={() => handleSend(undefined, "How do I fix Founder Overload?")}
+              <button
+                onClick={() => handleSend(undefined, "Tell me about Anjani's background")}
                 className="whitespace-nowrap px-4 py-2 bg-muted rounded-full text-[10px] font-bold uppercase tracking-widest text-accent/60 hover:bg-accent hover:text-white transition-all border border-transparent hover:border-accent/20"
               >
-                Fix Founder Overload
+                Anjani's Background
               </button>
-              <button 
-                onClick={() => window.location.href = '/calculator'}
+              <button
+                onClick={() => window.location.href = '/writing'}
                 className="whitespace-nowrap px-4 py-2 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-bold uppercase tracking-widest text-accent hover:bg-accent hover:text-white transition-all flex items-center gap-1"
               >
-                Bottleneck Cost Calculator <ArrowRight size={10} />
+                Read Writing <ArrowRight size={10} />
               </button>
-              <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="whitespace-nowrap px-4 py-2 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-bold uppercase tracking-widest text-accent hover:bg-accent hover:text-white transition-all flex items-center gap-1">
-                Free Diagnostic <ArrowRight size={10} />
-              </a>
               <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="whitespace-nowrap px-4 py-2 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-bold uppercase tracking-widest text-accent hover:bg-accent hover:text-white transition-all flex items-center gap-1">
-                Book Fit Call <ArrowRight size={10} />
+                Book a Call <ArrowRight size={10} />
               </a>
             </div>
 
@@ -360,7 +355,7 @@ export default function ChatAssistant() {
                     <MessageSquare size={20} className="text-accent" />
                   </div>
                   <h4 className="font-bold text-lg mb-2">You're asking great questions.</h4>
-                  <p className="text-sm text-accent-light mb-6">Drop your email to continue the conversation and get Anjani's scaling insights delivered to you.</p>
+                  <p className="text-sm text-accent-light mb-6">Drop your email to continue the conversation and stay in the loop on Anjani's writing and work.</p>
                   <form onSubmit={(e) => { e.preventDefault(); handleLeadSubmit(); }} className="space-y-3">
                     <input
                       type="email"
@@ -396,7 +391,7 @@ export default function ChatAssistant() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask about scaling..."
+                  placeholder="Ask me anything..."
                   className="w-full pl-4 pr-12 py-3 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-sm"
                   disabled={isLoading || showLeadGate}
                 />
