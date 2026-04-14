@@ -26,7 +26,7 @@ function Analytics() {
         page_path: location.pathname + location.search,
         page_location: window.location.href,
         page_title: document.title,
-        debug_mode: true
+        debug_mode: false
       });
     }
   }, [location]);
