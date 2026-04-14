@@ -11,6 +11,11 @@
       ],
       "destination": "https://www.anjanipandey.com/$1",
       "permanent": true
+    },
+    {
+      "source": "/blog",
+      "destination": "/writing",
+      "permanent": true
     }
   ],
   "rewrites": [
