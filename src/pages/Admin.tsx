@@ -39,8 +39,10 @@ export default function Admin() {
   // Cross-tab state: blog editing flow (Manage -> Upload)
   const [editFormData, setEditFormData] = useState<BlogFormData | null>(null);
 
-  // On mount, check if session cookie is still valid
+  // On mount: clean up legacy localStorage auth and check session cookie
   useEffect(() => {
+    localStorage.removeItem('admin_auth');
+    localStorage.removeItem('admin_pwd');
     checkSession().then((valid) => {
       setAuthState(valid ? 'authenticated' : 'unauthenticated');
     });
