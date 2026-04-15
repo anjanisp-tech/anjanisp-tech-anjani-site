@@ -64,7 +64,7 @@ export default function About() {
     <div className="bg-white min-h-screen">
       <SEO
         title="About | Anjani Pandey"
-        description="Operations leader, builder, and writer. 15+ years designing execution systems inside high-growth companies. Co-founder, MetMov LLP. ISB alumnus. Based in Bengaluru."
+        description="Operations and AI transformation leader. 15+ years designing execution systems for global supply chains and high-growth platforms. Co-founder, MetMov LLP. ISB alumnus. PMP, Six Sigma Black Belt. Based in Bengaluru."
         canonical="https://www.anjanipandey.com/about"
       />
 
