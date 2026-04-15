@@ -1351,6 +1351,28 @@ router.post("/admin/posts", async (req, res, next) => {
   }
 });
 
+router.delete("/admin/posts/:id", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+      await sql`DELETE FROM posts WHERE id = ${id}`;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        db.prepare("DELETE FROM posts WHERE id = ?").run(id);
+      }
+    }
+    res.json({ success: true, deleted: id });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to delete post", details: err.message });
+  }
+});
+
 router.post("/subscribe", async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
