@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { MessageSquare, FileText, PlusCircle, Mail, Rocket, Database, BarChart3, Globe, Users, LayoutDashboard, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MessageSquare, FileText, PlusCircle, Mail, Rocket, Database, BarChart3, Globe, Users, LayoutDashboard, AlertCircle, Loader2 } from 'lucide-react';
+import { checkSession, adminPost } from '../admin/useAdminApi';
 import type { AdminTab, BlogFormData } from '../admin/types';
 
 // Tab components
@@ -30,46 +31,67 @@ const TAB_CONFIG: { id: AdminTab; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function Admin() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return typeof window !== 'undefined' && localStorage.getItem('admin_auth') === 'true';
-  });
+  const [authState, setAuthState] = useState<'checking' | 'authenticated' | 'unauthenticated'>('checking');
   const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
 
   // Cross-tab state: blog editing flow (Manage -> Upload)
   const [editFormData, setEditFormData] = useState<BlogFormData | null>(null);
 
+  // On mount, check if session cookie is still valid
+  useEffect(() => {
+    checkSession().then((valid) => {
+      setAuthState(valid ? 'authenticated' : 'unauthenticated');
+    });
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError('');
     try {
-      const testRes = await fetch('/api/admin/settings', {
-        headers: { 'Authorization': `Bearer ${password}` }
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ password }),
       });
-      if (testRes.ok) {
-        setIsAuthenticated(true);
-        localStorage.setItem('admin_auth', 'true');
-        localStorage.setItem('admin_pwd', password);
+      if (res.ok) {
+        setAuthState('authenticated');
+        setPassword('');
       } else {
-        alert("Incorrect password");
+        const data = await res.json().catch(() => ({ error: 'Login failed' }));
+        setLoginError(data.error || 'Incorrect password');
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      alert("Login failed. Check your connection.");
+    } catch {
+      setLoginError('Network error. Check your connection.');
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_auth');
-    localStorage.removeItem('admin_pwd');
-    setIsAuthenticated(false);
+  const handleLogout = async () => {
+    try {
+      await adminPost('/api/admin/logout');
+    } catch {
+      // Clear state regardless
+    }
+    setAuthState('unauthenticated');
   };
 
   const handleEditBlog = (formData: BlogFormData) => {
     setEditFormData(formData);
   };
 
+  // Loading state while checking session
+  if (authState === 'checking') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+        <Loader2 className="animate-spin text-accent" size={32} />
+      </div>
+    );
+  }
+
   // Login screen
-  if (!isAuthenticated) {
+  if (authState === 'unauthenticated') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30">
         <div className="bg-white p-8 rounded-3xl border border-border shadow-xl max-w-md w-full">
@@ -88,6 +110,9 @@ export default function Admin() {
               autoFocus
               autoComplete="current-password"
             />
+            {loginError && (
+              <p className="text-red-600 text-sm font-bold">{loginError}</p>
+            )}
             <button type="submit" className="w-full btn-primary py-3">Login</button>
           </form>
           <div className="mt-6 text-center">
@@ -183,10 +208,10 @@ export default function Admin() {
             {err instanceof Error ? err.message : String(err)}
           </pre>
           <button
-            onClick={() => { localStorage.clear(); window.location.reload(); }}
+            onClick={() => window.location.reload()}
             className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all"
           >
-            Reset & Try Again
+            Try Again
           </button>
         </div>
       </div>

@@ -17,19 +17,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
 
   useEffect(() => {
-    const checkAuth = () => {
-      setIsAdminAuthenticated(localStorage.getItem('admin_auth') === 'true');
-    };
-    checkAuth();
-    // Also check on storage events (from other tabs)
-    window.addEventListener('storage', checkAuth);
-    // And a small interval just in case
-    const interval = setInterval(checkAuth, 1000);
-    return () => {
-      window.removeEventListener('storage', checkAuth);
-      clearInterval(interval);
-    };
-  }, []);
+    // Check session cookie validity via API
+    fetch('/api/admin/session', { credentials: 'same-origin' })
+      .then(res => res.ok ? res.json() : { authenticated: false })
+      .then(data => setIsAdminAuthenticated(data.authenticated === true))
+      .catch(() => setIsAdminAuthenticated(false));
+  }, [location.pathname]);
 
   const showAdminLink = isAdminAuthenticated;
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Database, Rocket, RefreshCw, FileText, Mail, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { adminFetch, adminPost, getSecret } from '../useAdminApi';
+import { adminFetch, adminPost } from '../useAdminApi';
 
 export default function SystemTab() {
   const [audits, setAudits] = useState<any[]>([]);

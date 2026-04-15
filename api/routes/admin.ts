@@ -3,6 +3,68 @@ import { getDb, getUtils, getKnowledge } from "../helpers.js";
 
 const router = express.Router();
 
+// ── Auth endpoints (no middleware needed) ───────────────────────────
+
+// Login: validate password, set httpOnly signed session cookie
+router.post("/login", async (req, res) => {
+  try {
+    const { password } = req.body || {};
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    if (!adminPassword) {
+      return res.status(503).json({ error: "Admin not configured" });
+    }
+    if (!password || password !== adminPassword) {
+      return res.status(401).json({ error: "Invalid password" });
+    }
+    const { createSessionToken, SESSION_COOKIE_NAME } = await getUtils();
+    const token = createSessionToken();
+    const isProduction = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
+    res.setHeader('Set-Cookie', [
+      `${SESSION_COOKIE_NAME}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=86400${isProduction ? '; Secure' : ''}`
+    ]);
+    return res.json({ success: true });
+  } catch (err: any) {
+    console.error("[AUTH] Login error:", err);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
+// Logout: clear session cookie
+router.post("/logout", async (_req, res) => {
+  try {
+    const { SESSION_COOKIE_NAME } = await getUtils();
+    const isProduction = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
+    res.setHeader('Set-Cookie', [
+      `${SESSION_COOKIE_NAME}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${isProduction ? '; Secure' : ''}`
+    ]);
+    return res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: "Logout failed" });
+  }
+});
+
+// Session check: verify if current session cookie is valid
+router.get("/session", async (req, res) => {
+  try {
+    const { verifySessionToken, SESSION_COOKIE_NAME } = await getUtils();
+    const cookieHeader = req.headers.cookie || '';
+    const cookies: Record<string, string> = {};
+    cookieHeader.split(';').forEach((pair: string) => {
+      const [key, ...rest] = pair.trim().split('=');
+      if (key) cookies[key.trim()] = decodeURIComponent(rest.join('='));
+    });
+    const token = cookies[SESSION_COOKIE_NAME];
+    if (token && verifySessionToken(token)) {
+      return res.json({ authenticated: true });
+    }
+    return res.json({ authenticated: false });
+  } catch {
+    return res.json({ authenticated: false });
+  }
+});
+
+// ── Protected admin routes ─────────────────────────────────────────
+
 // Init DB
 router.post("/init-db", async (req, res, next) => {
   const { adminAuth } = await getUtils();

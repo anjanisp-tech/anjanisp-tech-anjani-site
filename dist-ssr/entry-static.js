@@ -64520,17 +64520,8 @@ function Layout({ children }) {
   }, [location2]);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = reactExports.useState(false);
   reactExports.useEffect(() => {
-    const checkAuth = () => {
-      setIsAdminAuthenticated(localStorage.getItem("admin_auth") === "true");
-    };
-    checkAuth();
-    window.addEventListener("storage", checkAuth);
-    const interval = setInterval(checkAuth, 1e3);
-    return () => {
-      window.removeEventListener("storage", checkAuth);
-      clearInterval(interval);
-    };
-  }, []);
+    fetch("/api/admin/session", { credentials: "same-origin" }).then((res) => res.ok ? res.json() : { authenticated: false }).then((data2) => setIsAdminAuthenticated(data2.authenticated === true)).catch(() => setIsAdminAuthenticated(false));
+  }, [location2.pathname]);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-h-screen flex flex-col", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "sticky top-0 left-0 right-0 bg-white/95 backdrop-blur-md z-50 border-b border-border", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container-custom h-24 flex items-center justify-between", children: [

@@ -1,25 +1,17 @@
 /**
  * Shared API utilities for admin panel.
- * Centralizes auth token retrieval and authenticated fetch calls.
+ * Auth is handled via httpOnly session cookies (set by /api/admin/login).
+ * No passwords or tokens stored in localStorage.
  */
 
-export function getSecret(): string {
-  return localStorage.getItem('admin_pwd') || '';
-}
-
-export function authHeaders(extra?: Record<string, string>): Record<string, string> {
-  return {
-    'Authorization': `Bearer ${getSecret()}`,
-    ...extra,
-  };
-}
-
 export async function adminFetch(url: string, options?: RequestInit): Promise<Response> {
-  const headers = {
-    ...authHeaders(),
-    ...(options?.headers as Record<string, string> || {}),
-  };
-  return fetch(url, { ...options, headers });
+  return fetch(url, {
+    ...options,
+    credentials: 'same-origin', // sends httpOnly cookie automatically
+    headers: {
+      ...(options?.headers as Record<string, string> || {}),
+    },
+  });
 }
 
 export async function adminPost(url: string, body?: any): Promise<Response> {
@@ -28,6 +20,18 @@ export async function adminPost(url: string, body?: any): Promise<Response> {
     headers: body ? { 'Content-Type': 'application/json' } : undefined,
     body: body ? JSON.stringify(body) : undefined,
   });
+}
+
+/** Check if the current session cookie is valid */
+export async function checkSession(): Promise<boolean> {
+  try {
+    const res = await adminFetch('/api/admin/session');
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data.authenticated === true;
+  } catch {
+    return false;
+  }
 }
 
 /** Download helper for CSV export */
