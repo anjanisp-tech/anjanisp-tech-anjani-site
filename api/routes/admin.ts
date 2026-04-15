@@ -22,6 +22,7 @@ router.post("/init-db", async (req, res, next) => {
       await sql`CREATE TABLE IF NOT EXISTS analytics_blog (id SERIAL PRIMARY KEY, post_id TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
       await sql`CREATE TABLE IF NOT EXISTS analytics_calculator (id SERIAL PRIMARY KEY, currency TEXT NOT NULL, revenue REAL NOT NULL, team_size INTEGER NOT NULL, heroic_hours REAL NOT NULL, total_tax REAL NOT NULL, email TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
       await sql`CREATE TABLE IF NOT EXISTS chatbot_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, query TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
+      await sql`CREATE TABLE IF NOT EXISTS resource_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, resource_name TEXT, created_at TIMESTAMP DEFAULT NOW())`;
       await sql`ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_premium INTEGER DEFAULT 0`;
 
       return res.json({ success: true, message: "Postgres tables initialized (with migrations)" });
@@ -580,6 +581,72 @@ router.get("/subscriptions", async (req, res, next) => {
     res.json([]);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch subscriptions" });
+  }
+});
+
+// All Emails (unified view across all sources)
+router.get("/all-emails", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    let allEmails: any[] = [];
+
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+
+      // Ensure resource_leads table exists (it's created on-the-fly in chat.ts)
+      await sql`CREATE TABLE IF NOT EXISTS resource_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, resource_name TEXT, created_at TIMESTAMP DEFAULT NOW())`;
+
+      const result = await sql`
+        SELECT email, 'newsletter' as source, created_at, NULL as metadata
+        FROM subscriptions
+        UNION ALL
+        SELECT email, 'chatbot' as source, created_at, query as metadata
+        FROM chatbot_leads
+        UNION ALL
+        SELECT email, 'resource' as source, created_at, resource_name as metadata
+        FROM resource_leads
+        UNION ALL
+        SELECT email, 'comment' as source, created_at, name as metadata
+        FROM comments WHERE is_admin = 0
+        UNION ALL
+        SELECT email, 'calculator' as source, created_at, CAST(revenue AS TEXT) as metadata
+        FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
+        ORDER BY created_at DESC
+      `;
+      allEmails = result.rows;
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        // Ensure resource_leads table exists
+        db.exec("CREATE TABLE IF NOT EXISTS resource_leads (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL, resource_name TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+
+        allEmails = db.prepare(`
+          SELECT email, 'newsletter' as source, created_at, NULL as metadata
+          FROM subscriptions
+          UNION ALL
+          SELECT email, 'chatbot' as source, created_at, query as metadata
+          FROM chatbot_leads
+          UNION ALL
+          SELECT email, 'resource' as source, created_at, resource_name as metadata
+          FROM resource_leads
+          UNION ALL
+          SELECT email, 'comment' as source, created_at, name as metadata
+          FROM comments WHERE is_admin = 0
+          UNION ALL
+          SELECT email, 'calculator' as source, created_at, CAST(revenue AS TEXT) as metadata
+          FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
+          ORDER BY created_at DESC
+        `).all();
+      }
+    }
+
+    res.json(allEmails);
+  } catch (err: any) {
+    console.error("[ALL EMAILS ERROR]", err);
+    res.status(500).json({ error: "Failed to fetch emails", details: err.message });
   }
 });
 
