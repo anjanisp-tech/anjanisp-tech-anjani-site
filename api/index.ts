@@ -386,6 +386,15 @@ router.post("/admin/init-db", async (req, res, next) => {
         );
       `;
       
+      await sql`
+        CREATE TABLE IF NOT EXISTS chatbot_leads (
+          id SERIAL PRIMARY KEY,
+          email TEXT NOT NULL,
+          query TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+
       // Schema migrations - add columns missing from older schemas
       await sql`ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_premium INTEGER DEFAULT 0`;
 
@@ -946,6 +955,7 @@ router.post("/chatbot-lead", async (req, res) => {
 
     if (isPostgres) {
       const { sql } = await import("@vercel/postgres");
+      await sql`CREATE TABLE IF NOT EXISTS chatbot_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, query TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
       await sql`INSERT INTO chatbot_leads (email, query) VALUES (${email}, ${query || null})`;
     } else {
       const db = getSqliteDb();
