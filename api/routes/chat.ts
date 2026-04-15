@@ -201,6 +201,13 @@ router.post("/chatbot-lead", async (req, res) => {
       }
     }
 
+    // Send email notification so leads don't go into a black hole
+    const { sendNotification } = await getUtils();
+    sendNotification(
+      "New Chatbot Lead",
+      `Email: ${email}\nQuery: ${query || "(no query)"}\nSource: Chatbot widget`
+    ).catch(() => {});
+
     res.json({ success: true });
   } catch (err: any) {
     console.error("[CHATBOT LEAD ERROR]", err);
@@ -227,6 +234,13 @@ router.post("/resource-lead", async (req, res) => {
         db.prepare("INSERT INTO resource_leads (email, resource_name) VALUES (?, ?)").run(email, resource_name || null);
       }
     }
+
+    // Send email notification so leads don't go into a black hole
+    const { sendNotification } = await getUtils();
+    sendNotification(
+      "New Resource Lead",
+      `Email: ${email}\nResource: ${resource_name || "(unknown)"}\nSource: Resource gate`
+    ).catch(() => {});
 
     res.json({ success: true });
   } catch (err: any) {
