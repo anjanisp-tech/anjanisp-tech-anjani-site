@@ -1,7 +1,7 @@
 import express from "express";
 import fs from "fs";
 import path from "path";
-import { getDb, getKnowledge } from "../helpers.js";
+import { getDb, getKnowledge, getUtils } from "../helpers.js";
 
 const router = express.Router();
 
@@ -142,8 +142,13 @@ router.get("/sitemap.xml", async (req, res) => {
   }
 });
 
-// Diagnostic route
-router.get("/diagnostic", async (req, res) => {
+// Diagnostic route (admin-only)
+router.get("/diagnostic", async (req, res, next) => {
+  try {
+    const { adminAuth } = await getUtils();
+    adminAuth(req, res, next);
+  } catch (err) { next(err); }
+}, async (req, res) => {
   try {
     const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.VITE_GEMINI_API_KEY;
     const hasGemini = !!geminiKey && geminiKey.length > 10;
@@ -247,7 +252,7 @@ router.get("/diagnostic", async (req, res) => {
       }
     });
   } catch (err: any) {
-    res.status(200).json({ status: "error", error: "Diagnostic failed", details: err.message });
+    res.status(500).json({ status: "error", error: "Diagnostic failed", details: err.message });
   }
 });
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { getDb, getUtils } from "../helpers.js";
+import { getDb, getUtils, isValidEmail } from "../helpers.js";
 
 const router = express.Router();
 
@@ -57,7 +57,7 @@ router.get("/posts", async (req, res) => {
     }
     res.json(filtered.slice(offset, offset + limit));
   } catch (err: any) {
-    res.status(200).json({ status: "error", error: "Failed to fetch posts", details: err.message });
+    res.status(500).json({ status: "error", error: "Failed to fetch posts", details: err.message });
   }
 });
 
@@ -146,6 +146,9 @@ router.get("/blog/:id/comments", async (req, res) => {
 router.post("/blog/:id/comments", async (req, res) => {
   const { id } = req.params;
   const { name, email, website, phone, comment, parent_id, is_admin } = req.body;
+  if (!name || !email || !comment) return res.status(400).json({ error: "Name, email, and comment are required" });
+  if (!isValidEmail(email)) return res.status(400).json({ error: "Invalid email format" });
+  if (comment.length > 5000) return res.status(400).json({ error: "Comment too long (max 5000 characters)" });
   try {
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     const { sql } = await import("@vercel/postgres");
@@ -179,6 +182,7 @@ router.post("/blog/:id/comments", async (req, res) => {
 router.post("/subscribe", async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
+  if (!isValidEmail(email)) return res.status(400).json({ error: "Invalid email format" });
   try {
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     const { sql } = await import("@vercel/postgres");

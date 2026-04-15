@@ -26,6 +26,8 @@ export default function Admin() {
   const [subscribers, setSubscribers] = useState<{ id: number, email: string, created_at: string }[]>([]);
   const [audits, setAudits] = useState<any[]>([]);
   const [analytics, setAnalytics] = useState<{ chatbotQueries: any[], blogViews: any[], calculatorLeads: any[], chatbotLeads: any[] }>({ chatbotQueries: [], blogViews: [], calculatorLeads: [], chatbotLeads: [] });
+  const [dashboard, setDashboard] = useState<any>(null);
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);
   const [allEmails, setAllEmails] = useState<{ email: string, source: string, created_at: string, metadata: string | null }[]>([]);
   const [emailSourceFilter, setEmailSourceFilter] = useState<string>('all');
   const [isLoadingEmails, setIsLoadingEmails] = useState(false);
@@ -94,6 +96,9 @@ export default function Admin() {
     };
     window.addEventListener('error', handleError);
     
+    if (activeTab === 'dashboard' && isAuthenticated) {
+      fetchDashboard();
+    }
     if (activeTab === 'comments' && isAuthenticated) {
       fetchComments();
     }
@@ -120,6 +125,10 @@ export default function Admin() {
     if (activeTab === 'seo' && isAuthenticated) {
       fetchSeoInstructions();
       fetchSeoSettings();
+    }
+
+    if (activeTab === 'all-emails' && isAuthenticated) {
+      fetchAllEmails();
     }
 
     if (activeTab === 'all-emails' && isAuthenticated) {
@@ -530,6 +539,24 @@ export default function Admin() {
     }
   };
 
+  const fetchDashboard = async () => {
+    const secret = password || localStorage.getItem('admin_pwd') || '';
+    setIsLoadingDashboard(true);
+    try {
+      const res = await fetch('/api/admin/dashboard', {
+        headers: { 'Authorization': `Bearer ${secret}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDashboard(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch dashboard", err);
+    } finally {
+      setIsLoadingDashboard(false);
+    }
+  };
+
   const handleDeleteComment = async (id: number) => {
     if (!confirm("Are you sure you want to delete this comment?")) return;
     const secret = password || localStorage.getItem('admin_pwd') || '';
@@ -645,8 +672,14 @@ export default function Admin() {
               <p className="text-accent-light">Manage your blog content and discussions.</p>
             </div>
             
-            <div className="flex bg-muted p-1 rounded-xl">
-              <button 
+            <div className="flex flex-wrap bg-muted p-1 rounded-xl gap-0.5">
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'dashboard' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
+              >
+                <LayoutDashboard size={18} /> Dashboard
+              </button>
+              <button
                 onClick={() => setActiveTab('comments')}
                 className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'comments' ? 'bg-white shadow-sm text-accent' : 'text-accent/40 hover:text-accent/60'}`}
               >
@@ -715,7 +748,118 @@ export default function Admin() {
             </div>
           </div>
 
-          {activeTab === 'comments' ? (
+          {activeTab === 'dashboard' ? (
+            <div className="space-y-8">
+              {isLoadingDashboard || !dashboard ? (
+                <div className="py-20 flex justify-center"><RefreshCw className="animate-spin text-accent/20" size={32} /></div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    {[
+                      { label: 'Unique Emails', value: dashboard.totalEmails, icon: <Users size={20} />, color: 'text-blue-600 bg-blue-50' },
+                      { label: 'Subscribers', value: dashboard.subscribers, icon: <Mail size={20} />, color: 'text-green-600 bg-green-50' },
+                      { label: 'Comments', value: dashboard.totalComments, icon: <MessageSquare size={20} />, color: 'text-orange-600 bg-orange-50' },
+                      { label: 'Blog Posts', value: dashboard.totalPosts, icon: <FileText size={20} />, color: 'text-purple-600 bg-purple-50' },
+                    ].map((kpi, idx) => (
+                      <div key={idx} className="bg-white border border-border rounded-2xl p-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className={`p-2 rounded-xl ${kpi.color}`}>{kpi.icon}</span>
+                        </div>
+                        <div className="text-3xl font-bold">{kpi.value}</div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mt-1">{kpi.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
+                      <h3 className="text-lg font-bold mb-4">7-Day Activity</h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
+                          <div className="flex items-center gap-3">
+                            <MessageSquare size={18} className="text-accent/40" />
+                            <span className="font-bold text-sm">Chatbot Queries</span>
+                          </div>
+                          <span className="text-2xl font-bold">{dashboard.chatbotQueries7d}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
+                          <div className="flex items-center gap-3">
+                            <Calculator size={18} className="text-accent/40" />
+                            <span className="font-bold text-sm">Calculator Uses</span>
+                          </div>
+                          <span className="text-2xl font-bold">{dashboard.calculatorUses7d}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
+                      <h3 className="text-lg font-bold mb-4">Emails by Source</h3>
+                      <div className="space-y-3">
+                        {Object.entries(dashboard.emailsBySource || {}).sort((a: any, b: any) => b[1] - a[1]).map(([source, count]: any) => {
+                          const total = Object.values(dashboard.emailsBySource || {}).reduce((s: number, v: any) => s + v, 0);
+                          const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                          const colors: Record<string, string> = { newsletter: 'bg-blue-500', chatbot: 'bg-purple-500', resource: 'bg-green-500', comment: 'bg-orange-500', calculator: 'bg-red-500' };
+                          return (
+                            <div key={source}>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="font-bold capitalize">{source}</span>
+                                <span className="text-accent/40">{count} ({pct}%)</span>
+                              </div>
+                              <div className="w-full bg-muted/50 rounded-full h-2">
+                                <div className={`h-2 rounded-full ${colors[source] || 'bg-gray-500'}`} style={{ width: `${pct}%` }}></div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {Object.keys(dashboard.emailsBySource || {}).length === 0 && (
+                          <div className="text-center text-accent/30 py-4 italic">No email data yet</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
+                      <h3 className="text-lg font-bold mb-4">Recent Leads</h3>
+                      <div className="space-y-3">
+                        {(dashboard.recentEmails || []).map((e: any, idx: number) => {
+                          const sourceColors: Record<string, string> = { newsletter: 'bg-blue-50 text-blue-700', chatbot: 'bg-purple-50 text-purple-700', resource: 'bg-green-50 text-green-700' };
+                          return (
+                            <div key={idx} className="flex items-center justify-between p-3 bg-muted/20 rounded-xl">
+                              <div>
+                                <div className="text-sm font-bold">{e.email}</div>
+                                <div className="text-[10px] text-accent/30">{new Date(e.created_at).toLocaleDateString()}</div>
+                              </div>
+                              <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${sourceColors[e.source] || 'bg-gray-50 text-gray-700'}`}>{e.source}</span>
+                            </div>
+                          );
+                        })}
+                        {(dashboard.recentEmails || []).length === 0 && (
+                          <div className="text-center text-accent/30 py-4 italic">No leads yet</div>
+                        )}
+                      </div>
+                      <button onClick={() => setActiveTab('all-emails')} className="mt-4 text-xs font-bold text-accent hover:underline">View all emails &rarr;</button>
+                    </div>
+                    <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
+                      <h3 className="text-lg font-bold mb-4">Top Articles</h3>
+                      <div className="space-y-3">
+                        {(dashboard.topPosts || []).map((p: any, idx: number) => (
+                          <div key={idx} className="flex items-center justify-between p-3 bg-muted/20 rounded-xl">
+                            <div className="flex-grow pr-4"><div className="text-sm font-bold line-clamp-1">{p.title || p.post_id}</div></div>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-accent">{p.views}</div>
+                              <div className="text-[10px] text-accent/30 uppercase">views</div>
+                            </div>
+                          </div>
+                        ))}
+                        {(dashboard.topPosts || []).length === 0 && (
+                          <div className="text-center text-accent/30 py-4 italic">No view data yet</div>
+                        )}
+                      </div>
+                      <button onClick={() => setActiveTab('analytics')} className="mt-4 text-xs font-bold text-accent hover:underline">View analytics &rarr;</button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : activeTab === 'comments' ? (
             <div className="space-y-6">
               {/* System Status Info */}
               <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex flex-wrap gap-6 text-xs text-slate-700">
@@ -1261,6 +1405,87 @@ export default function Admin() {
                         <tr>
                           <td colSpan={4} className="py-12 text-center text-accent/40">No emails collected yet.</td>
                         </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ) : activeTab === 'all-emails' ? (
+            <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h2 className="text-2xl font-bold">All Emails</h2>
+                  <p className="text-sm text-accent-light mt-1">
+                    Unified view across all {(() => { const u = new Set(allEmails.map(e => e.email.toLowerCase())); return u.size; })()} unique emails from {allEmails.length} records
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <select value={emailSourceFilter} onChange={(e) => setEmailSourceFilter(e.target.value)} className="px-4 py-2 border border-border rounded-lg text-sm font-bold bg-white">
+                    <option value="all">All Sources</option>
+                    <option value="newsletter">Newsletter</option>
+                    <option value="chatbot">Chatbot</option>
+                    <option value="resource">Resource Gate</option>
+                    <option value="comment">Blog Comments</option>
+                    <option value="calculator">Calculator</option>
+                  </select>
+                  <button onClick={() => {
+                    const seen = new Set<string>();
+                    const deduped = allEmails.filter(e => emailSourceFilter === 'all' || e.source === emailSourceFilter).filter(e => { const k = e.email.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+                    const csv = ['Email,Source,Date,Metadata'].concat(deduped.map(e => `${e.email},${e.source},${e.created_at},${(e.metadata || '').replace(/,/g, ';')}`)).join('\n');
+                    const blob = new Blob([csv], { type: 'text/csv' }); const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.setAttribute('hidden', ''); a.setAttribute('href', url); a.setAttribute('download', `all-emails-${emailSourceFilter}.csv`); document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                  }} className="text-sm font-bold text-accent hover:underline">Export CSV</button>
+                  <button onClick={fetchAllEmails} className="p-2 text-accent/40 hover:text-accent transition-colors" title="Refresh">
+                    <RefreshCw className={isLoadingEmails ? 'animate-spin' : ''} size={18} />
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-3 mb-6">
+                {['newsletter', 'chatbot', 'resource', 'comment', 'calculator'].map(source => {
+                  const count = allEmails.filter(e => e.source === source).length;
+                  const uniqueCount = new Set(allEmails.filter(e => e.source === source).map(e => e.email.toLowerCase())).size;
+                  if (count === 0) return null;
+                  return (
+                    <button key={source} onClick={() => setEmailSourceFilter(emailSourceFilter === source ? 'all' : source)}
+                      className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${emailSourceFilter === source ? 'bg-accent text-white border-accent' : 'bg-muted/30 text-accent/60 border-border hover:border-accent/30'}`}>
+                      {source.charAt(0).toUpperCase() + source.slice(1)}: {uniqueCount} unique / {count} total
+                    </button>
+                  );
+                })}
+              </div>
+              {isLoadingEmails ? (
+                <div className="py-20 flex justify-center"><RefreshCw className="animate-spin text-accent/20" size={32} /></div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead><tr className="border-b border-border">
+                      <th className="py-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Email</th>
+                      <th className="py-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Source</th>
+                      <th className="py-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Date</th>
+                      <th className="py-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Metadata</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/50">
+                      {(() => {
+                        const filtered = allEmails.filter(e => emailSourceFilter === 'all' || e.source === emailSourceFilter);
+                        const seen = new Set<string>();
+                        return filtered.map((entry, idx) => {
+                          const emailLower = entry.email.toLowerCase();
+                          const isDuplicate = seen.has(emailLower);
+                          seen.add(emailLower);
+                          const sourceColors: Record<string, string> = { newsletter: 'bg-blue-50 text-blue-700 border-blue-200', chatbot: 'bg-purple-50 text-purple-700 border-purple-200', resource: 'bg-green-50 text-green-700 border-green-200', comment: 'bg-orange-50 text-orange-700 border-orange-200', calculator: 'bg-red-50 text-red-700 border-red-200' };
+                          return (
+                            <tr key={idx} className={`hover:bg-muted/30 transition-colors ${isDuplicate ? 'opacity-40' : ''}`}>
+                              <td className="py-4"><div className="font-medium text-sm">{entry.email}</div>{isDuplicate && <span className="text-[10px] text-accent/30 font-bold">DUPLICATE</span>}</td>
+                              <td className="py-4"><span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${sourceColors[entry.source] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>{entry.source}</span></td>
+                              <td className="py-4 text-xs font-mono text-accent-light">{new Date(entry.created_at).toLocaleString()}</td>
+                              <td className="py-4 text-xs text-accent-light max-w-xs truncate">{entry.metadata || <span className="opacity-30 italic">-</span>}</td>
+                            </tr>
+                          );
+                        });
+                      })()}
+                      {allEmails.filter(e => emailSourceFilter === 'all' || e.source === emailSourceFilter).length === 0 && (
+                        <tr><td colSpan={4} className="py-12 text-center text-accent/40">No emails collected yet.</td></tr>
                       )}
                     </tbody>
                   </table>

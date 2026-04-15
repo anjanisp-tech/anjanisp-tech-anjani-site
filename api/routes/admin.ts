@@ -650,4 +650,145 @@ router.get("/all-emails", async (req, res, next) => {
   }
 });
 
+// Dashboard summary
+router.get("/dashboard", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  try {
+    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+
+    const stats: any = {
+      totalEmails: 0,
+      emailsBySource: {},
+      recentEmails: [],
+      totalComments: 0,
+      recentComments: [],
+      totalPosts: 0,
+      topPosts: [],
+      chatbotQueries7d: 0,
+      calculatorUses7d: 0,
+      subscribers: 0,
+    };
+
+    if (isPostgres) {
+      const { sql } = await import("@vercel/postgres");
+
+      // Ensure resource_leads exists
+      await sql`CREATE TABLE IF NOT EXISTS resource_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, resource_name TEXT, created_at TIMESTAMP DEFAULT NOW())`;
+
+      // Total unique emails across all sources
+      const emailCount = await sql`
+        SELECT COUNT(DISTINCT lower_email) as count FROM (
+          SELECT LOWER(email) as lower_email FROM subscriptions
+          UNION ALL SELECT LOWER(email) FROM chatbot_leads
+          UNION ALL SELECT LOWER(email) FROM resource_leads
+          UNION ALL SELECT LOWER(email) FROM comments WHERE is_admin = 0
+          UNION ALL SELECT LOWER(email) FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
+        ) combined
+      `;
+      stats.totalEmails = parseInt(emailCount.rows[0]?.count || '0');
+
+      // Emails by source
+      const srcCounts = await sql`
+        SELECT source, COUNT(*) as count FROM (
+          SELECT 'newsletter' as source FROM subscriptions
+          UNION ALL SELECT 'chatbot' FROM chatbot_leads
+          UNION ALL SELECT 'resource' FROM resource_leads
+          UNION ALL SELECT 'comment' FROM comments WHERE is_admin = 0
+          UNION ALL SELECT 'calculator' FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
+        ) combined GROUP BY source
+      `;
+      srcCounts.rows.forEach((r: any) => stats.emailsBySource[r.source] = parseInt(r.count));
+
+      // Recent 5 emails (any source)
+      const recent = await sql`
+        SELECT email, 'newsletter' as source, created_at FROM subscriptions
+        UNION ALL SELECT email, 'chatbot', created_at FROM chatbot_leads
+        UNION ALL SELECT email, 'resource', created_at FROM resource_leads
+        ORDER BY created_at DESC LIMIT 5
+      `;
+      stats.recentEmails = recent.rows;
+
+      // Comments
+      const commentCount = await sql`SELECT COUNT(*) as count FROM comments WHERE is_admin = 0`;
+      stats.totalComments = parseInt(commentCount.rows[0]?.count || '0');
+      const recentComments = await sql`SELECT name, comment, created_at FROM comments WHERE is_admin = 0 ORDER BY created_at DESC LIMIT 3`;
+      stats.recentComments = recentComments.rows;
+
+      // Posts + top
+      const postCount = await sql`SELECT COUNT(*) as count FROM posts`;
+      stats.totalPosts = parseInt(postCount.rows[0]?.count || '0');
+      const topPosts = await sql`SELECT b.post_id, p.title, COUNT(*) as views FROM analytics_blog b LEFT JOIN posts p ON b.post_id = p.id GROUP BY b.post_id, p.title ORDER BY views DESC LIMIT 3`;
+      stats.topPosts = topPosts.rows;
+
+      // 7-day activity
+      const chat7d = await sql`SELECT COUNT(*) as count FROM analytics_chatbot WHERE created_at > NOW() - INTERVAL '7 days'`;
+      stats.chatbotQueries7d = parseInt(chat7d.rows[0]?.count || '0');
+      const calc7d = await sql`SELECT COUNT(*) as count FROM analytics_calculator WHERE created_at > NOW() - INTERVAL '7 days'`;
+      stats.calculatorUses7d = parseInt(calc7d.rows[0]?.count || '0');
+
+      // Subscribers
+      const subCount = await sql`SELECT COUNT(*) as count FROM subscriptions`;
+      stats.subscribers = parseInt(subCount.rows[0]?.count || '0');
+
+    } else {
+      const db = getSqliteDb();
+      if (db && !useMockDb) {
+        db.exec("CREATE TABLE IF NOT EXISTS resource_leads (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL, resource_name TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+
+        const emailCount: any = db.prepare(`
+          SELECT COUNT(DISTINCT lower_email) as count FROM (
+            SELECT LOWER(email) as lower_email FROM subscriptions
+            UNION ALL SELECT LOWER(email) FROM chatbot_leads
+            UNION ALL SELECT LOWER(email) FROM resource_leads
+            UNION ALL SELECT LOWER(email) FROM comments WHERE is_admin = 0
+            UNION ALL SELECT LOWER(email) FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
+          )
+        `).get();
+        stats.totalEmails = emailCount?.count || 0;
+
+        const srcCounts = db.prepare(`
+          SELECT source, COUNT(*) as count FROM (
+            SELECT 'newsletter' as source FROM subscriptions
+            UNION ALL SELECT 'chatbot' FROM chatbot_leads
+            UNION ALL SELECT 'resource' FROM resource_leads
+            UNION ALL SELECT 'comment' FROM comments WHERE is_admin = 0
+            UNION ALL SELECT 'calculator' FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
+          ) GROUP BY source
+        `).all();
+        (srcCounts as any[]).forEach((r: any) => stats.emailsBySource[r.source] = r.count);
+
+        stats.recentEmails = db.prepare(`
+          SELECT email, 'newsletter' as source, created_at FROM subscriptions
+          UNION ALL SELECT email, 'chatbot', created_at FROM chatbot_leads
+          UNION ALL SELECT email, 'resource', created_at FROM resource_leads
+          ORDER BY created_at DESC LIMIT 5
+        `).all();
+
+        const commentCount: any = db.prepare("SELECT COUNT(*) as count FROM comments WHERE is_admin = 0").get();
+        stats.totalComments = commentCount?.count || 0;
+        stats.recentComments = db.prepare("SELECT name, comment, created_at FROM comments WHERE is_admin = 0 ORDER BY created_at DESC LIMIT 3").all();
+
+        const postCount: any = db.prepare("SELECT COUNT(*) as count FROM posts").get();
+        stats.totalPosts = postCount?.count || 0;
+        stats.topPosts = db.prepare("SELECT b.post_id, p.title, COUNT(*) as views FROM analytics_blog b LEFT JOIN posts p ON b.post_id = p.id GROUP BY b.post_id, p.title ORDER BY views DESC LIMIT 3").all();
+
+        const chat7d: any = db.prepare("SELECT COUNT(*) as count FROM analytics_chatbot WHERE created_at > datetime('now', '-7 days')").get();
+        stats.chatbotQueries7d = chat7d?.count || 0;
+        const calc7d: any = db.prepare("SELECT COUNT(*) as count FROM analytics_calculator WHERE created_at > datetime('now', '-7 days')").get();
+        stats.calculatorUses7d = calc7d?.count || 0;
+
+        const subCount: any = db.prepare("SELECT COUNT(*) as count FROM subscriptions").get();
+        stats.subscribers = subCount?.count || 0;
+      }
+    }
+
+    res.json(stats);
+  } catch (err: any) {
+    console.error("[DASHBOARD ERROR]", err);
+    res.status(500).json({ error: "Failed to fetch dashboard", details: err.message });
+  }
+});
+
 export default router;

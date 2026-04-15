@@ -21,13 +21,13 @@ router.use("/admin", adminRoutes);
 // Error handler for API routes
 router.use((err: any, req: any, res: any, next: any) => {
   console.error("[API ROUTE ERROR]", err);
-  res.status(200).json({ status: "error", error: "Internal API Error", details: err.message });
+  res.status(500).json({ status: "error", error: "Internal API Error", details: err.message });
 });
 
 // Global error handler for apiApp (must be last)
 apiApp.use((err: any, req: any, res: any, next: any) => {
   console.error("[GLOBAL API ERROR]", err);
-  res.status(200).json({
+  res.status(500).json({
     status: "error",
     error: "Global API Error",
     details: err.message || "An unknown error occurred"

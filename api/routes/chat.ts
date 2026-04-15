@@ -1,5 +1,5 @@
 import express from "express";
-import { getDb, getUtils, getKnowledge } from "../helpers.js";
+import { getDb, getUtils, getKnowledge, isValidEmail } from "../helpers.js";
 
 const router = express.Router();
 
@@ -187,6 +187,7 @@ router.post("/chatbot-lead", async (req, res) => {
   try {
     const { email, query } = req.body || {};
     if (!email) return res.status(400).json({ error: "Email is required" });
+    if (!isValidEmail(email)) return res.status(400).json({ error: "Invalid email format" });
 
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
 
@@ -220,6 +221,7 @@ router.post("/resource-lead", async (req, res) => {
   try {
     const { email, resource_name } = req.body || {};
     if (!email) return res.status(400).json({ error: "Email is required" });
+    if (!isValidEmail(email)) return res.status(400).json({ error: "Invalid email format" });
 
     const { isPostgres, getSqliteDb, useMockDb } = await getDb();
 

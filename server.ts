@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config({ override: true });
 import express from "express";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -12,6 +14,34 @@ const __dirname = path.dirname(__filename);
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // Security headers
+  app.use(helmet({
+    contentSecurityPolicy: false, // CSP can break Vite HMR in dev
+    crossOriginEmbedderPolicy: false,
+  }));
+
+  // Rate limiting on admin routes (5 failed attempts per 15 min window)
+  const adminLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many requests. Try again later." },
+  });
+  app.use("/api/admin", adminLimiter);
+
+  // Rate limiting on public form endpoints (prevent spam)
+  const formLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 15,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many submissions. Try again later." },
+  });
+  app.use("/api/subscribe", formLimiter);
+  app.use("/api/chatbot-lead", formLimiter);
+  app.use("/api/resource-lead", formLimiter);
 
   // Middleware to parse JSON bodies
   app.use(express.json());
@@ -103,14 +133,14 @@ async function startServer() {
     console.error("[GLOBAL SERVER ERROR]", err);
     // If it's an API request, return JSON
     if (req.path.startsWith('/api')) {
-      return res.status(200).json({ 
+      return res.status(500).json({
         status: "error",
-        error: "Internal API Error", 
+        error: "Internal API Error",
         details: err.message || "An unknown error occurred"
       });
     }
     // Otherwise, let it fall through or send a simple message
-    res.status(200).send(`
+    res.status(500).send(`
       <html>
         <body style="font-family: sans-serif; padding: 2rem; text-align: center;">
           <h1>Service Temporarily Unavailable</h1>
