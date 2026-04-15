@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node --import tsx server.ts",
     "start": "node --import tsx server.ts",
-    "build": "vite build",
+    "build": "vite build && node --import tsx scripts/prerender.tsx",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
