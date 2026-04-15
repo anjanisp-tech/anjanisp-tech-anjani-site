@@ -20,6 +20,7 @@ import TermsOfService from './pages/TermsOfService';
 import Sitemap from './pages/Sitemap';
 import BottleneckCostCalculator from './pages/BottleneckCostCalculator';
 import Resources from './pages/Resources';
+import ResourceGuideDetail from './pages/ResourceGuideDetail';
 import About from './pages/About';
 import SEO from './components/SEO';
 import { blogPosts } from './data/blogData';
@@ -73,6 +74,7 @@ function StaticApp() {
         <Route path="/sitemap" element={<Sitemap />} />
         <Route path="/calculator" element={<BottleneckCostCalculator />} />
         <Route path="/resources" element={<Resources />} />
+        <Route path="/resources/:slug" element={<ResourceGuideDetail />} />
       </Routes>
     </Layout>
   );

@@ -3,6 +3,7 @@
  * Single source of truth for all routes.
  */
 import { blogPosts } from './data/blogData';
+import { getGuideRoutes } from './data/guidesData';
 
 export interface RouteEntry {
     path: string;
@@ -39,5 +40,6 @@ export function getPrerenderedRoutes(): string[] {
     return [
           ...staticRoutes.filter((r) => r.prerender).map((r) => r.path),
           ...getBlogRoutes().map((r) => r.path),
+          ...getGuideRoutes().map((r) => r.path),
         ];
 }

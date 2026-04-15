@@ -14,6 +14,7 @@ const Admin = lazy(() => import('./pages/Admin'));
 const Sitemap = lazy(() => import('./pages/Sitemap'));
 const BottleneckCostCalculator = lazy(() => import('./pages/BottleneckCostCalculator'));
 const Resources = lazy(() => import('./pages/Resources'));
+const ResourceGuideDetail = lazy(() => import('./pages/ResourceGuideDetail'));
 const About = lazy(() => import('./pages/About'));
 
 function Analytics() {
@@ -62,6 +63,7 @@ export default function App() {
             <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/calculator" element={<BottleneckCostCalculator />} />
             <Route path="/resources" element={<Resources />} />
+            <Route path="/resources/:slug" element={<ResourceGuideDetail />} />
           </Routes>
         </Suspense>
       </Layout>

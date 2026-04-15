@@ -1,7 +1,24 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, FileText, Calculator, Cpu, BookOpen, Download, X, Sparkles, ShoppingCart, ExternalLink } from 'lucide-react';
+import {
+  ArrowRight,
+  FileText,
+  Calculator,
+  BookOpen,
+  Download,
+  X,
+  Sparkles,
+  ShoppingCart,
+  ExternalLink,
+  Clock,
+  Tag,
+  Cpu,
+  Lock,
+} from 'lucide-react';
 import SEO from '../components/SEO';
+import { getPublishedGuides } from '../data/guidesData';
+
+/* ─── Existing resource data (unchanged) ─── */
 
 interface Resource {
   title: string;
@@ -19,7 +36,8 @@ interface Resource {
 const freeResources: Resource[] = [
   {
     title: 'Bottleneck Cost Calculator',
-    description: 'Quantify how much founder-dependent bottlenecks are costing your business. Interactive, instant results.',
+    description:
+      'Quantify how much founder-dependent bottlenecks are costing your business. Interactive, instant results.',
     format: 'Interactive Tool',
     formatIcon: <Calculator size={16} />,
     cta: 'Try It',
@@ -30,7 +48,8 @@ const freeResources: Resource[] = [
   },
   {
     title: 'AI for Consultants: A Practical Starter Guide',
-    description: 'How solo consultants and small firms use AI as infrastructure, not just a tool. Real workflows, real stack.',
+    description:
+      'How solo consultants and small firms use AI as infrastructure, not just a tool. Real workflows, real stack.',
     format: 'PDF Guide',
     formatIcon: <FileText size={16} />,
     cta: 'Get Free Access',
@@ -41,7 +60,8 @@ const freeResources: Resource[] = [
   },
   {
     title: 'Structural Health Quick-Check',
-    description: '7 questions that reveal whether your business has structural gaps holding back growth. Takes 3 minutes.',
+    description:
+      '7 questions that reveal whether your business has structural gaps holding back growth. Takes 3 minutes.',
     format: 'PDF Checklist',
     formatIcon: <FileText size={16} />,
     cta: 'Get Free Access',
@@ -51,8 +71,9 @@ const freeResources: Resource[] = [
     tag: 'FREE',
   },
   {
-    title: 'Why Your Rs.50 Cr Business Still Runs on You (Preview)',
-    description: 'Free 3-chapter preview: The Dependency Trap, The Bottleneck Tax, and Why Hiring Doesn\'t Fix It. Diagnose before you solve.',
+    title: "Why Your Rs.50 Cr Business Still Runs on You (Preview)",
+    description:
+      "Free 3-chapter preview: The Dependency Trap, The Bottleneck Tax, and Why Hiring Doesn't Fix It. Diagnose before you solve.",
     format: 'PDF Preview (12 pages)',
     formatIcon: <BookOpen size={16} />,
     cta: 'Get Free Preview',
@@ -65,20 +86,29 @@ const freeResources: Resource[] = [
 
 const paidResources: Resource[] = [
   {
-    title: 'Why Your Rs.50 Cr Business Still Runs on You',
-    description: 'A founder\'s guide to building a business that scales without you. Diagnostic frameworks, operating architecture, decision maps, and a 90-day transition playbook.',
+    title: "Why Your Rs.50 Cr Business Still Runs on You",
+    description:
+      "A founder's guide to building a business that scales without you. Diagnostic frameworks, operating architecture, decision maps, and a 90-day transition playbook.",
     format: 'Ebook (PDF)',
     formatIcon: <BookOpen size={16} />,
     cta: 'Buy on Gumroad',
-    href: 'https://anjanipandey.gumroad.com/l/founder-scale', // TODO: Replace with actual Gumroad link
+    href: 'https://anjanipandey.gumroad.com/l/founder-scale',
     gated: false,
     available: true,
     tag: 'Rs.499',
   },
 ];
 
+/* ─── Component ─── */
+
 export default function Resources() {
-  const [emailModal, setEmailModal] = useState<{ open: boolean; resourceName: string; downloadUrl: string }>({
+  const guides = getPublishedGuides();
+
+  const [emailModal, setEmailModal] = useState<{
+    open: boolean;
+    resourceName: string;
+    downloadUrl: string;
+  }>({
     open: false,
     resourceName: '',
     downloadUrl: '',
@@ -89,7 +119,11 @@ export default function Resources() {
 
   const handleGatedClick = (resource: Resource) => {
     if (!resource.available) return;
-    setEmailModal({ open: true, resourceName: resource.title, downloadUrl: resource.downloadUrl || '' });
+    setEmailModal({
+      open: true,
+      resourceName: resource.title,
+      downloadUrl: resource.downloadUrl || '',
+    });
     setEmail('');
     setSubmitted(false);
   };
@@ -104,13 +138,11 @@ export default function Resources() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, resource_name: emailModal.resourceName }),
       });
-      // Track event
       if (typeof window.gtag === 'function') {
         window.gtag('event', 'resource_lead', { resource_name: emailModal.resourceName });
       }
       setSubmitted(true);
     } catch {
-      // Still show success to not block UX
       setSubmitted(true);
     } finally {
       setSubmitting(false);
@@ -120,29 +152,101 @@ export default function Resources() {
   return (
     <div className="bg-white min-h-screen">
       <SEO
-        title="Resources | Tools & Frameworks | Anjani Pandey"
-        description="Free frameworks, diagnostic tools, and AI-powered resources for founder-led businesses and consultants. Built from 14 years of operating experience."
+        title="Guides & Playbooks | Anjani Pandey"
+        description="Practical guides on AI-native consulting, operations, and scaling. Built from 14 years of operating experience. Free frameworks, tools, and deep-dive playbooks."
         canonical="https://www.anjanipandey.com/resources"
       />
 
-      {/* Hero */}
-      <section className="pt-32 pb-16 md:pt-40 md:pb-24">
+      {/* ─── Hero ─── */}
+      <section className="pt-32 pb-8 md:pt-40 md:pb-12">
         <div className="container-custom">
           <div className="max-w-3xl">
-            <h1 className="mb-6">Tools, Frameworks, and Thinking I Use Every Day</h1>
+            <h1 className="mb-6">Guides & Playbooks</h1>
             <p className="text-xl md:text-2xl text-accent-light leading-relaxed">
-              14 years of operating experience + AI systems thinking, distilled into things you can actually use.
+              Deep-dive frameworks on AI, operations, and building leverage. Written from the
+              trenches, not the theory.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Free Resources */}
+      {/* ─── Guides Card Grid ─── */}
       <section className="pb-20">
+        <div className="container-custom">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {guides.map((guide) => (
+              <Link
+                key={guide.slug}
+                to={`/resources/${guide.slug}`}
+                className="group relative bg-white border border-border rounded-2xl p-8 flex flex-col transition-all hover:border-accent/30 hover:shadow-lg"
+              >
+                {/* Gated badge */}
+                {guide.gated && (
+                  <div className="absolute top-4 right-4 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-primary/5 text-primary border border-primary/15">
+                    <Lock size={10} />
+                    Gated
+                  </div>
+                )}
+
+                {/* Category */}
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">
+                  <Tag size={14} />
+                  {guide.category}
+                </div>
+
+                {/* Title */}
+                <h3 className="text-xl font-bold mb-3 pr-16 group-hover:text-primary transition-colors">
+                  {guide.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-accent-light text-sm leading-relaxed flex-grow mb-6 line-clamp-3">
+                  {guide.description}
+                </p>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                  <div className="flex items-center gap-2 text-xs font-bold text-accent/30">
+                    <Clock size={12} />
+                    {guide.readTime}
+                  </div>
+                  <div className="text-sm font-bold text-primary flex items-center gap-1.5 group-hover:gap-3 transition-all">
+                    Read Guide <ArrowRight size={14} />
+                  </div>
+                </div>
+              </Link>
+            ))}
+
+            {/* Coming Soon placeholder if only one guide */}
+            {guides.length < 3 &&
+              Array.from({ length: 3 - guides.length }).map((_, i) => (
+                <div
+                  key={`placeholder-${i}`}
+                  className="border-2 border-dashed border-border/50 rounded-2xl p-8 flex flex-col items-center justify-center text-center min-h-[280px]"
+                >
+                  <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
+                    <BookOpen size={20} className="text-accent/20" />
+                  </div>
+                  <p className="text-sm font-bold text-accent/25 uppercase tracking-widest">
+                    Coming Soon
+                  </p>
+                </div>
+              ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Divider ─── */}
+      <div className="container-custom">
+        <div className="h-px bg-border" />
+      </div>
+
+      {/* ─── Tools & Downloads ─── */}
+      <section className="py-20">
         <div className="container-custom">
           <h2 className="text-sm font-bold uppercase tracking-widest text-accent/40 mb-10 flex items-center gap-2">
             <Sparkles size={16} />
-            Free Resources
+            Tools & Downloads
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             {freeResources.map((resource, i) => (
@@ -152,34 +256,30 @@ export default function Resources() {
                   resource.available ? 'hover:border-accent/30 hover:shadow-lg' : 'opacity-70'
                 }`}
               >
-                {/* Tag */}
                 {resource.tag && (
                   <div
                     className={`absolute top-4 right-4 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full ${
                       resource.tag === 'LIVE'
                         ? 'bg-green-50 text-green-700 border border-green-200'
                         : resource.tag === 'FREE'
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                          : 'bg-amber-50 text-amber-700 border border-amber-200'
                     }`}
                   >
                     {resource.tag}
                   </div>
                 )}
 
-                {/* Format badge */}
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">
                   {resource.formatIcon}
                   {resource.format}
                 </div>
 
-                {/* Content */}
                 <h3 className="text-xl font-bold mb-3 pr-16">{resource.title}</h3>
                 <p className="text-accent-light text-sm leading-relaxed flex-grow mb-6">
                   {resource.description}
                 </p>
 
-                {/* CTA */}
                 {resource.available ? (
                   resource.href ? (
                     <Link
@@ -209,7 +309,7 @@ export default function Resources() {
         </div>
       </section>
 
-      {/* Paid Resources */}
+      {/* ─── Premium ─── */}
       <section className="pb-20">
         <div className="container-custom">
           <h2 className="text-sm font-bold uppercase tracking-widest text-accent/40 mb-10 flex items-center gap-2">
@@ -222,33 +322,31 @@ export default function Resources() {
                 key={i}
                 className="relative bg-white border-2 border-accent/10 rounded-2xl p-8 flex flex-col transition-all hover:border-accent/30 hover:shadow-lg"
               >
-                {/* Tag */}
                 {resource.tag && (
                   <div className="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-accent/5 text-accent border border-accent/15">
                     {resource.tag}
                   </div>
                 )}
 
-                {/* Format badge */}
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">
                   {resource.formatIcon}
                   {resource.format}
                 </div>
 
-                {/* Content */}
                 <h3 className="text-xl font-bold mb-3 pr-16">{resource.title}</h3>
                 <p className="text-accent-light text-sm leading-relaxed flex-grow mb-6">
                   {resource.description}
                 </p>
 
-                {/* CTA */}
                 <a
                   href={resource.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => {
                     if (typeof window.gtag === 'function') {
-                      window.gtag('event', 'ebook_cta_click', { resource_name: resource.title });
+                      window.gtag('event', 'ebook_cta_click', {
+                        resource_name: resource.title,
+                      });
                     }
                   }}
                   className="btn-primary gap-2 w-full justify-center text-sm py-3"
@@ -262,7 +360,7 @@ export default function Resources() {
         </div>
       </section>
 
-      {/* What I'm Building */}
+      {/* ─── What I'm Building ─── */}
       <section className="bg-muted border-t border-border/50 py-20">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto text-center">
@@ -271,10 +369,20 @@ export default function Resources() {
               What I'm Building
             </h2>
             <p className="text-xl md:text-2xl text-accent-light leading-relaxed mb-8">
-              I'm building two things in public: a consulting firm (<a href="https://metmov.com" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov</a>) and an AI-powered personal operating system. I write about what's working, what's not, and what I'm learning along the way.
+              I'm building two things in public: a consulting firm (
+              <a
+                href="https://metmov.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent font-semibold hover:underline"
+              >
+                MetMov
+              </a>
+              ) and an AI-powered personal operating system. I write about what's working, what's
+              not, and what I'm learning along the way.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/blog" className="btn-primary gap-2 px-8">
+              <Link to="/writing" className="btn-primary gap-2 px-8">
                 <BookOpen size={18} />
                 Read the Blog
               </Link>
@@ -292,7 +400,7 @@ export default function Resources() {
         </div>
       </section>
 
-      {/* Email Gate Modal */}
+      {/* ─── Email Gate Modal (for PDF downloads) ─── */}
       {emailModal.open && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-in fade-in zoom-in-95">
@@ -341,7 +449,9 @@ export default function Resources() {
                   download
                   onClick={() => {
                     if (typeof window.gtag === 'function') {
-                      window.gtag('event', 'resource_download', { resource_name: emailModal.resourceName });
+                      window.gtag('event', 'resource_download', {
+                        resource_name: emailModal.resourceName,
+                      });
                     }
                   }}
                   className="btn-primary w-full justify-center py-3 text-sm gap-2 inline-flex"
