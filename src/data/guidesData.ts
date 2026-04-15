@@ -26,6 +26,7 @@ export const guides: Guide[] = [
     category: 'AI + Operations',
     readTime: '14 min read',
     publishedDate: '2026-04-15',
+    ogImage: 'https://www.anjanipandey.com/og/og-ai-consulting-stack.png',
     gated: true,
     published: true,
     teaserContent: `Let me get this out of the way: I cannot write code. Not Python, not JavaScript, not a single line. My background is operations, supply chain, and consulting. I\u2019ve spent 14 years inside businesses, not inside terminals.
