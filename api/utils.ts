@@ -32,17 +32,16 @@ export function getResendKey() {
 
 export const adminAuth = (req: any, res: any, next: any) => {
   const authHeader = req.headers.authorization;
-  const adminPassword = process.env.ADMIN_PASSWORD || "scaling2024";
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) {
+    console.error("[AUTH] ADMIN_PASSWORD env var not set. Admin routes disabled.");
+    return res.status(503).json({ error: "Admin not configured" });
+  }
   
   if (authHeader === `Bearer ${adminPassword}`) {
     next();
   } else {
-    const timestamp = new Date().toISOString();
-    const logMsg = `[AUTH][${timestamp}] Unauthorized access attempt. Header: ${authHeader ? 'Present' : 'Missing'}`;
-    try {
-      const logPath = path.join(process.cwd(), 'seo_debug.log');
-      fs.appendFileSync(logPath, logMsg + '\n');
-    } catch (e) {}
+    console.warn(`[AUTH] Unauthorized access attempt. Header: ${authHeader ? 'Present' : 'Missing'}`);
     res.status(401).json({ error: "Unauthorized" });
   }
 };

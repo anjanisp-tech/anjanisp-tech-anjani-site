@@ -13,23 +13,8 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  const fs = await import('fs');
-  const logFile = process.env.VERCEL ? '/tmp/seo_debug.log' : path.join(process.cwd(), 'seo_debug.log');
-  try {
-    fs.appendFileSync(logFile, `[SERVER] Starting at ${new Date().toISOString()}\n`);
-  } catch (e) {}
-
   // Middleware to parse JSON bodies
   app.use(express.json());
-
-  app.use((req, res, next) => {
-    const timestamp = new Date().toISOString();
-    const logMsg = `[REQ][${timestamp}] ${req.method} ${req.url} (Host: ${req.headers.host})`;
-    try {
-      fs.appendFileSync(logFile, logMsg + '\n');
-    } catch (e) {}
-    next();
-  });
 
   // Direct test route to bypass apiApp router entirely
   app.get("/api-test-ping", (req, res) => {
@@ -94,17 +79,7 @@ async function startServer() {
   });
 
   // Use the API app for /api routes
-  app.use("/api", (req, res, next) => {
-    try {
-      const timestamp = new Date().toISOString();
-      const logMsg = `[SERVER][${timestamp}] ${req.method} ${req.url} (IP: ${req.ip})`;
-      const logPath = path.join(process.cwd(), 'seo_debug.log');
-      fs.appendFileSync(logPath, logMsg + '\n');
-      next();
-    } catch (e) {
-      next();
-    }
-  }, apiApp);
+  app.use("/api", apiApp);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
@@ -148,19 +123,8 @@ async function startServer() {
   });
 
   app.listen(PORT, "0.0.0.0", () => {
-    const logPath = path.join(process.cwd(), 'seo_debug.log');
-    const timestamp = new Date().toISOString();
-    const envInfo = [
-      `[SERVER][${timestamp}] Full-stack server running on http://localhost:${PORT}`,
-      `[SERVER][${timestamp}] Environment Check:`,
-      ...Object.keys(process.env).filter(k => k.includes('GEMINI')).map(k => `[SERVER][${timestamp}] - ${k}: ${process.env[k]?.length} chars, preview: ${process.env[k]?.substring(0, 5)}`),
-      `[SERVER][${timestamp}] - RESEND_API_KEY: ${process.env.RESEND_API_KEY ? "Present" : "MISSING"}`,
-      `[SERVER][${timestamp}] - POSTGRES_URL: ${process.env.POSTGRES_URL ? "Present" : "MISSING"}`
-    ].join('\n');
-    try {
-      fs.appendFileSync(logPath, envInfo + '\n');
-    } catch (e) {}
     console.log(`Full-stack server running on http://localhost:${PORT}`);
+    console.log(`Environment: RESEND_API_KEY=${process.env.RESEND_API_KEY ? "Present" : "MISSING"}, POSTGRES_URL=${process.env.POSTGRES_URL ? "Present" : "MISSING"}`);
   });
 }
 

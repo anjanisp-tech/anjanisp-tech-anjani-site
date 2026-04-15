@@ -68,10 +68,23 @@ const services = [
 export default function Services() {
   return (
     <div className="bg-white min-h-screen">
-      <SEO 
+      <SEO
         title="Services | Operating Spine & Scaling | Anjani Pandey"
         description="MetMov's operating spine methodology: we diagnose structural bottlenecks, install scalable systems, and embed them into your team. For $1M-$10M ARR businesses."
         canonical="https://www.anjanipandey.com/services"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "Operating Spine Consulting",
+          "provider": {
+            "@type": "Organization",
+            "name": "MetMov LLP",
+            "url": "https://www.metmov.com"
+          },
+          "description": "Diagnose structural bottlenecks and install scalable operating systems for $1M-$10M ARR businesses.",
+          "areaServed": "Worldwide",
+          "serviceType": "Business Consulting"
+        }}
       />
       {/* ... header ... */}
       <section className="pt-32 pb-20 md:pt-40 md:pb-32">

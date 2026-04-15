@@ -9,6 +9,7 @@ interface SEOProps {
   ogType?: string;
   ogImage?: string;
   twitterCard?: string;
+  jsonLd?: Record<string, any>;
 }
 
 export default function SEO({
@@ -20,6 +21,7 @@ export default function SEO({
   ogType = 'website',
   ogImage = 'https://www.anjanipandey.com/og-image.png',
   twitterCard = 'summary_large_image',
+  jsonLd,
 }: SEOProps) {
   const siteTitle = "Anjani Pandey | Operating Spine & Scaling Specialist";
   const fullTitle = title ? `${title}` : siteTitle;
@@ -47,6 +49,11 @@ export default function SEO({
       <meta name="twitter:title" content={ogTitle || fullTitle} data-rh="true" />
       <meta name="twitter:description" content={ogDescription || fullDescription} data-rh="true" />
       <meta name="twitter:image" content={ogImage} data-rh="true" />
+
+      {/* JSON-LD Structured Data */}
+      {jsonLd && (
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      )}
     </Helmet>
   );
 }

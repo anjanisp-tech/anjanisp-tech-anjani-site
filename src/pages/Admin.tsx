@@ -56,11 +56,13 @@ export default function Admin() {
   
   const [status, setStatus] = useState<{ type: 'success' | 'error' | 'idle', message: string }>({ type: 'idle', message: '' });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const secret = (import.meta as any).env?.VITE_ADMIN_PASSWORD || 'scaling2024';
-      if (password === secret) {
+      const testRes = await fetch('/api/admin/settings', {
+        headers: { 'Authorization': `Bearer ${password}` }
+      });
+      if (testRes.ok) {
         setIsAuthenticated(true);
         localStorage.setItem('admin_auth', 'true');
         localStorage.setItem('admin_pwd', password);
@@ -69,13 +71,7 @@ export default function Admin() {
       }
     } catch (err) {
       console.error("Login error:", err);
-      if (password === 'scaling2024') {
-        setIsAuthenticated(true);
-        localStorage.setItem('admin_auth', 'true');
-        localStorage.setItem('admin_pwd', password);
-      } else {
-        alert("Incorrect password or system error.");
-      }
+      alert("Login failed. Check your connection.");
     }
   };
 

@@ -84,6 +84,32 @@ export default function Home() {
         title="Anjani Pandey | Operations Leader, Builder, Writer"
         description="Operations leader. Builder. Writing about systems, scale, and what AI changes about both. Founder, MetMov LLP. Based in Bengaluru."
         canonical="https://www.anjanipandey.com/"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Person",
+          "name": "Anjani Pandey",
+          "url": "https://www.anjanipandey.com",
+          "jobTitle": "Co-founder & CEO",
+          "worksFor": {
+            "@type": "Organization",
+            "name": "MetMov LLP",
+            "url": "https://www.metmov.com"
+          },
+          "alumniOf": {
+            "@type": "EducationalOrganization",
+            "name": "Indian School of Business"
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Bengaluru",
+            "addressCountry": "IN"
+          },
+          "sameAs": [
+            "https://www.linkedin.com/in/anjanipandey/",
+            "https://www.metmov.com"
+          ],
+          "knowsAbout": ["Operations", "Business Scaling", "AI", "Systems Thinking", "B2B Consulting"]
+        }}
       />
 
       {/* SECTION 1 - Personal Hero */}
