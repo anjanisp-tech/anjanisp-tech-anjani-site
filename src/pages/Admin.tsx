@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket, Eye, EyeOff, RefreshCw, Database, BarChart3, Calculator, Info, Globe, Users } from 'lucide-react';
+import { MessageSquare, Trash2, Reply, Send, FileText, PlusCircle, CheckCircle, AlertCircle, Mail, Rocket, Eye, EyeOff, RefreshCw, Database, BarChart3, Calculator, Info, Globe, Users, LayoutDashboard } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 
