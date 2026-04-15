@@ -1541,6 +1541,40 @@ export default function Admin() {
                 )}
               </div>
 
+              {/* Chatbot Leads (Email Captures) */}
+              <div className="bg-white border border-border rounded-3xl p-8 shadow-sm">
+                <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                  <Mail className="text-accent" size={24} /> Chatbot Email Leads
+                </h3>
+                {isLoadingAnalytics ? (
+                  <div className="py-12 flex justify-center"><RefreshCw className="animate-spin text-accent/20" /></div>
+                ) : analytics.chatbotLeads && analytics.chatbotLeads.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <div className="mb-4 text-sm font-bold text-accent/60">{analytics.chatbotLeads.length} lead{analytics.chatbotLeads.length !== 1 ? 's' : ''} captured</div>
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="pb-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Date</th>
+                          <th className="pb-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Email</th>
+                          <th className="pb-4 text-[10px] font-bold uppercase tracking-widest text-accent/40">Query Context</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {analytics.chatbotLeads.map((lead: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-muted/30 transition-colors">
+                            <td className="py-4 text-xs font-mono">{new Date(lead.created_at).toLocaleDateString()}</td>
+                            <td className="py-4 text-sm font-bold">{lead.email}</td>
+                            <td className="py-4 text-xs text-accent-light max-w-xs truncate">{lead.query || <span className="opacity-30 italic">No context</span>}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="py-12 text-center text-accent/30 font-bold italic">No chatbot email leads yet. Leads appear here once visitors share their email in the chatbot.</div>
+                )}
+              </div>
+
               {/* Monetization Insights */}
               <div className="bg-accent text-white rounded-3xl p-10 shadow-xl relative overflow-hidden">
                 <div className="relative z-10">

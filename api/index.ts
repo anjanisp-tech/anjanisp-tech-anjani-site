@@ -1269,12 +1269,13 @@ router.get("/admin/analytics", async (req, res, next) => {
     let chatbotQueries = [];
     let blogViews = [];
     let calculatorLeads = [];
+    let chatbotLeads = [];
 
     if (isPostgres) {
       const { sql } = await import("@vercel/postgres");
       const chatRes = await sql`SELECT * FROM analytics_chatbot ORDER BY created_at DESC LIMIT 100`;
       const blogRes = await sql`
-        SELECT b.post_id, p.title, COUNT(*) as views 
+        SELECT b.post_id, p.title, COUNT(*) as views
         FROM analytics_blog b
         LEFT JOIN posts p ON b.post_id = p.id
         GROUP BY b.post_id, p.title
@@ -1284,22 +1285,34 @@ router.get("/admin/analytics", async (req, res, next) => {
       chatbotQueries = chatRes.rows;
       blogViews = blogRes.rows;
       calculatorLeads = calcRes.rows;
+      try {
+        const leadsRes = await sql`SELECT * FROM chatbot_leads ORDER BY created_at DESC LIMIT 100`;
+        chatbotLeads = leadsRes.rows;
+      } catch (e) {
+        // Table may not exist yet
+        chatbotLeads = [];
+      }
     } else {
       const db = getSqliteDb();
       if (db && !useMockDb) {
         chatbotQueries = db.prepare("SELECT * FROM analytics_chatbot ORDER BY created_at DESC LIMIT 100").all();
         blogViews = db.prepare(`
-          SELECT b.post_id, p.title, COUNT(*) as views 
+          SELECT b.post_id, p.title, COUNT(*) as views
           FROM analytics_blog b
           LEFT JOIN posts p ON b.post_id = p.id
           GROUP BY b.post_id, p.title
           ORDER BY views DESC
         `).all();
         calculatorLeads = db.prepare("SELECT * FROM analytics_calculator ORDER BY created_at DESC LIMIT 100").all();
+        try {
+          chatbotLeads = db.prepare("SELECT * FROM chatbot_leads ORDER BY created_at DESC LIMIT 100").all();
+        } catch (e) {
+          chatbotLeads = [];
+        }
       }
     }
 
-    res.json({ chatbotQueries, blogViews, calculatorLeads });
+    res.json({ chatbotQueries, blogViews, calculatorLeads, chatbotLeads });
   } catch (err: any) {
     res.status(500).json({ error: "Failed to fetch analytics", details: err.message });
   }

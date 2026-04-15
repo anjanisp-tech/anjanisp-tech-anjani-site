@@ -359,7 +359,7 @@ export default function BottleneckCostCalculator() {
                             <button
                               type="submit"
                               disabled={isSubmitting}
-                              className="bg-accent text-white px-8 py-4 rounded-xl font-bold hover:bg-accent-light transition-all disabled:opacity-50 whitespace-nowrap"
+                              className="bg-primary text-white px-8 py-4 rounded-xl font-bold hover:bg-primary/90 transition-all disabled:opacity-50 whitespace-nowrap"
                             >
                               {isSubmitting ? 'Saving...' : 'Get My Diagnosis'}
                             </button>

@@ -142,7 +142,7 @@ export default function BookCall() {
                       </div>
                     </div>
 
-                    <button type="submit" className="btn-primary w-full py-5 text-lg shadow-xl shadow-accent/10">
+                    <button type="submit" className="btn-primary w-full py-5 text-lg shadow-xl shadow-primary/10">
                       Send Inquiry
                     </button>
                   </form>

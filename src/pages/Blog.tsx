@@ -185,9 +185,9 @@ export default function Blog() {
                       key={cat}
                       onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
                       className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
-                        selectedCategory === cat 
-                          ? 'bg-accent text-white border-accent' 
-                          : 'bg-muted text-accent/60 border-border/50 hover:border-accent/30'
+                        selectedCategory === cat
+                          ? 'bg-primary text-white border-primary'
+                          : 'bg-muted text-accent/60 border-border/50 hover:border-primary/30'
                       }`}
                     >
                       {cat}
@@ -229,7 +229,7 @@ export default function Blog() {
                       <p className="text-lg text-accent-light mb-6 leading-relaxed">
                         {post.excerpt}
                       </p>
-                      <Link to={`/blog/${post.id}`} className="inline-flex items-center gap-2 font-bold text-accent hover:gap-3 transition-all">
+                      <Link to={`/blog/${post.id}`} className="inline-flex items-center gap-2 font-bold text-primary hover:gap-3 transition-all">
                         Read Article <ArrowRight size={18} />
                       </Link>
                     </div>
