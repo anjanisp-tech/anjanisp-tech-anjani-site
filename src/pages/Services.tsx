@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Target, CheckCircle2, AlertCircle } from 'lucide-react';
-import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
+import { ArrowRight, Target, CheckCircle2, AlertCircle, Sparkles, Cpu } from 'lucide-react';
+import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, LINKEDIN_URL } from '../constants';
 import SEO from '../components/SEO';
 
 const services = [
@@ -179,6 +179,100 @@ export default function Services() {
         </div>
 
       </div>
+
+      {/* AI Setup Sprint */}
+      <section className="border-t border-border/50 py-20 md:py-32">
+        <div className="container-custom">
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-24">
+            {/* Left Column */}
+            <div className="lg:col-span-5">
+              <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60 bg-primary/5 border border-primary/15 rounded-full px-4 py-2 mb-6">
+                <Sparkles size={14} />
+                For Individuals & Professionals
+              </div>
+              <h2 className="text-3xl md:text-4xl mb-6">AI Setup Sprint</h2>
+              <div className="bg-muted p-8 rounded-2xl border border-border/50 mb-8">
+                <div className="flex items-start gap-3 text-accent/60 mb-4">
+                  <Cpu size={20} className="mt-1 flex-shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-widest">The Situation</span>
+                </div>
+                <p className="text-lg text-accent-light leading-relaxed italic">
+                  "I know AI can help me work smarter, but I don't know where to start. I'm not technical. I've tried ChatGPT a few times but it felt underwhelming."
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-sm font-bold text-accent/40">
+                <div className="w-8 h-px bg-accent/20" />
+                I built my entire consulting firm on AI without writing a single line of code. <Link to="/resources/ai-consulting-stack" className="text-primary hover:underline ml-1">Read how.</Link>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="lg:col-span-7 space-y-12">
+              <div className="grid md:grid-cols-2 gap-12">
+                {/* What we do */}
+                <div>
+                  <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-accent/40 mb-6">
+                    <Target size={16} />
+                    What You Get
+                  </h3>
+                  <ul className="space-y-4">
+                    {[
+                      '2-3 focused 1:1 sessions (virtual)',
+                      'Full Claude-based AI system setup tailored to your work',
+                      'Custom prompt library for your specific workflows',
+                      'Tool recommendations matched to your needs (no code required)',
+                      'A working AI-powered operating rhythm by the end',
+                    ].map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-accent-light">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Outcomes */}
+                <div>
+                  <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-accent/40 mb-6">
+                    <CheckCircle2 size={16} />
+                    You Walk Away With
+                  </h3>
+                  <ul className="space-y-4">
+                    {[
+                      'AI integrated into your daily workflow, not just bookmarked',
+                      'Confidence to use AI independently going forward',
+                      'Hours saved every week on research, writing, and admin',
+                      'A system you actually use, built around how you think',
+                    ].map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-accent-light font-medium">
+                        <CheckCircle2 size={18} className="text-primary mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Pricing & CTA */}
+              <div className="bg-muted/50 rounded-2xl p-8 border border-border/50">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                  <div>
+                    <div className="text-3xl font-bold text-accent mb-1">&#8377;25,000</div>
+                    <p className="text-sm text-accent-light">Fixed price. 2-3 sessions. No ongoing commitment.</p>
+                  </div>
+                  <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary gap-3 px-10">
+                    Book a Free Intro Call
+                    <ArrowRight size={20} />
+                  </a>
+                </div>
+                <p className="text-xs text-accent-light/50 mt-4 font-medium">
+                  We'll start with a free 20-minute call to understand your workflow and see if this is the right fit.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Final CTA */}
       <section className="bg-muted border-t border-border/50">
