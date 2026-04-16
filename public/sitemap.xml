@@ -43,6 +43,24 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.anjanipandey.com/resources/ai-consulting-stack</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.anjanipandey.com/privacy</loc>
+    <lastmod>2026-04-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.anjanipandey.com/terms</loc>
+    <lastmod>2026-04-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://www.anjanipandey.com/blog/founder-overload-map</loc>
     <lastmod>2026-02-18</lastmod>
     <changefreq>yearly</changefreq>
