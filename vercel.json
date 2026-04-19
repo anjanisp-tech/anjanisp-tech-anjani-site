@@ -32,7 +32,15 @@
       "destination": "/api/index.ts"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/os",
+      "destination": "/os/index.html"
+    },
+    {
+      "source": "/os/",
+      "destination": "/os/index.html"
+    },
+    {
+      "source": "/((?!api/|os(/|$)).*)",
       "destination": "/index.html"
     }
   ]

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Anjani Pandey — Personal OS Architect</title>
+<meta name="description" content="I build Personal Operating Systems for operators and solopreneurs. Claude is the kernel. Level4-OS is the proof." />
+<meta name="author" content="Anjani Pandey" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --ink: #0c0a09;
+    --ink-soft: #44403c;
+    --muted: #78716c;
+    --line: #e7e5e4;
+    --card: #ffffff;
+    --accent: #1e3a8a;
+    --accent-soft: #eef2ff;
+    --ok: #15803d;
+    --warn: #b45309;
+  }
+  html, body { background: var(--bg); color: var(--ink); }
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif; }
+  .serif { font-family: ui-serif, Georgia, "Iowan Old Style", serif; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .hairline { border-color: var(--line); }
+  .ink-soft { color: var(--ink-soft); }
+  .muted { color: var(--muted); }
+  .btn-primary {
+    background: var(--ink); color: #fff; border: 1px solid var(--ink);
+    padding: 0.75rem 1.25rem; border-radius: 0.375rem; font-weight: 500;
+    transition: background 0.15s ease;
+  }
+  .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+  .btn-ghost {
+    background: transparent; color: var(--ink); border: 1px solid var(--ink);
+    padding: 0.75rem 1.25rem; border-radius: 0.375rem; font-weight: 500;
+    transition: background 0.15s ease;
+  }
+  .btn-ghost:hover { background: var(--ink); color: #fff; }
+  .tab-btn {
+    padding: 0.75rem 1rem; color: var(--muted); font-weight: 500;
+    border-bottom: 2px solid transparent; transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 0.5rem;
+    padding: 1.5rem;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    padding: 0.25rem 0.625rem; border-radius: 9999px;
+    background: var(--accent-soft); color: var(--accent);
+    font-size: 0.75rem; font-weight: 500;
+  }
+  .dot-ok { width: 6px; height: 6px; border-radius: 9999px; background: var(--ok); display: inline-block; }
+  .divider { height: 1px; background: var(--line); }
+  details summary { cursor: pointer; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary .chev { transform: rotate(90deg); }
+  .chev { transition: transform 0.2s ease; display: inline-block; }
+</style>
+</head>
+<body class="antialiased">
+
+<!-- Sticky top bar -->
+<header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b hairline">
+  <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 rounded-md bg-stone-900 text-white flex items-center justify-center text-xs font-bold">A</div>
+      <span class="font-medium">Anjani Pandey</span>
+      <span class="muted text-sm hidden sm:inline">· Personal OS Architect</span>
+    </div>
+    <nav class="flex items-center gap-1 overflow-x-auto">
+      <button class="tab-btn active" data-tab="manifesto">Manifesto</button>
+      <button class="tab-btn" data-tab="architecture">Architecture</button>
+      <button class="tab-btn" data-tab="capabilities">Capabilities</button>
+      <button class="tab-btn" data-tab="outcomes">Outcomes</button>
+      <button class="tab-btn" data-tab="starter">Starter Kit</button>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="max-w-6xl mx-auto px-6 pt-16 pb-12">
+  <div class="grid md:grid-cols-5 gap-10 items-start">
+    <div class="md:col-span-3">
+      <div class="chip mb-5">
+        <span class="dot-ok"></span> Level4-OS running · 9 live subsystems
+      </div>
+      <h1 class="serif text-4xl md:text-5xl leading-tight tracking-tight">
+        I build Personal Operating Systems for operators and solopreneurs.
+        <span class="muted">Claude is the kernel.</span>
+      </h1>
+      <p class="mt-6 text-lg ink-soft leading-relaxed max-w-2xl">
+        Most people use AI as a chatbot. A few use it as a tool. Almost no one runs it as infrastructure.
+        Level4-OS is my personal operating system — memory, capability registry, scheduled automations,
+        and hard rules — stitched together so Claude acts like a teammate, not a prompt box.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="#starter" class="btn-primary" onclick="switchTab('starter'); return false;">Get the Starter Kit</a>
+        <a href="#diagnostic" class="btn-ghost">Book a diagnostic call</a>
+      </div>
+      <p class="mt-4 text-sm muted">
+        Free download · 4-page PDF + template files · Email-gated
+      </p>
+    </div>
+    <aside class="md:col-span-2">
+      <div class="card">
+        <p class="text-xs uppercase tracking-wider muted mb-3">What clients hire me for</p>
+        <ul class="space-y-3 text-sm">
+          <li class="flex gap-3"><span class="muted">01</span><span>Designing the memory + capability layer for their AI stack</span></li>
+          <li class="flex gap-3"><span class="muted">02</span><span>Replacing brittle scripts with rule-governed automations</span></li>
+          <li class="flex gap-3"><span class="muted">03</span><span>Turning scattered tools into a single operating system</span></li>
+          <li class="flex gap-3"><span class="muted">04</span><span>Reclaiming 8-15 hrs/week of ops work</span></li>
+        </ul>
+        <div class="divider my-5"></div>
+        <p class="text-xs muted">
+          Based in Bengaluru. ISB alumni. Founder, MetMov.
+        </p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<div class="divider max-w-6xl mx-auto"></div>
+
+<!-- Tab content -->
+<main class="max-w-6xl mx-auto px-6 py-16">
+
+  <!-- MANIFESTO -->
+  <section id="manifesto" class="tab-panel active">
+    <div class="mb-10">
+      <p class="chip mb-4">Manifesto</p>
+      <h2 class="serif text-3xl md:text-4xl tracking-tight">Why a Personal OS?</h2>
+      <p class="mt-4 text-lg ink-soft max-w-3xl">
+        Because AI literacy is a commodity. Personal infrastructure is not.
+        The leverage isn't in knowing prompts — it's in running a system that survives your bad days.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="card">
+        <h3 class="font-semibold text-lg mb-3">The 4 levels of AI usage</h3>
+        <ol class="space-y-4 text-sm ink-soft">
+          <li>
+            <p class="font-semibold text-stone-900">Level 1 — Chatbot user</p>
+            <p>One-off questions. Copy-paste answers. No memory, no leverage. This is where most people stop.</p>
+          </li>
+          <li>
+            <p class="font-semibold text-stone-900">Level 2 — Power prompter</p>
+            <p>Longer conversations, role-play, custom instructions. Better output, same manual loop.</p>
+          </li>
+          <li>
+            <p class="font-semibold text-stone-900">Level 3 — Tool builder</p>
+            <p>Scripts, automations, MCPs, custom GPTs. Real productivity, but fragile and scattered.</p>
+          </li>
+          <li>
+            <p class="font-semibold text-stone-900">Level 4 — OS operator</p>
+            <p>Memory, rules, capability registry, scheduled tasks, safety constraints — running as one system.
+            AI is a teammate with context, not a tool you launch.</p>
+          </li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3 class="font-semibold text-lg mb-3">Core beliefs</h3>
+        <ul class="space-y-3 text-sm ink-soft">
+          <li><strong class="text-stone-900">Specific knowledge over general skill.</strong> The moat is in how you configure the system for your life and work, not the model.</li>
+          <li><strong class="text-stone-900">Capability-first, not prompt-first.</strong> Never write a script for something Claude already does natively.</li>
+          <li><strong class="text-stone-900">Memory before intelligence.</strong> A smart assistant with no memory is a stranger every morning.</li>
+          <li><strong class="text-stone-900">Rules over reminders.</strong> Hard constraints beat polite requests. The system should fail safely.</li>
+          <li><strong class="text-stone-900">Ship, don't theorize.</strong> Every rule was earned in production. The OS is a log of lessons.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-8 card">
+      <h3 class="font-semibold text-lg mb-3">The Level4 thesis</h3>
+      <p class="ink-soft leading-relaxed">
+        Functional experts will out-automate you in their own domain. A senior ops person with Claude
+        will beat you at ops. A senior CS person will beat you at CS. Competing on domain knowledge
+        is a losing game.
+      </p>
+      <p class="ink-soft leading-relaxed mt-4">
+        What doesn't scale with headcount is <em>systems thinking applied to your own life</em>.
+        A Personal OS is the architecture you carry across roles, companies, and decades.
+        It compounds. Prompts don't.
+      </p>
+      <p class="ink-soft leading-relaxed mt-4">
+        Level4-OS is my running proof. Nine live subsystems, a memory layer, a capability registry, hard safety rules,
+        and a weekly self-audit loop. It is the artifact on this site.
+      </p>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section id="architecture" class="tab-panel">
+    <div class="mb-10">
+      <p class="chip mb-4">Architecture</p>
+      <h2 class="serif text-3xl md:text-4xl tracking-tight">Nine live subsystems. One operating system.</h2>
+      <p class="mt-4 text-lg ink-soft max-w-3xl">
+        Level4-OS is organized the way an OS is: kernel, memory, rules, capabilities, observability.
+        Every subsystem has a clear job. Every subsystem is documented.
+      </p>
+    </div>
+
+    <!-- Subsystem grid -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="card"><p class="text-xs uppercase muted tracking-wider">01 · Kernel</p><p class="font-semibold mt-1">Claude + Cowork</p><p class="text-sm ink-soft mt-2">Execution substrate. Where every request lands, reasons, and acts.</p></div>
+      <div class="card"><p class="text-xs uppercase muted tracking-wider">02 · Memory</p><p class="font-semibold mt-1">Identity + Context + Learnings</p><p class="text-sm ink-soft mt-2">Persistent files that give Claude continuity across every session.</p></div>
+      <div class="card"><p class="text-xs uppercase muted tracking-wider">03 · Rules</p><p class="font-semibold mt-1">Capability-first, Safety, Output</p><p class="text-sm ink-soft mt-2">Hard constraints that govern tool selection, cost, and destructive actions.</p></div>
+      <div class="card"><p class="text-xs uppercase muted tracking-wider">04 · Capability Registry</p><p class="font-semibold mt-1">CLIs · MCPs · Plugins · Scripts</p><p class="text-sm ink-soft mt-2">Typed map of every tool, its cost, and when to use it.</p></div>
+      <div class="card"><p class="text-xs uppercase muted tracking-wider">05 · Scheduler</p><p class="font-semibold mt-1">Cowork Scheduled Tasks</p><p class="text-sm ink-soft mt-2">Recurring jobs — health checks, outcome refreshes, learnings consolidation.</p></div>
+      <div class="card"><p class="text-xs uppercase muted tracking-wider">06 · Observability</p><p class="font-semibold mt-1">Health status + run logs</p><p class="text-sm ink-soft mt-2">Every scheduled run produces an artifact. Nothing is opaque.</p></div>
+      <div class="card"><p class="text-xs uppercase muted tracking-wider">07 · Router</p><p class="font-semibold mt-1">Project + thread dispatch</p><p class="text-sm ink-soft mt-2">Which project context each request belongs to. Prevents cross-context leakage.</p></div>
+      <div class="card"><p class="text-xs uppercase muted tracking-wider">08 · Command Center</p><p class="font-semibold mt-1">Unified dashboard</p><p class="text-sm ink-soft mt-2">Single HTML artifact showing systems, business IP, observability, router.</p></div>
+      <div class="card"><p class="text-xs uppercase muted tracking-wider">09 · Public Layer</p><p class="font-semibold mt-1">Site + Starter Kit</p><p class="text-sm ink-soft mt-2">The credibility artifact you are reading, and the lead magnet it feeds.</p></div>
+    </div>
+
+    <div class="mt-10 grid md:grid-cols-2 gap-6">
+      <div class="card">
+        <h3 class="font-semibold text-lg mb-3">Memory layer</h3>
+        <p class="ink-soft text-sm leading-relaxed">
+          Three files do most of the work: <span class="mono text-stone-900">identity.md</span> (who I am),
+          <span class="mono text-stone-900">context.md</span> (what I'm doing, why, who I work with),
+          and <span class="mono text-stone-900">learnings.md</span> (what I've learned the hard way).
+          Loaded at the start of every session. Updated at the end.
+        </p>
+      </div>
+      <div class="card">
+        <h3 class="font-semibold text-lg mb-3">Capability tiers</h3>
+        <p class="ink-soft text-sm leading-relaxed">
+          Strict order: native shell → official CLI → Cowork native → official MCP → plugin → unofficial → script → manual.
+          Token cost, stability, and recovery time all slope the same way. The rule removes decision fatigue.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAPABILITIES -->
+  <section id="capabilities" class="tab-panel">
+    <div class="mb-10">
+      <p class="chip mb-4">Capabilities</p>
+      <h2 class="serif text-3xl md:text-4xl tracking-tight">The stack, top to bottom.</h2>
+      <p class="mt-4 text-lg ink-soft max-w-3xl">
+        Most AI stacks I see are a pile of tools. A Personal OS has tiers.
+        Lower tiers are cheaper, more stable, and always preferred.
+      </p>
+    </div>
+
+    <div class="space-y-4">
+      <div class="card">
+        <div class="flex items-baseline justify-between mb-2">
+          <h3 class="font-semibold text-lg">Tier 1 — Native shell &amp; bash</h3>
+          <span class="chip">Zero token tax</span>
+        </div>
+        <p class="ink-soft text-sm">The operating system itself. File operations, git, curl, scheduled tasks, pipes. Most stable. Never loads schema tokens.</p>
+      </div>
+      <div class="card">
+        <div class="flex items-baseline justify-between mb-2">
+          <h3 class="font-semibold text-lg">Tier 2 — Official CLIs</h3>
+          <span class="chip">Stable</span>
+        </div>
+        <p class="ink-soft text-sm">Vendor-built command-line tools. <span class="mono">supabase</span>, <span class="mono">vercel</span>, <span class="mono">gh</span>, <span class="mono">qpdf</span>, <span class="mono">sentry-cli</span>. Battle-tested. Preferred over MCPs when both exist.</p>
+      </div>
+      <div class="card">
+        <div class="flex items-baseline justify-between mb-2">
+          <h3 class="font-semibold text-lg">Tier 3 — Cowork native</h3>
+          <span class="chip">Integrated</span>
+        </div>
+        <p class="ink-soft text-sm">Scheduled Tasks, Claude in Chrome, built-in skills. First-party. No extra install, no extra auth.</p>
+      </div>
+      <div class="card">
+        <div class="flex items-baseline justify-between mb-2">
+          <h3 class="font-semibold text-lg">Tier 4 — Official MCP connectors</h3>
+          <span class="chip">When CLI is missing</span>
+        </div>
+        <p class="ink-soft text-sm">Notion, Granola, Apollo, Common Room, Ahrefs, Gamma, Canva, Figma. Chosen only when no CLI exists or auth would be fragile.</p>
+      </div>
+      <div class="card">
+        <div class="flex items-baseline justify-between mb-2">
+          <h3 class="font-semibold text-lg">Tier 5 — Plugins</h3>
+          <span class="chip">Packaged</span>
+        </div>
+        <p class="ink-soft text-sm">Bundled skills + connectors for a role (sales, marketing, ops). Good for batch workflows, but expensive in token load.</p>
+      </div>
+      <div class="card">
+        <div class="flex items-baseline justify-between mb-2">
+          <h3 class="font-semibold text-lg">Tier 6 — Scripts &amp; manual</h3>
+          <span class="chip">Last resort</span>
+        </div>
+        <p class="ink-soft text-sm">Custom scripts or manual steps. Only when no higher tier fits. Every script is tech debt waiting to break.</p>
+      </div>
+    </div>
+
+    <div class="mt-10 card">
+      <h3 class="font-semibold text-lg mb-3">The Capability-First rule</h3>
+      <p class="ink-soft leading-relaxed">
+        Before suggesting any tool, I walk the registry top-down. If a native command does the job, MCPs don't get loaded.
+        If an official CLI exists, I don't install a third-party wrapper. This one rule removed ~40% of the token waste
+        and ~80% of the flakiness in my stack. It's the single highest-leverage rule in Level4-OS.
+      </p>
+    </div>
+  </section>
+
+  <!-- OUTCOMES -->
+  <section id="outcomes" class="tab-panel">
+    <div class="mb-10 flex items-start justify-between flex-wrap gap-3">
+      <div>
+        <p class="chip mb-4">Outcomes</p>
+        <h2 class="serif text-3xl md:text-4xl tracking-tight">What the system is producing.</h2>
+      </div>
+      <div class="text-right">
+        <p class="text-xs uppercase tracking-wider muted">Last refreshed</p>
+        <p id="lastUpdated" class="font-mono text-sm">2026-04-19</p>
+      </div>
+    </div>
+
+    <p class="ink-soft max-w-3xl mb-8">
+      Refreshed by hand from the private Level4-OS. Everything below is sanitized —
+      aggregated counts, categories, and lessons, never client names or private data.
+    </p>
+
+    <div class="grid sm:grid-cols-2 gap-4 mb-10">
+      <div class="card">
+        <p class="text-xs uppercase muted tracking-wider">Scheduled automations live</p>
+        <p class="text-4xl font-semibold mt-2">14</p>
+        <p class="text-sm muted mt-1">across memory, outreach, and observability</p>
+      </div>
+      <div class="card">
+        <p class="text-xs uppercase muted tracking-wider">Hours reclaimed / week</p>
+        <p class="text-4xl font-semibold mt-2">~12</p>
+        <p class="text-sm muted mt-1">rolling 4-week average</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="font-semibold text-lg mb-4">Recent learnings (sanitized)</h3>
+      <ul class="space-y-4 text-sm ink-soft">
+        <li class="pb-4 border-b hairline">
+          <p class="text-xs muted mono mb-1">WEEK OF 2026-04-13</p>
+          <p class="font-semibold text-stone-900">Stability &gt; cleverness in scheduled tasks.</p>
+          <p>A flaky MCP took down a weekly sync for three consecutive runs before I noticed. Replaced it with a two-line bash + official CLI. No failure since. Lesson: MCPs pay token rent; make them earn it.</p>
+        </li>
+        <li class="pb-4 border-b hairline">
+          <p class="text-xs muted mono mb-1">WEEK OF 2026-04-06</p>
+          <p class="font-semibold text-stone-900">Separate the memory file per project.</p>
+          <p>Merging two client contexts into one <span class="mono">context.md</span> leaked private vocabulary across domains. Split them, gated by the router. No cross-context bleed since.</p>
+        </li>
+        <li>
+          <p class="text-xs muted mono mb-1">WEEK OF 2026-03-30</p>
+          <p class="font-semibold text-stone-900">Hard rules beat soft reminders.</p>
+          <p>"Please ask before destructive actions" was ignored twice. Converted to a hard constraint: no destructive command without explicit token in the prompt. Zero incidents since.</p>
+        </li>
+      </ul>
+    </div>
+
+    <p class="mt-6 text-xs muted">
+      <span class="dot-ok mr-1"></span> System health: green. No silent failures in the last 14 days.
+    </p>
+  </section>
+
+  <!-- STARTER KIT -->
+  <section id="starter" class="tab-panel">
+    <div class="mb-10">
+      <p class="chip mb-4">Starter Kit</p>
+      <h2 class="serif text-3xl md:text-4xl tracking-tight">Level4 Starter.</h2>
+      <p class="mt-4 text-lg ink-soft max-w-3xl">
+        The skeleton of a Personal OS, stripped down to the parts you can set up in 30 minutes.
+        Templates teach structure. The PDF teaches philosophy. Together they get you from Level 2 to Level 3.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-5 gap-6">
+      <!-- Email capture -->
+      <div class="md:col-span-3">
+        <div class="card">
+          <h3 class="font-semibold text-lg mb-1">Get the Starter Kit</h3>
+          <p class="ink-soft text-sm mb-5">Free. Email-gated so I can send a 5-part setup nurture. Unsubscribe any time.</p>
+
+          <form id="starterForm" class="space-y-3" novalidate>
+            <input type="email" name="email" required placeholder="you@work.com" autocomplete="email"
+              class="w-full px-4 py-3 border hairline rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            <input type="text" name="role" placeholder="Role (optional, helps me tailor the nurture)" autocomplete="organization-title"
+              class="w-full px-4 py-3 border hairline rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            <!-- Honeypot field: bots fill it, humans never see it. Server rejects if non-empty. -->
+            <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">
+              <label>Website<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+            </div>
+            <label class="flex items-start gap-2 text-xs muted">
+              <input type="checkbox" name="consent" required class="mt-0.5" />
+              <span>I agree to receive the Starter Kit and a short setup sequence. No spam. Unsubscribe in one click.</span>
+            </label>
+            <!-- Cloudflare Turnstile widget. Replace data-sitekey with real key at launch. -->
+            <div class="cf-turnstile" data-sitekey="[PLACEHOLDER:TURNSTILE_SITE_KEY]" data-theme="light" data-size="flexible"></div>
+            <button type="submit" id="starterSubmit" class="btn-primary w-full">Send me the Starter Kit</button>
+          </form>
+          <p id="formMsg" class="text-sm muted mt-3 hidden"></p>
+          <p class="text-xs muted mt-4">
+            You'll receive a confirmation email to verify your address (double opt-in). The Starter Kit download link arrives after you confirm.
+          </p>
+        </div>
+
+        <div class="card mt-6">
+          <h3 class="font-semibold text-lg mb-4">What's inside</h3>
+          <div class="grid sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="font-semibold text-stone-900 mb-1">4-page PDF wrapper</p>
+              <ul class="ink-soft space-y-1">
+                <li>· Why a Personal OS</li>
+                <li>· The Level4 architecture at a glance</li>
+                <li>· 30-min setup guide</li>
+                <li>· DIY → full build-out upgrade path</li>
+              </ul>
+            </div>
+            <div>
+              <p class="font-semibold text-stone-900 mb-1">Template files (zip)</p>
+              <ul class="ink-soft space-y-1">
+                <li>· <span class="mono">CLAUDE.md</span> with placeholders</li>
+                <li>· Memory layer scaffolding</li>
+                <li>· Safety + capability rule copies</li>
+                <li>· Blank learnings &amp; capability registries</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upgrade path -->
+      <aside class="md:col-span-2">
+        <div class="card">
+          <p class="text-xs uppercase muted tracking-wider mb-2">Upgrade path</p>
+          <h3 class="font-semibold text-lg mb-3">From Starter to full build-out</h3>
+          <p class="ink-soft text-sm mb-4">
+            The Starter is the skeleton. The full OS is the automations, router, observability,
+            scheduled tasks, and tuning — built <em>around your actual work</em>, not a template.
+          </p>
+          <p class="ink-soft text-sm mb-5">
+            If you want that, book a 30-minute diagnostic. We'll map your current stack,
+            find the 2-3 highest-leverage installs, and figure out if a 1:1 build-out makes sense.
+          </p>
+          <a href="#diagnostic" class="btn-primary w-full text-center block">Book a diagnostic call</a>
+          <p class="text-xs muted mt-3 text-center">Free · 30 minutes · No pitch if there's no fit.</p>
+        </div>
+
+        <div class="card mt-6">
+          <p class="text-xs uppercase muted tracking-wider mb-2">Testimonials</p>
+          <p class="ink-soft text-sm italic">
+            — Testimonials slot (to be populated after first 3 build-outs).
+          </p>
+        </div>
+      </aside>
+    </div>
+
+    <!-- FAQ -->
+    <div class="mt-12">
+      <h3 class="font-semibold text-xl mb-4">FAQ</h3>
+      <div class="space-y-2">
+        <details class="card py-4">
+          <summary class="flex items-center justify-between font-medium">
+            <span>Do I need Claude Pro / Cowork to use the Starter?</span>
+            <span class="chev muted">›</span>
+          </summary>
+          <p class="ink-soft text-sm mt-3">You need a Claude plan that supports projects and memory. The Starter is model-agnostic in concept, but the examples assume Claude + Cowork.</p>
+        </details>
+        <details class="card py-4">
+          <summary class="flex items-center justify-between font-medium">
+            <span>How technical do I need to be?</span>
+            <span class="chev muted">›</span>
+          </summary>
+          <p class="ink-soft text-sm mt-3">Comfortable editing markdown files and running occasional CLI commands. You don't need to write code. If you can manage a Notion workspace, you can run this.</p>
+        </details>
+        <details class="card py-4">
+          <summary class="flex items-center justify-between font-medium">
+            <span>How long does setup take?</span>
+            <span class="chev muted">›</span>
+          </summary>
+          <p class="ink-soft text-sm mt-3">30 minutes for the Starter shell. 1-2 weeks of honest use before the benefits compound. Most people feel a difference inside week one.</p>
+        </details>
+        <details class="card py-4">
+          <summary class="flex items-center justify-between font-medium">
+            <span>What's the difference between the Starter and the 1:1 build-out?</span>
+            <span class="chev muted">›</span>
+          </summary>
+          <p class="ink-soft text-sm mt-3">Starter = skeleton. Build-out = memory tuned to your work, router for your projects, scheduled tasks for your rhythms, observability for your edge cases, and the rules re-derived from your actual failure modes.</p>
+        </details>
+        <details class="card py-4">
+          <summary class="flex items-center justify-between font-medium">
+            <span>Is my data safe if I share it with Claude?</span>
+            <span class="chev muted">›</span>
+          </summary>
+          <p class="ink-soft text-sm mt-3">Claude's enterprise and Pro plans don't train on your data. The Starter keeps all memory local in your files. Treat memory files like you'd treat a private git repo.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="border-t hairline mt-10">
+  <div class="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-7 h-7 rounded-md bg-stone-900 text-white flex items-center justify-center text-xs font-bold">A</div>
+        <span class="font-medium">Anjani Pandey</span>
+      </div>
+      <p class="text-sm ink-soft max-w-xs">
+        Consultant and builder in Bengaluru. I design Personal Operating Systems
+        for operators, consultants, and solopreneurs.
+      </p>
+    </div>
+    <div>
+      <p class="text-xs uppercase muted tracking-wider mb-3">Elsewhere</p>
+      <ul class="space-y-2 text-sm">
+        <li><a href="https://anjanipandey.com" class="hover:underline">anjanipandey.com</a></li>
+        <li><a href="https://www.linkedin.com/in/anjanispandey/" class="hover:underline">LinkedIn</a></li>
+        <li><a href="mailto:contact@anjanipandey.com" class="hover:underline">contact@anjanipandey.com</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="text-xs uppercase muted tracking-wider mb-3">Colophon</p>
+      <p class="text-sm ink-soft">
+        Hand-built with Claude as the kernel. Hosted on Vercel. Subscribe flow on Supabase Edge Functions;
+        transactional email via Resend. Outcomes refreshed by hand from the private Level4-OS.
+      </p>
+      <p class="text-xs muted mt-3">© 2026 Anjani Pandey. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const btn = document.querySelector(`.tab-btn[data-tab="${name}"]`);
+    const panel = document.getElementById(name);
+    if (btn) btn.classList.add('active');
+    if (panel) panel.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  // ============================================================
+  // Starter Kit form wiring — Supabase Edge Function + Turnstile
+  // ============================================================
+  // Strategy: Phase 8 (Hosting + email gate + form + safety controls).
+  // Flow: browser validates → Turnstile token attached → POST to
+  // Supabase Edge Function `subscribe` → edge fn verifies Turnstile
+  // server-side → inserts row into `subscribers` (RLS gated,
+  // status='pending_opt_in') → sends double-opt-in email with
+  // signed confirm link → confirm link flips status='confirmed'
+  // and returns signed Storage URL for the Starter Kit zip.
+  //
+  // Replace the three PLACEHOLDERs at launch:
+  //   - SUPABASE_URL: https://<ref>.supabase.co
+  //   - SUPABASE_ANON_KEY: the publishable anon key
+  //   - TURNSTILE_SITE_KEY: Cloudflare Turnstile site key
+  //     (site key also goes in the data-sitekey attr above)
+  // ============================================================
+  const CONFIG = {
+    SUPABASE_URL: '[PLACEHOLDER:SUPABASE_URL]',
+    SUPABASE_ANON_KEY: '[PLACEHOLDER:SUPABASE_ANON_KEY]',
+    TURNSTILE_SITE_KEY: '[PLACEHOLDER:TURNSTILE_SITE_KEY]',
+    SUBSCRIBE_PATH: '/functions/v1/subscribe'
+  };
+
+  const form = document.getElementById('starterForm');
+  const msg = document.getElementById('formMsg');
+  const submitBtn = document.getElementById('starterSubmit');
+
+  function showMsg(text, tone) {
+    msg.classList.remove('hidden');
+    msg.textContent = text;
+    msg.style.color = tone === 'ok' ? 'var(--ok)' : tone === 'warn' ? 'var(--warn)' : 'var(--muted)';
+  }
+
+  function resetTurnstile() {
+    if (window.turnstile) {
+      try { window.turnstile.reset(); } catch (_) { /* widget may not be mounted yet */ }
+    }
+  }
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (submitBtn.disabled) return;
+
+      // If placeholders haven't been replaced yet, short-circuit with a clear
+      // state so the form still gives visual feedback pre-launch.
+      if (CONFIG.SUPABASE_URL.startsWith('[PLACEHOLDER')) {
+        showMsg('Form is wired but config is not live yet. On launch, this will send the Starter Kit.', 'warn');
+        return;
+      }
+
+      const data = new FormData(form);
+      const email = (data.get('email') || '').toString().trim();
+      const role = (data.get('role') || '').toString().trim();
+      const website = (data.get('website') || '').toString().trim(); // honeypot
+      const consent = data.get('consent') === 'on';
+      const tsToken = (data.get('cf-turnstile-response') || '').toString();
+
+      // Client-side gates (server re-validates all of these).
+      if (website) { showMsg('Something went wrong. Please try again.', 'warn'); return; } // bot tripped honeypot
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showMsg('Please enter a valid email.', 'warn'); return; }
+      if (!consent) { showMsg('Please tick the consent box to continue.', 'warn'); return; }
+      if (!tsToken) { showMsg('Please complete the human check.', 'warn'); return; }
+
+      submitBtn.disabled = true;
+      const originalLabel = submitBtn.textContent;
+      submitBtn.textContent = 'Sending…';
+      showMsg('Submitting…', 'muted');
+
+      try {
+        const res = await fetch(CONFIG.SUPABASE_URL + CONFIG.SUBSCRIBE_PATH, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': CONFIG.SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + CONFIG.SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            email: email,
+            role: role || null,
+            consent: true,
+            turnstile_token: tsToken,
+            source: 'public_command_center',
+            referrer: document.referrer || null,
+            submitted_at: new Date().toISOString()
+          })
+        });
+
+        if (res.ok) {
+          showMsg('Check your inbox — I just sent a confirmation link. Click it to unlock the Starter Kit.', 'ok');
+          form.reset();
+          resetTurnstile();
+        } else if (res.status === 409) {
+          showMsg('You are already on the list. Check your inbox for the confirmation link.', 'warn');
+          resetTurnstile();
+        } else if (res.status === 429) {
+          showMsg('Too many requests. Please try again in a minute.', 'warn');
+          resetTurnstile();
+        } else {
+          const body = await res.text().catch(() => '');
+          showMsg('Something went wrong. ' + (body ? '(' + res.status + ')' : 'Please try again.'), 'warn');
+          resetTurnstile();
+        }
+      } catch (err) {
+        showMsg('Network error — please try again.', 'warn');
+        resetTurnstile();
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalLabel;
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
