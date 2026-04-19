@@ -40,7 +40,7 @@
       "destination": "/os/index.html"
     },
     {
-      "source": "/((?!api/|os(/|$)).*)",
+      "source": "/((?!api/|os/|os$).*)",
       "destination": "/index.html"
     }
   ]
