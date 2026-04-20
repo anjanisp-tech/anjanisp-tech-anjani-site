@@ -131,7 +131,7 @@
         <p class="text-sm ink-soft mb-3">
           The Starter is a skeleton. If you want the OS tuned to your actual stack, book a free 30-min diagnostic.
         </p>
-        <a href="/book" class="btn-primary text-sm inline-block">Book a diagnostic call</a>
+        <a id="postConfirmBookCta" href="/book" class="btn-primary text-sm inline-block">Book a diagnostic call</a>
         <p class="text-xs muted mt-2">No pitch if there's no fit.</p>
       </div>
 
@@ -619,6 +619,124 @@
   });
 
   // ============================================================
+  // Funnel telemetry — client-side emitter
+  // ============================================================
+  // Posts to public.funnel_events via Supabase REST (anon key).
+  // RLS policy `funnel_events_anon_insert` restricts anon-emittable
+  // event_type to: page_view | downloaded | services_cta_click |
+  // share_click. Server-only events (form_submit, subscribed,
+  // confirmed, etc.) are emitted by edge functions with service-role
+  // and would be rejected here.
+  //
+  // IDs:
+  //   - anon_id    — persists in localStorage (12 months effectively)
+  //   - session_id — rotates per page session in sessionStorage
+  // Both are forwarded to /functions/v1/subscribe so server events
+  // can be joined to client events in funnel_conversion_v1 / ad-hoc.
+  //
+  // Failures are silent. Telemetry must never break the user flow.
+  // ============================================================
+  const FUNNEL = (function initFunnel() {
+    const SUPABASE_URL_BASE = 'https://ydjauliaggmpunfehzzo.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkamF1bGlhZ2dtcHVuZmVoenpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Nzg2OTUsImV4cCI6MjA5MjE1NDY5NX0.ht_XuE-x1zEriZzWYKxtZySYhI7BYKvw6b1jss5CmE4';
+    const ENDPOINT = SUPABASE_URL_BASE + '/rest/v1/funnel_events';
+
+    function uuid() {
+      try { if (crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (_) {}
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+      });
+    }
+
+    function readOrSet(storage, key) {
+      try {
+        let v = storage.getItem(key);
+        if (!v) { v = uuid(); storage.setItem(key, v); }
+        return v;
+      } catch (_) { return uuid(); }
+    }
+
+    let anonId = '', sessionId = '';
+    try { anonId    = readOrSet(window.localStorage,   '_apf_anon'); } catch (_) { anonId = uuid(); }
+    try { sessionId = readOrSet(window.sessionStorage, '_apf_sess'); } catch (_) { sessionId = uuid(); }
+
+    const qp = new URLSearchParams(window.location.search);
+    const utm = {
+      source:   qp.get('utm_source')   || null,
+      medium:   qp.get('utm_medium')   || null,
+      campaign: qp.get('utm_campaign') || null,
+    };
+
+    const referrer = (document.referrer || '').slice(0, 500) || null;
+
+    function emit(event_type, properties) {
+      const body = {
+        event_type:  event_type,
+        anon_id:     anonId,
+        session_id:  sessionId,
+        source:      utm.source,
+        medium:      utm.medium,
+        campaign:    utm.campaign,
+        path:        window.location.pathname || '/os',
+        referrer:    referrer,
+        properties:  properties || {},
+      };
+      try {
+        const blob = new Blob([JSON.stringify(body)], { type: 'application/json' });
+        // Try sendBeacon first (survives page unload). It can't set custom
+        // headers, so anon key + content-type ride via fetch fallback when
+        // Beacon isn't available or returns false.
+        // NOTE: PostgREST requires apikey + content-type, so Beacon won't
+        // work here directly — go straight to fetch with keepalive.
+        fetch(ENDPOINT, {
+          method:  'POST',
+          headers: {
+            'Content-Type':  'application/json',
+            'apikey':        ANON_KEY,
+            'Authorization': 'Bearer ' + ANON_KEY,
+            'Prefer':        'return=minimal',
+          },
+          body:      blob,
+          keepalive: true,
+          mode:      'cors',
+        }).catch(() => { /* silent */ });
+      } catch (_) { /* silent */ }
+    }
+
+    // Fire page_view on load.
+    emit('page_view', { initial_status: qp.get('confirmed') || null });
+
+    return {
+      emit:       emit,
+      anonId:     anonId,
+      sessionId:  sessionId,
+      utm:        utm,
+      referrer:   referrer,
+    };
+  })();
+
+  // ============================================================
+  // services_cta_click — delegated listener for #diagnostic CTAs
+  // ============================================================
+  // Captures clicks on the two `#diagnostic` anchors (hero + starter
+  // sidebar). Uses capture-phase delegation so a single listener
+  // covers both surfaces and any future CTAs that use the same
+  // anchor target. `source` property distinguishes where the click
+  // originated, so the funnel can be read per-surface later.
+  // ============================================================
+  document.addEventListener('click', function (ev) {
+    const a = ev.target && ev.target.closest ? ev.target.closest('a[href="#diagnostic"]') : null;
+    if (!a) return;
+    let source = 'hero'; // default: anchors outside any tab-panel / postConfirm / nav are in the hero
+    if      (a.closest('#postConfirm'))   source = 'post_confirm_banner';
+    else if (a.closest('#starter'))       source = 'starter_sidebar';
+    else if (a.closest('.tab-panel'))     source = a.closest('.tab-panel').id || 'tab_panel';
+    else if (a.closest('header, nav'))    source = 'nav';
+    try { FUNNEL.emit('services_cta_click', { source: source }); } catch (_) { /* silent */ }
+  }, { capture: true });
+
+  // ============================================================
   // Post-confirm landing logic
   // ============================================================
   // Handles the URL the `confirm` Supabase edge function redirects
@@ -669,8 +787,12 @@
     if (shareLI) shareLI.href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(pageUrl);
     if (shareX)  shareX.href  = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText) + '&url=' + encodeURIComponent(pageUrl);
 
+    if (shareLI) shareLI.addEventListener('click', () => { try { FUNNEL.emit('share_click', { target: 'linkedin' }); } catch (_) {} });
+    if (shareX)  shareX.addEventListener('click',  () => { try { FUNNEL.emit('share_click', { target: 'twitter' });  } catch (_) {} });
+
     if (shareCp && shareMsg) {
       shareCp.addEventListener('click', async () => {
+        try { FUNNEL.emit('share_click', { target: 'copy' }); } catch (_) {}
         try {
           await navigator.clipboard.writeText(pageUrl);
           shareMsg.textContent = 'Link copied.';
@@ -679,6 +801,13 @@
         }
         shareMsg.hidden = false;
         setTimeout(() => { shareMsg.hidden = true; }, 2500);
+      });
+    }
+
+    const bookCta = document.getElementById('postConfirmBookCta');
+    if (bookCta) {
+      bookCta.addEventListener('click', () => {
+        try { FUNNEL.emit('services_cta_click', { source: 'post_confirm_banner' }); } catch (_) {}
       });
     }
 
@@ -725,7 +854,26 @@
         // returns the zip with Content-Disposition: attachment, so the browser
         // saves the file without leaving the page. Visible Download button +
         // Copy-link button remain as fallbacks if the browser blocks it.
-        try { frame.setAttribute('src', dlUrl); } catch (_) { /* ignore */ }
+        let downloadEmitted = false;
+        const emitDownload = () => {
+          if (downloadEmitted) return;
+          downloadEmitted = true;
+          try { FUNNEL.emit('downloaded', { trigger: 'auto_iframe', via: status }); } catch (_) {}
+        };
+        try {
+          if (frame) {
+            frame.addEventListener('load', emitDownload, { once: true });
+            frame.setAttribute('src', dlUrl);
+            // Fallback: some browsers won't fire load on attachment downloads.
+            setTimeout(emitDownload, 4000);
+          }
+        } catch (_) { /* ignore */ }
+        // Visible Download button click also counts as a download intent.
+        if (dlBtn) {
+          dlBtn.addEventListener('click', () => {
+            try { FUNNEL.emit('downloaded', { trigger: 'manual_button', via: status }); } catch (_) {}
+          });
+        }
       } else {
         // Confirmed but no dl param — uncommon (would mean the storage call
         // failed inside the edge function). Hide the download row and point
@@ -832,7 +980,12 @@
             turnstile_token: tsToken,
             source: 'public_command_center',
             referrer: document.referrer || null,
-            submitted_at: new Date().toISOString()
+            submitted_at: new Date().toISOString(),
+            anon_id:      (typeof FUNNEL !== 'undefined' && FUNNEL && FUNNEL.anonId)    || null,
+            session_id:   (typeof FUNNEL !== 'undefined' && FUNNEL && FUNNEL.sessionId) || null,
+            utm_source:   (typeof FUNNEL !== 'undefined' && FUNNEL && FUNNEL.utm && FUNNEL.utm.source)   || null,
+            utm_medium:   (typeof FUNNEL !== 'undefined' && FUNNEL && FUNNEL.utm && FUNNEL.utm.medium)   || null,
+            utm_campaign: (typeof FUNNEL !== 'undefined' && FUNNEL && FUNNEL.utm && FUNNEL.utm.campaign) || null
           })
         });
 
