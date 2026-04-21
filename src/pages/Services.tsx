@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Target, CheckCircle2, AlertCircle, Sparkles, Cpu, Layers, Wrench } from 'lucide-react';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, LINKEDIN_URL } from '../constants';
 import SEO from '../components/SEO';
+import { funnel } from '../lib/funnel';
 
 const services = [
   {
@@ -66,6 +68,24 @@ const services = [
 ];
 
 export default function Services() {
+  useEffect(() => {
+    const handler = (ev: MouseEvent) => {
+      const target = ev.target as HTMLElement | null;
+      if (!target || !target.closest) return;
+      const el = target.closest('[data-cta-surface]') as HTMLElement | null;
+      if (!el) return;
+      const source = el.getAttribute('data-cta-surface') || 'unknown';
+      const href = (el as HTMLAnchorElement).getAttribute?.('href') || null;
+      try {
+        funnel.emit('services_cta_click', { source, destination: href });
+      } catch {
+        /* silent */
+      }
+    };
+    document.addEventListener('click', handler, { capture: true });
+    return () => document.removeEventListener('click', handler, { capture: true });
+  }, []);
+
   return (
     <div className="bg-white min-h-screen">
       <SEO
