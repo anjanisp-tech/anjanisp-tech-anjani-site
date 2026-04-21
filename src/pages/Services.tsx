@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Target, CheckCircle2, AlertCircle, Sparkles, Cpu } from 'lucide-react';
+import { ArrowRight, Target, CheckCircle2, AlertCircle, Sparkles, Cpu, Layers, Wrench } from 'lucide-react';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, LINKEDIN_URL } from '../constants';
 import SEO from '../components/SEO';
 
@@ -277,6 +277,162 @@ export default function Services() {
         </div>
       </section>
 
+
+      {/* Personal OS Build Sprint */}
+      <section className="border-t border-border/50 py-20 md:py-32">
+        <div className="container-custom">
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-24">
+            {/* Left Column */}
+            <div className="lg:col-span-5">
+              <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60 bg-primary/5 border border-primary/15 rounded-full px-4 py-2 mb-6">
+                <Layers size={14} />
+                For Operators & Solopreneurs
+              </div>
+              <h2 className="text-3xl md:text-4xl mb-6">Personal OS Build Sprint</h2>
+              <div className="bg-muted p-8 rounded-2xl border border-border/50 mb-8">
+                <div className="flex items-start gap-3 text-accent/60 mb-4">
+                  <Cpu size={20} className="mt-1 flex-shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-widest">The Situation</span>
+                </div>
+                <p className="text-lg text-accent-light leading-relaxed italic">
+                  "I downloaded the Starter Kit. I get the architecture. I don't have four hours a week for three months to wire it up myself, and I'm not going to learn to code to make this work."
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-sm font-bold text-accent/40">
+                <div className="w-8 h-px bg-accent/20" />
+                I run three entities on this architecture. I'll install it on yours, with you.
+              </div>
+              <p className="text-sm text-accent-light/70 mt-4 leading-relaxed">
+                See the live architecture powering this on my <a href="/os" className="text-primary font-semibold hover:underline">Personal OS</a> &mdash; nine subsystems, public dashboard, real metrics.
+              </p>
+            </div>
+
+            {/* Right Column */}
+            <div className="lg:col-span-7 space-y-12">
+              <div className="grid md:grid-cols-2 gap-12">
+                {/* What we do */}
+                <div>
+                  <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-accent/40 mb-6">
+                    <Target size={16} />
+                    What You Get
+                  </h3>
+                  <ul className="space-y-4">
+                    {[
+                      'Kickoff + discovery to map your workflow and pick the right 3-5 subsystems',
+                      'Weekly 60-minute pairing sessions over 4-6 weeks',
+                      'Async support on Slack or WhatsApp between sessions',
+                      'The Starter Kit architecture customised to your stack',
+                      '30-day post-launch warranty on everything we built',
+                    ].map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-accent-light">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Outcomes */}
+                <div>
+                  <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-accent/40 mb-6">
+                    <CheckCircle2 size={16} />
+                    You Walk Away With
+                  </h3>
+                  <ul className="space-y-4">
+                    {[
+                      '3-5 live subsystems talking to each other in your operating rhythm',
+                      'Full ownership of every prompt, config, and SOP. No vendor lock-in.',
+                      'A self-improving OS baseline that audits and upgrades itself',
+                      'Confidence to add subsystems 6, 7, 8 yourself or stay on Care',
+                    ].map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-accent-light font-medium">
+                        <CheckCircle2 size={18} className="text-primary mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Pricing & CTA */}
+              <div className="bg-muted/50 rounded-2xl p-8 border border-border/50">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                  <div>
+                    <div className="text-3xl font-bold text-accent mb-1">&#8377;1,25,000</div>
+                    <p className="text-sm text-accent-light">4-6 weeks. Done-with-you. Fixed scope.</p>
+                  </div>
+                  <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="build_sprint" className="btn-primary gap-3 px-10">
+                    Book a Scoping Call
+                    <ArrowRight size={20} />
+                  </a>
+                </div>
+                <p className="text-xs text-accent-light/50 mt-4 font-medium">
+                  Introductory rate for the first 5 sprints. We'll scope on a free 30-minute call before anyone commits.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Personal OS Care */}
+      <section className="border-t border-border/50 py-20 md:py-32">
+        <div className="container-custom">
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-24">
+            {/* Left Column */}
+            <div className="lg:col-span-5">
+              <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60 bg-primary/5 border border-primary/15 rounded-full px-4 py-2 mb-6">
+                <Wrench size={14} />
+                After Launch
+              </div>
+              <h2 className="text-3xl md:text-4xl mb-6">Personal OS Care</h2>
+              <p className="text-lg text-accent-light leading-relaxed italic">
+                A Personal OS without maintenance becomes dead code in six months. Care keeps yours compounding instead of decaying.
+              </p>
+              <p className="text-sm text-accent-light/70 mt-6 leading-relaxed">
+                Available after a Build Sprint, or if you're already running a Personal OS and want to keep it live.
+              </p>
+            </div>
+
+            {/* Right Column */}
+            <div className="lg:col-span-7 space-y-8">
+              <div>
+                <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-accent/40 mb-6">
+                  <Target size={16} />
+                  What's Included
+                </h3>
+                <ul className="space-y-4">
+                  {[
+                    "Monthly 60-minute audit call. What's decaying, what's upgradable, what's next.",
+                    'One new or upgraded subsystem every quarter. You pick the priority.',
+                    'Model upgrades, bug fixes, and prompt refresh as kernels evolve.',
+                    'Priority async response on Slack or WhatsApp.',
+                  ].map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-accent-light">
+                      <CheckCircle2 size={18} className="text-primary mt-0.5 flex-shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Pricing & CTA */}
+              <div className="bg-muted/50 rounded-2xl p-8 border border-border/50">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                  <div>
+                    <div className="text-3xl font-bold text-accent mb-1">&#8377;15,000<span className="text-base font-medium text-accent-light">/mo</span></div>
+                    <p className="text-sm text-accent-light">3-month minimum. Quarterly prepay option: &#8377;40,000.</p>
+                  </div>
+                  <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="os_care" className="btn-primary gap-3 px-10">
+                    Talk About Care
+                    <ArrowRight size={20} />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       {/* Final CTA */}
       <section className="bg-muted border-t border-border/50">
         <div className="container-custom text-center">
