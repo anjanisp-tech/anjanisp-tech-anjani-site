@@ -173,7 +173,7 @@
       </p>
       <div class="mt-8 flex flex-wrap gap-3">
         <a href="#starter" class="btn-primary" onclick="switchTab('starter'); return false;">Get the Starter Kit</a>
-        <a href="#diagnostic" class="btn-ghost">Book a diagnostic call</a>
+        <a href="/book" class="btn-ghost">Book a diagnostic call</a>
       </div>
       <p class="mt-4 text-sm muted">
         Free download · 4-page PDF + template files · Email-gated
@@ -514,7 +514,7 @@
             If you want that, book a 30-minute diagnostic. We'll map your current stack,
             find the 2-3 highest-leverage installs, and figure out if a 1:1 build-out makes sense.
           </p>
-          <a href="#diagnostic" class="btn-primary w-full text-center block">Book a diagnostic call</a>
+          <a href="/book" class="btn-primary w-full text-center block">Book a diagnostic call</a>
           <p class="text-xs muted mt-3 text-center">Free · 30 minutes · No pitch if there's no fit.</p>
         </div>
 
@@ -717,16 +717,16 @@
   })();
 
   // ============================================================
-  // services_cta_click — delegated listener for #diagnostic CTAs
+  // services_cta_click — delegated listener for /book CTAs
   // ============================================================
-  // Captures clicks on the two `#diagnostic` anchors (hero + starter
+  // Captures clicks on the two `/book` anchors (hero + starter
   // sidebar). Uses capture-phase delegation so a single listener
   // covers both surfaces and any future CTAs that use the same
   // anchor target. `source` property distinguishes where the click
   // originated, so the funnel can be read per-surface later.
   // ============================================================
   document.addEventListener('click', function (ev) {
-    const a = ev.target && ev.target.closest ? ev.target.closest('a[href="#diagnostic"]') : null;
+    const a = ev.target && ev.target.closest ? ev.target.closest('a[href="/book"]') : null;
     if (!a) return;
     let source = 'hero'; // default: anchors outside any tab-panel / postConfirm / nav are in the hero
     if      (a.closest('#postConfirm'))   source = 'post_confirm_banner';
