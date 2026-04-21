@@ -98,7 +98,7 @@ export const adminAuth = (req: any, res: any, next: any) => {
   res.status(401).json({ error: "Unauthorized" });
 };
 
-export async function sendNotification(subject: string, message: string) {
+export async function sendNotification(subject: string, message: string): Promise<void> {
   const recipient = process.env.RESEND_TO_EMAIL || process.env.VITE_RESEND_TO_EMAIL || "anjanisp@gmail.com";
   const apiKey = getResendKey();
   if (!apiKey) {

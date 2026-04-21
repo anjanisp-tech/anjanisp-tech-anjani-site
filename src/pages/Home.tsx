@@ -129,10 +129,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECTION 2 - Two Cards: Writing + Building */}
+      {/* SECTION 2 - Three Cards: Writing + Building + Now Building */}
       <section className="bg-muted border-y border-border/50 py-20">
         <div className="container-custom">
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             {/* Card 1: What I'm Writing */}
             <Link to="/writing" className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm flex flex-col">
               <div className="flex items-center gap-3 mb-6">
@@ -166,6 +166,27 @@ export default function Home() {
                 See how we work <ArrowRight size={16} />
               </span>
             </Link>
+
+            {/* Card 3: Now Building — Personal OS */}
+            <a href="/os" className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm flex flex-col relative overflow-hidden">
+              <div className="absolute top-6 right-6 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live
+              </div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-accent">
+                  <Layers size={20} />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest text-accent/40">Now Building</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">Personal OS</h2>
+              <p className="text-accent-light leading-relaxed mb-8 flex-grow">
+                A working operating system for solo operators. Claude as the kernel, nine subsystems live, the architecture I run my own business on. Open the public command center.
+              </p>
+              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">
+                Open the OS <ArrowRight size={16} />
+              </span>
+            </a>
           </div>
         </div>
       </section>

@@ -7,6 +7,7 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import apiApp from "./api/index.js";
+import * as db from "./api/dbService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,26 +56,13 @@ async function startServer() {
     res.json({ status: "ok", message: "Server process is alive", timestamp: new Date().toISOString() });
   });
 
-  // Dynamic robots.txt and sitemap.xml from database
+  // Dynamic robots.txt and sitemap.xml from database (via dbService)
   app.get("/robots.txt", async (req, res, next) => {
     try {
-      const dbModule = await import("./api/db.js");
-      const { isPostgres, getSqliteDb } = dbModule;
-      let content = "";
-      if (isPostgres) {
-        const { sql } = await import("@vercel/postgres");
-        const { rows } = await sql`SELECT value FROM settings WHERE key = 'robots_txt'`;
-        content = rows[0]?.value;
-      } else {
-        const db = getSqliteDb();
-        if (db) {
-          const row: any = db.prepare("SELECT value FROM settings WHERE key = ?").get('robots_txt');
-          content = row?.value;
-        }
-      }
-      if (content) {
+      const row = await db.queryOne("SELECT value FROM settings WHERE key = ?", ['robots_txt']);
+      if (row?.value) {
         res.header('Content-Type', 'text/plain');
-        return res.send(content);
+        return res.send(row.value);
       }
       next(); // Fallback to static file
     } catch (e) {
@@ -84,23 +72,10 @@ async function startServer() {
 
   app.get("/sitemap.xml", async (req, res, next) => {
     try {
-      const dbModule = await import("./api/db.js");
-      const { isPostgres, getSqliteDb } = dbModule;
-      let content = "";
-      if (isPostgres) {
-        const { sql } = await import("@vercel/postgres");
-        const { rows } = await sql`SELECT value FROM settings WHERE key = 'sitemap_xml'`;
-        content = rows[0]?.value;
-      } else {
-        const db = getSqliteDb();
-        if (db) {
-          const row: any = db.prepare("SELECT value FROM settings WHERE key = ?").get('sitemap_xml');
-          content = row?.value;
-        }
-      }
-      if (content) {
+      const row = await db.queryOne("SELECT value FROM settings WHERE key = ?", ['sitemap_xml']);
+      if (row?.value) {
         res.header('Content-Type', 'application/xml');
-        return res.send(content);
+        return res.send(row.value);
       }
       next(); // Fallback to static file
     } catch (e) {

@@ -1,5 +1,6 @@
 import express from "express";
-import { getDb, getUtils, getKnowledge } from "../helpers.js";
+import { getUtils, getKnowledge } from "../helpers.js";
+import * as db from "../dbService.js";
 
 const router = express.Router();
 
@@ -71,30 +72,8 @@ router.post("/init-db", async (req, res, next) => {
   adminAuth(req, res, next);
 }, async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-
-      await sql`CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, title TEXT NOT NULL, date TEXT NOT NULL, category TEXT NOT NULL, excerpt TEXT NOT NULL, content TEXT NOT NULL, is_premium INTEGER DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-      await sql`CREATE TABLE IF NOT EXISTS comments (id SERIAL PRIMARY KEY, post_id TEXT NOT NULL, parent_id INTEGER DEFAULT NULL, name TEXT NOT NULL, email TEXT NOT NULL, website TEXT, phone TEXT, comment TEXT NOT NULL, is_admin INTEGER DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-      await sql`CREATE TABLE IF NOT EXISTS subscriptions (id SERIAL PRIMARY KEY, email TEXT UNIQUE NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-      await sql`CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-      await sql`CREATE TABLE IF NOT EXISTS audits (id SERIAL PRIMARY KEY, status TEXT NOT NULL, details TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-      await sql`CREATE TABLE IF NOT EXISTS analytics_chatbot (id SERIAL PRIMARY KEY, query TEXT NOT NULL, response TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-      await sql`CREATE TABLE IF NOT EXISTS analytics_blog (id SERIAL PRIMARY KEY, post_id TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-      await sql`CREATE TABLE IF NOT EXISTS analytics_calculator (id SERIAL PRIMARY KEY, currency TEXT NOT NULL, revenue REAL NOT NULL, team_size INTEGER NOT NULL, heroic_hours REAL NOT NULL, total_tax REAL NOT NULL, email TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-      await sql`CREATE TABLE IF NOT EXISTS chatbot_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, query TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-      await sql`CREATE TABLE IF NOT EXISTS resource_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, resource_name TEXT, created_at TIMESTAMP DEFAULT NOW())`;
-      await sql`ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_premium INTEGER DEFAULT 0`;
-
-      return res.json({ success: true, message: "Postgres tables initialized (with migrations)" });
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        return res.json({ success: true, message: "SQLite tables are ready" });
-      }
-    }
-    res.json({ success: true, message: "Database initialized" });
+    const message = await db.initAllTables();
+    res.json({ success: true, message });
   } catch (err: any) {
     res.status(500).json({ error: "Initialization failed", details: err.message });
   }
@@ -108,20 +87,7 @@ router.get("/audits", async (req, res, next) => {
   } catch (err) { next(err); }
 }, async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb } = await getDb();
-    let audits = [];
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      await sql`CREATE TABLE IF NOT EXISTS audits (id SERIAL PRIMARY KEY, status TEXT NOT NULL, details TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-      const result = await sql`SELECT * FROM audits ORDER BY created_at DESC LIMIT 50`;
-      audits = result.rows;
-    } else {
-      const db = getSqliteDb();
-      if (db) {
-        db.exec(`CREATE TABLE IF NOT EXISTS audits (id INTEGER PRIMARY KEY AUTOINCREMENT, status TEXT NOT NULL, details TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
-        audits = db.prepare("SELECT * FROM audits ORDER BY created_at DESC LIMIT 50").all();
-      }
-    }
+    const audits = await db.query("SELECT * FROM audits ORDER BY created_at DESC LIMIT 50");
     res.json(audits);
   } catch (err: any) {
     res.status(500).json({ error: "Failed to fetch audits", details: err.message });
@@ -136,26 +102,13 @@ router.post("/audit", async (req, res, next) => {
   } catch (err) { next(err); }
 }, async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb } = await getDb();
     const { getKnowledgeBase } = await getKnowledge();
-
     const results: any = { timestamp: new Date().toISOString(), checks: {} };
 
     // Database Check
     try {
-      if (isPostgres) {
-        const { sql } = await import("@vercel/postgres");
-        await sql`SELECT 1`;
-        results.checks.database = { status: "ok", type: "Postgres" };
-      } else {
-        const db = getSqliteDb();
-        if (db) {
-          db.prepare("SELECT 1").get();
-          results.checks.database = { status: "ok", type: "SQLite" };
-        } else {
-          results.checks.database = { status: "warning", type: "Mock" };
-        }
-      }
+      const health = await db.healthCheck();
+      results.checks.database = { status: health.status, type: health.type };
     } catch (e: any) {
       results.checks.database = { status: "error", message: e.message };
     }
@@ -174,17 +127,8 @@ router.post("/audit", async (req, res, next) => {
       const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || process.env.KEY;
       let fileId = process.env.GOOGLE_DRIVE_KNOWLEDGE_FILE_ID || process.env.DOC_ID;
       try {
-        if (isPostgres) {
-          const { sql } = await import("@vercel/postgres");
-          const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
-          if (rows.length > 0) fileId = rows[0].value;
-        } else {
-          const db = getSqliteDb();
-          if (db) {
-            const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
-            if (row) fileId = (row as any).value;
-          }
-        }
+        const row = await db.queryOne("SELECT value FROM settings WHERE key = ?", ['GOOGLE_DRIVE_KNOWLEDGE_FILE_ID']);
+        if (row) fileId = row.value;
       } catch (e) {}
 
       const missing = [];
@@ -215,17 +159,7 @@ router.post("/audit", async (req, res, next) => {
     const details = JSON.stringify(results);
 
     try {
-      if (isPostgres) {
-        const { sql } = await import("@vercel/postgres");
-        await sql`CREATE TABLE IF NOT EXISTS audits (id SERIAL PRIMARY KEY, status TEXT NOT NULL, details TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-        await sql`INSERT INTO audits (status, details) VALUES (${overallStatus}, ${details})`;
-      } else {
-        const db = getSqliteDb();
-        if (db) {
-          db.exec(`CREATE TABLE IF NOT EXISTS audits (id INTEGER PRIMARY KEY AUTOINCREMENT, status TEXT NOT NULL, details TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
-          db.prepare("INSERT INTO audits (status, details) VALUES (?, ?)").run(overallStatus, details);
-        }
-      }
+      await db.execute("INSERT INTO audits (status, details) VALUES (?, ?)", [overallStatus, details]);
     } catch (e: any) {
       console.error("[AUDIT DB ERROR]", e);
       results.db_log_error = e.message;
@@ -243,20 +177,10 @@ router.get("/settings", async (req, res, next) => {
   adminAuth(req, res, next);
 }, async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     let settings: Record<string, string> = {};
     try {
-      if (isPostgres) {
-        const { sql } = await import("@vercel/postgres");
-        const { rows } = await sql`SELECT * FROM settings`;
-        rows.forEach((r: any) => settings[r.key] = r.value);
-      } else {
-        const db = getSqliteDb();
-        if (db && !useMockDb) {
-          const rows = db.prepare("SELECT * FROM settings").all();
-          rows.forEach((r: any) => settings[r.key] = r.value);
-        }
-      }
+      const rows = await db.query("SELECT * FROM settings");
+      rows.forEach((r: any) => settings[r.key] = r.value);
     } catch (dbErr: any) {
       console.warn("[SETTINGS] Settings table missing:", dbErr.message);
     }
@@ -273,22 +197,28 @@ router.post("/settings", async (req, res, next) => {
   const { key, value } = req.body;
   if (!key) return res.status(400).json({ error: "Key is required" });
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
+    const dbType = await db.getDbType();
+    if (dbType === 'postgres') {
       try {
-        await sql`INSERT INTO settings (key, value) VALUES (${key}, ${value}) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`;
+        await db.executeDual(
+          `INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`,
+          `INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)`,
+          [key, value]
+        );
       } catch (dbErr: any) {
         if (dbErr.message.includes('relation "settings" does not exist')) {
-          await sql`CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-          await sql`INSERT INTO settings (key, value) VALUES (${key}, ${value}) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`;
+          await db.execDDL(
+            `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`
+          );
+          await db.executeDual(
+            `INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`,
+            `INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)`,
+            [key, value]
+          );
         } else { throw dbErr; }
       }
     } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").run(key, value);
-      }
+      await db.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [key, value]);
     }
     res.json({ success: true });
   } catch (err: any) {
@@ -346,21 +276,11 @@ router.post("/knowledge/sync", async (req, res, next) => {
 }, async (req, res) => {
   try {
     const { getKnowledgeBase } = await getKnowledge();
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
 
     let fileIdOverride: string | undefined;
     try {
-      if (isPostgres) {
-        const { sql } = await import("@vercel/postgres");
-        const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
-        if (rows.length > 0) fileIdOverride = rows[0].value;
-      } else {
-        const db = getSqliteDb();
-        if (db && !useMockDb) {
-          const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
-          if (row) fileIdOverride = (row as any).value;
-        }
-      }
+      const row = await db.queryOne("SELECT value FROM settings WHERE key = ?", ['GOOGLE_DRIVE_KNOWLEDGE_FILE_ID']);
+      if (row) fileIdOverride = row.value;
     } catch (dbErr: any) {
       console.warn("[SYNC] Settings table check failed:", dbErr.message);
     }
@@ -384,21 +304,11 @@ router.post("/ai-debug", async (req, res, next) => {
     if (!message) return res.status(400).json({ error: "Message is required" });
 
     const { getKnowledgeBase } = await getKnowledge();
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
 
     let fileIdOverride: string | undefined;
     try {
-      if (isPostgres) {
-        const { sql } = await import("@vercel/postgres");
-        const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
-        if (rows.length > 0) fileIdOverride = rows[0].value;
-      } else {
-        const db = getSqliteDb();
-        if (db && !useMockDb) {
-          const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
-          if (row) fileIdOverride = (row as any).value;
-        }
-      }
+      const row = await db.queryOne("SELECT value FROM settings WHERE key = ?", ['GOOGLE_DRIVE_KNOWLEDGE_FILE_ID']);
+      if (row) fileIdOverride = row.value;
     } catch (e) {}
 
     const knowledge = await getKnowledgeBase(false, fileIdOverride);
@@ -436,34 +346,13 @@ router.get("/analytics", async (req, res, next) => {
   adminAuth(req, res, next);
 }, async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-
-    let chatbotQueries = [];
-    let blogViews = [];
-    let calculatorLeads = [];
-    let chatbotLeads = [];
-
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      const chatRes = await sql`SELECT * FROM analytics_chatbot ORDER BY created_at DESC LIMIT 100`;
-      const blogRes = await sql`SELECT b.post_id, p.title, COUNT(*) as views FROM analytics_blog b LEFT JOIN posts p ON b.post_id = p.id GROUP BY b.post_id, p.title ORDER BY views DESC`;
-      const calcRes = await sql`SELECT * FROM analytics_calculator ORDER BY created_at DESC LIMIT 100`;
-      chatbotQueries = chatRes.rows;
-      blogViews = blogRes.rows;
-      calculatorLeads = calcRes.rows;
-      try {
-        const leadsRes = await sql`SELECT * FROM chatbot_leads ORDER BY created_at DESC LIMIT 100`;
-        chatbotLeads = leadsRes.rows;
-      } catch (e) { chatbotLeads = []; }
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        chatbotQueries = db.prepare("SELECT * FROM analytics_chatbot ORDER BY created_at DESC LIMIT 100").all();
-        blogViews = db.prepare(`SELECT b.post_id, p.title, COUNT(*) as views FROM analytics_blog b LEFT JOIN posts p ON b.post_id = p.id GROUP BY b.post_id, p.title ORDER BY views DESC`).all();
-        calculatorLeads = db.prepare("SELECT * FROM analytics_calculator ORDER BY created_at DESC LIMIT 100").all();
-        try { chatbotLeads = db.prepare("SELECT * FROM chatbot_leads ORDER BY created_at DESC LIMIT 100").all(); } catch (e) { chatbotLeads = []; }
-      }
-    }
+    const chatbotQueries = await db.query("SELECT * FROM analytics_chatbot ORDER BY created_at DESC LIMIT 100");
+    const blogViews = await db.query(`SELECT b.post_id, p.title, COUNT(*) as views FROM analytics_blog b LEFT JOIN posts p ON b.post_id = p.id GROUP BY b.post_id, p.title ORDER BY views DESC`);
+    const calculatorLeads = await db.query("SELECT * FROM analytics_calculator ORDER BY created_at DESC LIMIT 100");
+    let chatbotLeads: any[] = [];
+    try {
+      chatbotLeads = await db.query("SELECT * FROM chatbot_leads ORDER BY created_at DESC LIMIT 100");
+    } catch (e) { chatbotLeads = []; }
 
     res.json({ chatbotQueries, blogViews, calculatorLeads, chatbotLeads });
   } catch (err: any) {
@@ -479,21 +368,25 @@ router.post("/posts", async (req, res, next) => {
   const { title, date, category, excerpt, content, is_premium } = req.body;
   const id = title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    const { sql } = await import("@vercel/postgres");
-
-    if (isPostgres) {
-      await sql`INSERT INTO posts (id, title, date, category, excerpt, content, is_premium) VALUES (${id}, ${title}, ${date}, ${category}, ${excerpt}, ${content}, ${is_premium ? 1 : 0}) ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, date = EXCLUDED.date, category = EXCLUDED.category, excerpt = EXCLUDED.excerpt, content = EXCLUDED.content, is_premium = EXCLUDED.is_premium`;
-      const { rows } = await sql`SELECT * FROM posts WHERE id = ${id}`;
-      return res.status(201).json(rows[0]);
+    const dbType = await db.getDbType();
+    let post;
+    if (dbType === 'postgres') {
+      // Postgres: upsert with ON CONFLICT
+      const rows = await db.queryDual(
+        `INSERT INTO posts (id, title, date, category, excerpt, content, is_premium) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, date = EXCLUDED.date, category = EXCLUDED.category, excerpt = EXCLUDED.excerpt, content = EXCLUDED.content, is_premium = EXCLUDED.is_premium RETURNING *`,
+        `SELECT 1`, // unused, handled below
+        [id, title, date, category, excerpt, content, is_premium ? 1 : 0]
+      );
+      post = rows[0];
+    } else {
+      await db.execute(
+        "INSERT OR REPLACE INTO posts (id, title, date, category, excerpt, content, is_premium) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [id, title, date, category, excerpt, content, is_premium ? 1 : 0]
+      );
+      post = await db.queryOne("SELECT * FROM posts WHERE id = ?", [id]);
     }
-    const db = getSqliteDb();
-    if (db && !useMockDb) {
-      db.prepare("INSERT OR REPLACE INTO posts (id, title, date, category, excerpt, content, is_premium) VALUES (?, ?, ?, ?, ?, ?, ?)").run(id, title, date, category, excerpt, content, is_premium ? 1 : 0);
-      const newPost = db.prepare("SELECT * FROM posts WHERE id = ?").get(id);
-      return res.status(201).json(newPost);
-    }
-    res.status(201).json({ id, title, date, category, excerpt, content, is_premium });
+    if (!post) post = { id, title, date, category, excerpt, content, is_premium };
+    return res.status(201).json(post);
   } catch (err: any) {
     res.status(500).json({ error: "Failed to save post", details: err.message });
   }
@@ -505,16 +398,7 @@ router.delete("/posts/:id", async (req, res, next) => {
 }, async (req, res) => {
   const { id } = req.params;
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      await sql`DELETE FROM posts WHERE id = ${id}`;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        db.prepare("DELETE FROM posts WHERE id = ?").run(id);
-      }
-    }
+    await db.execute("DELETE FROM posts WHERE id = ?", [id]);
     res.json({ success: true, deleted: id });
   } catch (err: any) {
     res.status(500).json({ error: "Failed to delete post", details: err.message });
@@ -527,20 +411,12 @@ router.get("/comments", async (req, res, next) => {
   adminAuth(req, res, next);
 }, async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    const { sql } = await import("@vercel/postgres");
     const limit = parseInt(req.query.limit as string) || 500;
-
-    if (isPostgres) {
-      const { rows } = await sql`SELECT c.*, p.title as post_title FROM comments c JOIN posts p ON c.post_id = p.id ORDER BY c.created_at DESC LIMIT ${limit}`;
-      return res.json(rows);
-    }
-    const db = getSqliteDb();
-    if (db && !useMockDb) {
-      const rows = db.prepare(`SELECT c.*, p.title as post_title FROM comments c JOIN posts p ON c.post_id = p.id ORDER BY c.created_at DESC LIMIT ?`).all(limit);
-      return res.json(rows);
-    }
-    res.json([]);
+    const rows = await db.query(
+      `SELECT c.*, p.title as post_title FROM comments c JOIN posts p ON c.post_id = p.id ORDER BY c.created_at DESC LIMIT ?`,
+      [limit]
+    );
+    res.json(rows);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch comments" });
   }
@@ -551,17 +427,7 @@ router.delete("/comments/:id", async (req, res, next) => {
   adminAuth(req, res, next);
 }, async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    const { sql } = await import("@vercel/postgres");
-
-    if (isPostgres) {
-      await sql`DELETE FROM comments WHERE id = ${req.params.id} OR parent_id = ${req.params.id}`;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        db.prepare("DELETE FROM comments WHERE id = ? OR parent_id = ?").run(req.params.id, req.params.id);
-      }
-    }
+    await db.execute("DELETE FROM comments WHERE id = ? OR parent_id = ?", [req.params.id, req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Failed to delete comment" });
@@ -628,19 +494,8 @@ router.get("/subscriptions", async (req, res, next) => {
   adminAuth(req, res, next);
 }, async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    const { sql } = await import("@vercel/postgres");
-
-    if (isPostgres) {
-      const { rows } = await sql`SELECT * FROM subscriptions ORDER BY created_at DESC`;
-      return res.json(rows);
-    }
-    const db = getSqliteDb();
-    if (db && !useMockDb) {
-      const rows = db.prepare("SELECT * FROM subscriptions ORDER BY created_at DESC").all();
-      return res.json(rows);
-    }
-    res.json([]);
+    const rows = await db.query("SELECT * FROM subscriptions ORDER BY created_at DESC");
+    res.json(rows);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch subscriptions" });
   }
@@ -652,59 +507,25 @@ router.get("/all-emails", async (req, res, next) => {
   adminAuth(req, res, next);
 }, async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    let allEmails: any[] = [];
+    await db.ensureResourceLeads();
 
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-
-      // Ensure resource_leads table exists (it's created on-the-fly in chat.ts)
-      await sql`CREATE TABLE IF NOT EXISTS resource_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, resource_name TEXT, created_at TIMESTAMP DEFAULT NOW())`;
-
-      const result = await sql`
-        SELECT email, 'newsletter' as source, created_at, NULL as metadata
-        FROM subscriptions
-        UNION ALL
-        SELECT email, 'chatbot' as source, created_at, query as metadata
-        FROM chatbot_leads
-        UNION ALL
-        SELECT email, 'resource' as source, created_at, resource_name as metadata
-        FROM resource_leads
-        UNION ALL
-        SELECT email, 'comment' as source, created_at, name as metadata
-        FROM comments WHERE is_admin = 0
-        UNION ALL
-        SELECT email, 'calculator' as source, created_at, CAST(revenue AS TEXT) as metadata
-        FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
-        ORDER BY created_at DESC
-      `;
-      allEmails = result.rows;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        // Ensure resource_leads table exists
-        db.exec("CREATE TABLE IF NOT EXISTS resource_leads (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL, resource_name TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
-
-        allEmails = db.prepare(`
-          SELECT email, 'newsletter' as source, created_at, NULL as metadata
-          FROM subscriptions
-          UNION ALL
-          SELECT email, 'chatbot' as source, created_at, query as metadata
-          FROM chatbot_leads
-          UNION ALL
-          SELECT email, 'resource' as source, created_at, resource_name as metadata
-          FROM resource_leads
-          UNION ALL
-          SELECT email, 'comment' as source, created_at, name as metadata
-          FROM comments WHERE is_admin = 0
-          UNION ALL
-          SELECT email, 'calculator' as source, created_at, CAST(revenue AS TEXT) as metadata
-          FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
-          ORDER BY created_at DESC
-        `).all();
-      }
-    }
-
+    const allEmails = await db.query(`
+      SELECT email, 'newsletter' as source, created_at, NULL as metadata
+      FROM subscriptions
+      UNION ALL
+      SELECT email, 'chatbot' as source, created_at, query as metadata
+      FROM chatbot_leads
+      UNION ALL
+      SELECT email, 'resource' as source, created_at, resource_name as metadata
+      FROM resource_leads
+      UNION ALL
+      SELECT email, 'comment' as source, created_at, name as metadata
+      FROM comments WHERE is_admin = 0
+      UNION ALL
+      SELECT email, 'calculator' as source, created_at, CAST(revenue AS TEXT) as metadata
+      FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
+      ORDER BY created_at DESC
+    `);
     res.json(allEmails);
   } catch (err: any) {
     console.error("[ALL EMAILS ERROR]", err);
@@ -718,7 +539,7 @@ router.get("/dashboard", async (req, res, next) => {
   adminAuth(req, res, next);
 }, async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    await db.ensureResourceLeads();
 
     const stats: any = {
       totalEmails: 0,
@@ -733,118 +554,64 @@ router.get("/dashboard", async (req, res, next) => {
       subscribers: 0,
     };
 
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
+    // Total unique emails across all sources
+    const emailCount = await db.queryOne(`
+      SELECT COUNT(DISTINCT lower_email) as count FROM (
+        SELECT LOWER(email) as lower_email FROM subscriptions
+        UNION ALL SELECT LOWER(email) FROM chatbot_leads
+        UNION ALL SELECT LOWER(email) FROM resource_leads
+        UNION ALL SELECT LOWER(email) FROM comments WHERE is_admin = 0
+        UNION ALL SELECT LOWER(email) FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
+      ) combined
+    `);
+    stats.totalEmails = parseInt(emailCount?.count || '0');
 
-      // Ensure resource_leads exists
-      await sql`CREATE TABLE IF NOT EXISTS resource_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, resource_name TEXT, created_at TIMESTAMP DEFAULT NOW())`;
+    // Emails by source
+    const srcCounts = await db.query(`
+      SELECT source, COUNT(*) as count FROM (
+        SELECT 'newsletter' as source FROM subscriptions
+        UNION ALL SELECT 'chatbot' FROM chatbot_leads
+        UNION ALL SELECT 'resource' FROM resource_leads
+        UNION ALL SELECT 'comment' FROM comments WHERE is_admin = 0
+        UNION ALL SELECT 'calculator' FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
+      ) combined GROUP BY source
+    `);
+    srcCounts.forEach((r: any) => stats.emailsBySource[r.source] = parseInt(r.count));
 
-      // Total unique emails across all sources
-      const emailCount = await sql`
-        SELECT COUNT(DISTINCT lower_email) as count FROM (
-          SELECT LOWER(email) as lower_email FROM subscriptions
-          UNION ALL SELECT LOWER(email) FROM chatbot_leads
-          UNION ALL SELECT LOWER(email) FROM resource_leads
-          UNION ALL SELECT LOWER(email) FROM comments WHERE is_admin = 0
-          UNION ALL SELECT LOWER(email) FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
-        ) combined
-      `;
-      stats.totalEmails = parseInt(emailCount.rows[0]?.count || '0');
+    // Recent 5 emails (any source)
+    stats.recentEmails = await db.query(`
+      SELECT email, 'newsletter' as source, created_at FROM subscriptions
+      UNION ALL SELECT email, 'chatbot', created_at FROM chatbot_leads
+      UNION ALL SELECT email, 'resource', created_at FROM resource_leads
+      ORDER BY created_at DESC LIMIT 5
+    `);
 
-      // Emails by source
-      const srcCounts = await sql`
-        SELECT source, COUNT(*) as count FROM (
-          SELECT 'newsletter' as source FROM subscriptions
-          UNION ALL SELECT 'chatbot' FROM chatbot_leads
-          UNION ALL SELECT 'resource' FROM resource_leads
-          UNION ALL SELECT 'comment' FROM comments WHERE is_admin = 0
-          UNION ALL SELECT 'calculator' FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
-        ) combined GROUP BY source
-      `;
-      srcCounts.rows.forEach((r: any) => stats.emailsBySource[r.source] = parseInt(r.count));
+    // Comments
+    const commentCount = await db.queryOne("SELECT COUNT(*) as count FROM comments WHERE is_admin = 0");
+    stats.totalComments = parseInt(commentCount?.count || '0');
+    stats.recentComments = await db.query("SELECT name, comment, created_at FROM comments WHERE is_admin = 0 ORDER BY created_at DESC LIMIT 3");
 
-      // Recent 5 emails (any source)
-      const recent = await sql`
-        SELECT email, 'newsletter' as source, created_at FROM subscriptions
-        UNION ALL SELECT email, 'chatbot', created_at FROM chatbot_leads
-        UNION ALL SELECT email, 'resource', created_at FROM resource_leads
-        ORDER BY created_at DESC LIMIT 5
-      `;
-      stats.recentEmails = recent.rows;
+    // Posts + top
+    const postCount = await db.queryOne("SELECT COUNT(*) as count FROM posts");
+    stats.totalPosts = parseInt(postCount?.count || '0');
+    stats.topPosts = await db.query("SELECT b.post_id, p.title, COUNT(*) as views FROM analytics_blog b LEFT JOIN posts p ON b.post_id = p.id GROUP BY b.post_id, p.title ORDER BY views DESC LIMIT 3");
 
-      // Comments
-      const commentCount = await sql`SELECT COUNT(*) as count FROM comments WHERE is_admin = 0`;
-      stats.totalComments = parseInt(commentCount.rows[0]?.count || '0');
-      const recentComments = await sql`SELECT name, comment, created_at FROM comments WHERE is_admin = 0 ORDER BY created_at DESC LIMIT 3`;
-      stats.recentComments = recentComments.rows;
+    // 7-day activity (dialect differs for date math)
+    const chat7d = await db.queryOneDual(
+      "SELECT COUNT(*) as count FROM analytics_chatbot WHERE created_at > NOW() - INTERVAL '7 days'",
+      "SELECT COUNT(*) as count FROM analytics_chatbot WHERE created_at > datetime('now', '-7 days')"
+    );
+    stats.chatbotQueries7d = parseInt(chat7d?.count || '0');
 
-      // Posts + top
-      const postCount = await sql`SELECT COUNT(*) as count FROM posts`;
-      stats.totalPosts = parseInt(postCount.rows[0]?.count || '0');
-      const topPosts = await sql`SELECT b.post_id, p.title, COUNT(*) as views FROM analytics_blog b LEFT JOIN posts p ON b.post_id = p.id GROUP BY b.post_id, p.title ORDER BY views DESC LIMIT 3`;
-      stats.topPosts = topPosts.rows;
+    const calc7d = await db.queryOneDual(
+      "SELECT COUNT(*) as count FROM analytics_calculator WHERE created_at > NOW() - INTERVAL '7 days'",
+      "SELECT COUNT(*) as count FROM analytics_calculator WHERE created_at > datetime('now', '-7 days')"
+    );
+    stats.calculatorUses7d = parseInt(calc7d?.count || '0');
 
-      // 7-day activity
-      const chat7d = await sql`SELECT COUNT(*) as count FROM analytics_chatbot WHERE created_at > NOW() - INTERVAL '7 days'`;
-      stats.chatbotQueries7d = parseInt(chat7d.rows[0]?.count || '0');
-      const calc7d = await sql`SELECT COUNT(*) as count FROM analytics_calculator WHERE created_at > NOW() - INTERVAL '7 days'`;
-      stats.calculatorUses7d = parseInt(calc7d.rows[0]?.count || '0');
-
-      // Subscribers
-      const subCount = await sql`SELECT COUNT(*) as count FROM subscriptions`;
-      stats.subscribers = parseInt(subCount.rows[0]?.count || '0');
-
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        db.exec("CREATE TABLE IF NOT EXISTS resource_leads (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL, resource_name TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
-
-        const emailCount: any = db.prepare(`
-          SELECT COUNT(DISTINCT lower_email) as count FROM (
-            SELECT LOWER(email) as lower_email FROM subscriptions
-            UNION ALL SELECT LOWER(email) FROM chatbot_leads
-            UNION ALL SELECT LOWER(email) FROM resource_leads
-            UNION ALL SELECT LOWER(email) FROM comments WHERE is_admin = 0
-            UNION ALL SELECT LOWER(email) FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
-          )
-        `).get();
-        stats.totalEmails = emailCount?.count || 0;
-
-        const srcCounts = db.prepare(`
-          SELECT source, COUNT(*) as count FROM (
-            SELECT 'newsletter' as source FROM subscriptions
-            UNION ALL SELECT 'chatbot' FROM chatbot_leads
-            UNION ALL SELECT 'resource' FROM resource_leads
-            UNION ALL SELECT 'comment' FROM comments WHERE is_admin = 0
-            UNION ALL SELECT 'calculator' FROM analytics_calculator WHERE email IS NOT NULL AND email != ''
-          ) GROUP BY source
-        `).all();
-        (srcCounts as any[]).forEach((r: any) => stats.emailsBySource[r.source] = r.count);
-
-        stats.recentEmails = db.prepare(`
-          SELECT email, 'newsletter' as source, created_at FROM subscriptions
-          UNION ALL SELECT email, 'chatbot', created_at FROM chatbot_leads
-          UNION ALL SELECT email, 'resource', created_at FROM resource_leads
-          ORDER BY created_at DESC LIMIT 5
-        `).all();
-
-        const commentCount: any = db.prepare("SELECT COUNT(*) as count FROM comments WHERE is_admin = 0").get();
-        stats.totalComments = commentCount?.count || 0;
-        stats.recentComments = db.prepare("SELECT name, comment, created_at FROM comments WHERE is_admin = 0 ORDER BY created_at DESC LIMIT 3").all();
-
-        const postCount: any = db.prepare("SELECT COUNT(*) as count FROM posts").get();
-        stats.totalPosts = postCount?.count || 0;
-        stats.topPosts = db.prepare("SELECT b.post_id, p.title, COUNT(*) as views FROM analytics_blog b LEFT JOIN posts p ON b.post_id = p.id GROUP BY b.post_id, p.title ORDER BY views DESC LIMIT 3").all();
-
-        const chat7d: any = db.prepare("SELECT COUNT(*) as count FROM analytics_chatbot WHERE created_at > datetime('now', '-7 days')").get();
-        stats.chatbotQueries7d = chat7d?.count || 0;
-        const calc7d: any = db.prepare("SELECT COUNT(*) as count FROM analytics_calculator WHERE created_at > datetime('now', '-7 days')").get();
-        stats.calculatorUses7d = calc7d?.count || 0;
-
-        const subCount: any = db.prepare("SELECT COUNT(*) as count FROM subscriptions").get();
-        stats.subscribers = subCount?.count || 0;
-      }
-    }
+    // Subscribers
+    const subCount = await db.queryOne("SELECT COUNT(*) as count FROM subscriptions");
+    stats.subscribers = parseInt(subCount?.count || '0');
 
     res.json(stats);
   } catch (err: any) {

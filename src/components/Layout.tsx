@@ -44,7 +44,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link to="/services" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Work With Me</Link>
             <Link to="/writing" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Writing</Link>
             <Link to="/resources" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Resources</Link>
-            <a href="/os" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Starter Kit</a>
             <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary py-2.5 px-6 text-sm">Book a Call</a>
           </nav>
 
@@ -62,7 +61,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link to="/services" className="text-lg font-medium py-2">Work With Me</Link>
             <Link to="/writing" className="text-lg font-medium py-2">Writing</Link>
             <Link to="/resources" className="text-lg font-medium py-2">Resources</Link>
-            <a href="/os" className="text-lg font-medium py-2">Starter Kit</a>
             <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary w-full">Book a Call</a>
           </div>
         )}
@@ -115,7 +113,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <Link to="/services" className="hover:text-accent transition-colors">Work With Me</Link>
                   <Link to="/writing" className="hover:text-accent transition-colors">Writing</Link>
                   <Link to="/resources" className="hover:text-accent transition-colors">Resources</Link>
-                  <a href="/os" className="hover:text-accent transition-colors">Starter Kit</a>
                   <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Book a Call</a>
                 </nav>
               </div>

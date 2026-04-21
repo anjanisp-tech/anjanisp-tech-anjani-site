@@ -1,7 +1,8 @@
 import express from "express";
 import fs from "fs";
 import path from "path";
-import { getDb, getKnowledge, getUtils } from "../helpers.js";
+import { getUtils, getKnowledge } from "../helpers.js";
+import * as db from "../dbService.js";
 
 const router = express.Router();
 
@@ -13,20 +14,10 @@ router.get("/ping", (req, res) => {
 // SEO Routes: robots.txt and sitemap.xml
 router.get("/robots.txt", async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     let content = "";
 
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      const { rows } = await sql`SELECT value FROM settings WHERE key = 'robots_txt'`;
-      content = rows[0]?.value;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        const row: any = db.prepare("SELECT value FROM settings WHERE key = ?").get('robots_txt');
-        content = row?.value;
-      }
-    }
+    const row = await db.queryOne("SELECT value FROM settings WHERE key = ?", ['robots_txt']);
+    content = row?.value;
 
     if (!content) {
       const robotsPath = path.join(process.cwd(), 'public', 'robots.txt');
@@ -46,11 +37,7 @@ router.get("/robots.txt", async (req, res) => {
 
 router.get("/sitemap.xml", async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    let content = "";
-
-    {
-      let urls = `
+    let urls = `
   <url>
     <loc>https://www.anjanipandey.com/</loc>
     <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
@@ -88,49 +75,37 @@ router.get("/sitemap.xml", async (req, res) => {
     <priority>0.7</priority>
   </url>`;
 
-      try {
-        const { isPostgres: isPg2, getSqliteDb: getDb2, useMockDb: useMock2, initialPosts } = await getDb();
-        let posts: any[] = [];
-        if (isPg2) {
-          const { sql: sql2 } = await import("@vercel/postgres");
-          const { rows } = await sql2`SELECT id, created_at FROM posts ORDER BY created_at DESC`;
-          posts = rows;
-        } else {
-          const db2 = getDb2();
-          if (db2 && !useMock2) {
-            posts = db2.prepare("SELECT id, created_at FROM posts ORDER BY created_at DESC").all();
-          }
-        }
+    try {
+      let posts = await db.query("SELECT id, created_at FROM posts ORDER BY created_at DESC");
 
-        if (posts.length === 0 && initialPosts) {
-          posts = initialPosts;
-        }
+      if (posts.length === 0) {
+        posts = await db.getInitialPosts();
+      }
 
-        for (const post of posts) {
-          const date = post.created_at ? new Date(post.created_at).toISOString().split('T')[0] : (post.date || new Date().toISOString().split('T')[0]);
-          urls += `
+      for (const post of posts) {
+        const date = post.created_at ? new Date(post.created_at).toISOString().split('T')[0] : (post.date || new Date().toISOString().split('T')[0]);
+        urls += `
   <url>
     <loc>https://www.anjanipandey.com/blog/${post.id}</loc>
     <lastmod>${date}</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>`;
-        }
-      } catch (err) {
-        console.error("Error fetching posts for sitemap:", err);
       }
+    } catch (err) {
+      console.error("Error fetching posts for sitemap:", err);
+    }
 
-      content = `<?xml version="1.0" encoding="UTF-8"?>
+    let content = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}
 </urlset>`;
 
-      if (!content || !content.includes('<url>')) {
-        const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
-        if (fs.existsSync(sitemapPath)) {
-          const fileContent = fs.readFileSync(sitemapPath, 'utf-8');
-          if (fileContent.includes('<url>')) {
-            content = fileContent;
-          }
+    if (!content.includes('<url>')) {
+      const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+      if (fs.existsSync(sitemapPath)) {
+        const fileContent = fs.readFileSync(sitemapPath, 'utf-8');
+        if (fileContent.includes('<url>')) {
+          content = fileContent;
         }
       }
     }
@@ -173,13 +148,8 @@ router.get("/diagnostic", async (req, res, next) => {
 
     let dbStatus = "Not checked";
     try {
-      const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-      if (isPostgres) dbStatus = "Postgres (Active)";
-      else if (useMockDb) dbStatus = "Mock DB (Active)";
-      else {
-        const db = getSqliteDb();
-        dbStatus = db ? "SQLite (Active)" : "Mock DB (Fallback)";
-      }
+      const health = await db.healthCheck();
+      dbStatus = `${health.type.charAt(0).toUpperCase() + health.type.slice(1)} (Active)`;
     } catch (err: any) {
       dbStatus = "Failed: " + (err.message || "Unknown error");
     }

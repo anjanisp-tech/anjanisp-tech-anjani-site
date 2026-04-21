@@ -1,23 +1,14 @@
 import express from "express";
-import { getDb, getUtils, getKnowledge, isValidEmail } from "../helpers.js";
+import { getUtils, getKnowledge, isValidEmail } from "../helpers.js";
+import * as db from "../dbService.js";
 
 const router = express.Router();
 
 // Helper: get knowledge file ID override from settings
 async function getFileIdOverride(): Promise<string | undefined> {
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_KNOWLEDGE_FILE_ID'`;
-      if (rows.length > 0) return rows[0].value;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('GOOGLE_DRIVE_KNOWLEDGE_FILE_ID');
-        if (row) return (row as any).value;
-      }
-    }
+    const row = await db.queryOne("SELECT value FROM settings WHERE key = ?", ['GOOGLE_DRIVE_KNOWLEDGE_FILE_ID']);
+    if (row) return row.value;
   } catch (dbErr: any) {
     console.warn("[CHAT] Settings table check failed:", dbErr.message);
   }
@@ -56,7 +47,6 @@ router.post("/chat", async (req, res) => {
     }
 
     const { getKnowledgeBase } = await getKnowledge();
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
     const fileIdOverride = await getFileIdOverride();
     const knowledge = await getKnowledgeBase(false, fileIdOverride);
 
@@ -157,21 +147,12 @@ ${knowledge ? `\n\nContext from Anjani's methodology and writing: ${knowledge.su
     res.write('data: [DONE]\n\n');
     res.end();
 
-    // Async logging
+    // Async logging (fire-and-forget)
     if (success && responseText) {
-      try {
-        if (isPostgres) {
-          const { sql } = await import("@vercel/postgres");
-          await sql`INSERT INTO analytics_chatbot (query, response) VALUES (${message}, ${responseText})`;
-        } else {
-          const db = getSqliteDb();
-          if (db && !useMockDb) {
-            db.prepare("INSERT INTO analytics_chatbot (query, response) VALUES (?, ?)").run(message, responseText);
-          }
-        }
-      } catch (logErr) {
-        console.error("[ANALYTICS LOG ERROR] Chatbot:", logErr);
-      }
+      db.execute(
+        "INSERT INTO analytics_chatbot (query, response) VALUES (?, ?)",
+        [message, responseText]
+      ).catch(logErr => console.error("[ANALYTICS LOG ERROR] Chatbot:", logErr));
     }
     return;
   } catch (err: any) {
@@ -189,20 +170,8 @@ router.post("/chatbot-lead", async (req, res) => {
     if (!email) return res.status(400).json({ error: "Email is required" });
     if (!isValidEmail(email)) return res.status(400).json({ error: "Invalid email format" });
 
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    await db.execute("INSERT INTO chatbot_leads (email, query) VALUES (?, ?)", [email, query || null]);
 
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      await sql`CREATE TABLE IF NOT EXISTS chatbot_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, query TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
-      await sql`INSERT INTO chatbot_leads (email, query) VALUES (${email}, ${query || null})`;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        db.prepare("INSERT INTO chatbot_leads (email, query) VALUES (?, ?)").run(email, query || null);
-      }
-    }
-
-    // Send email notification so leads don't go into a black hole
     const { sendNotification } = await getUtils();
     sendNotification(
       "New Chatbot Lead",
@@ -223,21 +192,9 @@ router.post("/resource-lead", async (req, res) => {
     if (!email) return res.status(400).json({ error: "Email is required" });
     if (!isValidEmail(email)) return res.status(400).json({ error: "Invalid email format" });
 
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
+    await db.ensureResourceLeads();
+    await db.execute("INSERT INTO resource_leads (email, resource_name) VALUES (?, ?)", [email, resource_name || null]);
 
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      await sql`CREATE TABLE IF NOT EXISTS resource_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, resource_name TEXT, created_at TIMESTAMP DEFAULT NOW())`;
-      await sql`INSERT INTO resource_leads (email, resource_name) VALUES (${email}, ${resource_name || null})`;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        db.exec("CREATE TABLE IF NOT EXISTS resource_leads (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL, resource_name TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
-        db.prepare("INSERT INTO resource_leads (email, resource_name) VALUES (?, ?)").run(email, resource_name || null);
-      }
-    }
-
-    // Send email notification so leads don't go into a black hole
     const { sendNotification } = await getUtils();
     sendNotification(
       "New Resource Lead",

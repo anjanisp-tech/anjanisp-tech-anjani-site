@@ -25,6 +25,8 @@ export const staticRoutes: RouteEntry[] = [
   { path: '/sitemap', prerender: true },
     // Admin is not pre-rendered (auth-gated, no SEO value)
   { path: '/admin', prerender: false },
+    // Personal OS lives as a static HTML file in public/os/, not a React route — skip pre-render
+  { path: '/os', prerender: false },
   ];
 
 /** Generate blog post routes from the hardcoded blog data */

@@ -204,6 +204,9 @@ export default function Services() {
                 <div className="w-8 h-px bg-accent/20" />
                 I built my entire consulting firm on AI without writing a single line of code. <Link to="/resources/ai-consulting-stack" className="text-primary hover:underline ml-1">Read how.</Link>
               </div>
+              <p className="text-sm text-accent-light/70 mt-4 leading-relaxed">
+                The same architecture I'd install for you is running live as my <a href="/os" className="text-primary font-semibold hover:underline">Personal OS</a> &mdash; nine subsystems, public dashboard, real metrics.
+              </p>
             </div>
 
             {/* Right Column */}

@@ -1,0 +1,11 @@
+# Supabase project configuration for anjanipandey-public.
+# This file is read by `supabase` CLI when running from the repo root.
+# project_id is set by `supabase link --project-ref <ref>`.
+
+project_id = "REPLACE_AFTER_SUPABASE_LINK"
+
+[functions.subscribe]
+verify_jwt = false   # public form endpoint; we gate via Turnstile + RLS instead
+
+[functions.confirm]
+verify_jwt = false   # public confirmation link from email

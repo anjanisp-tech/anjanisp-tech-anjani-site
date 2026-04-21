@@ -1,61 +1,57 @@
 import express from "express";
-import { getDb, getUtils, isValidEmail } from "../helpers.js";
+import { getUtils, isValidEmail } from "../helpers.js";
+import * as db from "../dbService.js";
 
 const router = express.Router();
 
 // Blog Posts
 router.get("/posts", async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb, initialPosts } = await getDb();
-
     const limit = parseInt(req.query.limit as string) || 100;
     const offset = parseInt(req.query.offset as string) || 0;
     const search = (req.query.search as string) || "";
     const category = (req.query.category as string) || "";
 
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      let query;
-      if (search && category) {
-        query = sql`SELECT * FROM posts WHERE category = ${category} AND (title ILIKE ${'%' + search + '%'} OR content ILIKE ${'%' + search + '%'}) ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
-      } else if (search) {
-        query = sql`SELECT * FROM posts WHERE (title ILIKE ${'%' + search + '%'} OR content ILIKE ${'%' + search + '%'}) ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
-      } else if (category) {
-        query = sql`SELECT * FROM posts WHERE category = ${category} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
-      } else {
-        query = sql`SELECT * FROM posts ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
-      }
-      const { rows } = await query;
-      return res.json(rows);
+    let posts: any[];
+    if (search && category) {
+      posts = await db.queryDual(
+        `SELECT * FROM posts WHERE category = $1 AND (title ILIKE $2 OR content ILIKE $3) ORDER BY created_at DESC LIMIT $4 OFFSET $5`,
+        `SELECT * FROM posts WHERE category = ? AND (title LIKE ? OR content LIKE ?) ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        [category, `%${search}%`, `%${search}%`, limit, offset]
+      );
+    } else if (search) {
+      posts = await db.queryDual(
+        `SELECT * FROM posts WHERE (title ILIKE $1 OR content ILIKE $2) ORDER BY created_at DESC LIMIT $3 OFFSET $4`,
+        `SELECT * FROM posts WHERE (title LIKE ? OR content LIKE ?) ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        [`%${search}%`, `%${search}%`, limit, offset]
+      );
+    } else if (category) {
+      posts = await db.query(
+        "SELECT * FROM posts WHERE category = ? ORDER BY created_at DESC LIMIT ? OFFSET ?",
+        [category, limit, offset]
+      );
+    } else {
+      posts = await db.query(
+        "SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?",
+        [limit, offset]
+      );
     }
 
-    const db = getSqliteDb();
-    if (db && !useMockDb) {
-      let posts;
-      if (search && category) {
-        posts = db.prepare("SELECT * FROM posts WHERE category = ? AND (title LIKE ? OR content LIKE ?) ORDER BY created_at DESC LIMIT ? OFFSET ?")
-          .all(category, `%${search}%`, `%${search}%`, limit, offset);
-      } else if (search) {
-        posts = db.prepare("SELECT * FROM posts WHERE (title LIKE ? OR content LIKE ?) ORDER BY created_at DESC LIMIT ? OFFSET ?")
-          .all(`%${search}%`, `%${search}%`, limit, offset);
-      } else if (category) {
-        posts = db.prepare("SELECT * FROM posts WHERE category = ? ORDER BY created_at DESC LIMIT ? OFFSET ?")
-          .all(category, limit, offset);
-      } else {
-        posts = db.prepare("SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?").all(limit, offset);
+    // Fallback to initial posts if DB returned nothing (mock mode)
+    if (posts.length === 0 && !search && !category) {
+      const initialPosts = await db.getInitialPosts();
+      let filtered = initialPosts;
+      if (category) {
+        filtered = filtered.filter((p: any) => p.category === category);
       }
-      return res.json(posts);
+      if (search) {
+        const s = search.toLowerCase();
+        filtered = filtered.filter((p: any) => p.title.toLowerCase().includes(s) || p.content.toLowerCase().includes(s));
+      }
+      return res.json(filtered.slice(offset, offset + limit));
     }
 
-    let filtered = initialPosts;
-    if (category) {
-      filtered = filtered.filter((p: any) => p.category === category);
-    }
-    if (search) {
-      const s = search.toLowerCase();
-      filtered = filtered.filter((p: any) => p.title.toLowerCase().includes(s) || p.content.toLowerCase().includes(s));
-    }
-    res.json(filtered.slice(offset, offset + limit));
+    res.json(posts);
   } catch (err: any) {
     res.status(500).json({ status: "error", error: "Failed to fetch posts", details: err.message });
   }
@@ -63,20 +59,14 @@ router.get("/posts", async (req, res) => {
 
 router.get("/categories", async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb, initialPosts } = await getDb();
+    const rows = await db.query("SELECT DISTINCT category FROM posts WHERE category IS NOT NULL AND category != ''");
 
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      const { rows } = await sql`SELECT DISTINCT category FROM posts WHERE category IS NOT NULL AND category != ''`;
+    if (rows.length > 0) {
       return res.json(rows.map((r: any) => r.category));
     }
 
-    const db = getSqliteDb();
-    if (db && !useMockDb) {
-      const rows = db.prepare("SELECT DISTINCT category FROM posts WHERE category IS NOT NULL AND category != ''").all();
-      return res.json(rows.map((r: any) => r.category));
-    }
-
+    // Fallback to initial posts
+    const initialPosts = await db.getInitialPosts();
     const categories = Array.from(new Set(initialPosts.map((p: any) => p.category))).filter(Boolean);
     res.json(categories);
   } catch (err: any) {
@@ -86,37 +76,21 @@ router.get("/categories", async (req, res) => {
 
 router.get("/posts/:id", async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb, initialPosts } = await getDb();
     const postId = req.params.id;
 
-    // Log view to analytics
-    try {
-      if (isPostgres) {
-        const { sql } = await import("@vercel/postgres");
-        await sql`INSERT INTO analytics_blog (post_id) VALUES (${postId})`;
-      } else {
-        const db = getSqliteDb();
-        if (db && !useMockDb) {
-          db.prepare("INSERT INTO analytics_blog (post_id) VALUES (?)").run(postId);
-        }
-      }
-    } catch (logErr) {
-      console.error("[ANALYTICS LOG ERROR] Blog View:", logErr);
-    }
+    // Log view to analytics (fire-and-forget)
+    db.execute("INSERT INTO analytics_blog (post_id) VALUES (?)", [postId])
+      .catch(logErr => console.error("[ANALYTICS LOG ERROR] Blog View:", logErr));
 
-    if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
-      const { rows } = await sql`SELECT * FROM posts WHERE id = ${postId}`;
-      if (rows.length > 0) return res.json(rows[0]);
-    }
-    const db = getSqliteDb();
-    if (db && !useMockDb) {
-      const post = db.prepare("SELECT * FROM posts WHERE id = ?").get(postId);
-      if (post) return res.json(post);
-    }
-    const post = initialPosts.find((p: any) => p.id === postId);
-    if (!post) return res.status(404).json({ error: "Post not found" });
-    res.json(post);
+    // Try DB first
+    const post = await db.queryOne("SELECT * FROM posts WHERE id = ?", [postId]);
+    if (post) return res.json(post);
+
+    // Fallback to initial posts
+    const initialPosts = await db.getInitialPosts();
+    const fallback = initialPosts.find((p: any) => p.id === postId);
+    if (!fallback) return res.status(404).json({ error: "Post not found" });
+    res.json(fallback);
   } catch (err: any) {
     res.status(500).json({ error: "Failed to fetch post", details: err.message });
   }
@@ -125,19 +99,11 @@ router.get("/posts/:id", async (req, res) => {
 // Comments
 router.get("/blog/:id/comments", async (req, res) => {
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    const { sql } = await import("@vercel/postgres");
-
-    if (isPostgres) {
-      const { rows } = await sql`SELECT * FROM comments WHERE post_id = ${req.params.id} ORDER BY created_at ASC`;
-      return res.json(rows);
-    }
-    const db = getSqliteDb();
-    if (db && !useMockDb) {
-      const comments = db.prepare("SELECT * FROM comments WHERE post_id = ? ORDER BY created_at ASC").all(req.params.id);
-      return res.json(comments);
-    }
-    res.json([]);
+    const rows = await db.query(
+      "SELECT * FROM comments WHERE post_id = ? ORDER BY created_at ASC",
+      [req.params.id]
+    );
+    res.json(rows);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch comments" });
   }
@@ -150,27 +116,29 @@ router.post("/blog/:id/comments", async (req, res) => {
   if (!isValidEmail(email)) return res.status(400).json({ error: "Invalid email format" });
   if (comment.length > 5000) return res.status(400).json({ error: "Comment too long (max 5000 characters)" });
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    const { sql } = await import("@vercel/postgres");
     const { sendNotification } = await getUtils();
 
     let commentObj;
-    if (isPostgres) {
-      const { rows } = await sql`
-        INSERT INTO comments (post_id, name, email, website, phone, comment, parent_id, is_admin)
-        VALUES (${id}, ${name}, ${email}, ${website || null}, ${phone || null}, ${comment}, ${parent_id || null}, ${is_admin ? 1 : 0})
-        RETURNING *
-      `;
+    const dbType = await db.getDbType();
+
+    if (dbType === 'postgres') {
+      const rows = await db.queryDual(
+        `INSERT INTO comments (post_id, name, email, website, phone, comment, parent_id, is_admin)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+        `SELECT 1`, // unused
+        [id, name, email, website || null, phone || null, comment, parent_id || null, is_admin ? 1 : 0]
+      );
       commentObj = rows[0];
-    } else if (useMockDb) {
+    } else if (dbType === 'mock') {
       commentObj = { id: Date.now(), post_id: id, name, email, website, phone, comment, parent_id, is_admin: is_admin ? 1 : 0, created_at: new Date().toISOString() };
     } else {
-      const db = getSqliteDb();
-      if (!db) throw new Error("SQLite database not initialized");
-      const info = db.prepare("INSERT INTO comments (post_id, name, email, website, phone, comment, parent_id, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-        .run(id, name, email, website || null, phone || null, comment, parent_id || null, is_admin ? 1 : 0);
-      commentObj = db.prepare("SELECT * FROM comments WHERE id = ?").get(info.lastInsertRowid);
+      commentObj = await db.insertReturning(
+        'comments',
+        "INSERT INTO comments (post_id, name, email, website, phone, comment, parent_id, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [id, name, email, website || null, phone || null, comment, parent_id || null, is_admin ? 1 : 0]
+      );
     }
+
     sendNotification(`New Comment on ${id}`, `From: ${name}\nComment: ${comment}`).catch(() => {});
     res.status(201).json(commentObj);
   } catch (err: any) {
@@ -184,18 +152,14 @@ router.post("/subscribe", async (req, res) => {
   if (!email) return res.status(400).json({ error: "Email is required" });
   if (!isValidEmail(email)) return res.status(400).json({ error: "Invalid email format" });
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    const { sql } = await import("@vercel/postgres");
     const { sendNotification } = await getUtils();
 
-    if (isPostgres) {
-      await sql`INSERT INTO subscriptions (email) VALUES (${email}) ON CONFLICT (email) DO NOTHING`;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        db.prepare("INSERT OR IGNORE INTO subscriptions (email) VALUES (?)").run(email);
-      }
-    }
+    await db.executeDual(
+      `INSERT INTO subscriptions (email) VALUES ($1) ON CONFLICT (email) DO NOTHING`,
+      `INSERT OR IGNORE INTO subscriptions (email) VALUES (?)`,
+      [email]
+    );
+
     sendNotification("New Newsletter Subscriber", `Email: ${email}`).catch(() => {});
     res.json({ success: true });
   } catch (err: any) {
@@ -207,21 +171,10 @@ router.post("/subscribe", async (req, res) => {
 router.post("/analytics/calculator", async (req, res) => {
   const { currency, revenue, teamSize, heroicHours, totalTax, email } = req.body;
   try {
-    const { isPostgres, getSqliteDb, useMockDb } = await getDb();
-    const { sql } = await import("@vercel/postgres");
-
-    if (isPostgres) {
-      await sql`
-        INSERT INTO analytics_calculator (currency, revenue, team_size, heroic_hours, total_tax, email)
-        VALUES (${currency}, ${revenue}, ${teamSize}, ${heroicHours}, ${totalTax}, ${email || null})
-      `;
-    } else {
-      const db = getSqliteDb();
-      if (db && !useMockDb) {
-        db.prepare("INSERT INTO analytics_calculator (currency, revenue, team_size, heroic_hours, total_tax, email) VALUES (?, ?, ?, ?, ?, ?)")
-          .run(currency, revenue, teamSize, heroicHours, totalTax, email || null);
-      }
-    }
+    await db.execute(
+      "INSERT INTO analytics_calculator (currency, revenue, team_size, heroic_hours, total_tax, email) VALUES (?, ?, ?, ?, ?, ?)",
+      [currency, revenue, teamSize, heroicHours, totalTax, email || null]
+    );
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: "Failed to log calculator results", details: err.message });

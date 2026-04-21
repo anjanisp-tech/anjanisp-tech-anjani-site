@@ -4,12 +4,13 @@ import { blogPosts } from '../data/blogData';
 export default function Sitemap() {
   const baseUrl = 'https://www.anjanipandey.com';
   
-  const pages = [
+  const pages: { name: string; path: string; external?: boolean }[] = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
     { name: 'Work With Me', path: '/services' },
     { name: 'Writing', path: '/writing' },
     { name: 'Resources', path: '/resources' },
+    { name: 'Personal OS', path: '/os', external: true },
     { name: 'Bottleneck Cost Calculator', path: '/calculator' },
     { name: 'Book a Call', path: '/book' },
     { name: 'Privacy Policy', path: '/privacy' },
@@ -28,10 +29,17 @@ export default function Sitemap() {
               <ul className="space-y-4">
                 {pages.map(page => (
                   <li key={page.path}>
-                    <Link to={page.path} className="text-lg text-accent hover:text-accent-light font-medium flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-                      {page.name}
-                    </Link>
+                    {page.external ? (
+                      <a href={page.path} className="text-lg text-accent hover:text-accent-light font-medium flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                        {page.name}
+                      </a>
+                    ) : (
+                      <Link to={page.path} className="text-lg text-accent hover:text-accent-light font-medium flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                        {page.name}
+                      </Link>
+                    )}
                     <div className="text-xs text-accent/40 ml-3.5 mt-1">{baseUrl}{page.path}</div>
                   </li>
                 ))}

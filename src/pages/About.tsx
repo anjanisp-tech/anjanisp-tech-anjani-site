@@ -97,13 +97,21 @@ export default function About() {
                     { label: 'Based in', value: 'Bengaluru, India' },
                     { label: 'Education', value: 'MBA, Indian School of Business (ISB)' },
                     { label: 'Background', value: 'Manufacturing Engineering' },
-                    { label: 'Current', value: 'Co-founder & CEO, MetMov LLP' },
+                    { label: 'Current', value: 'Co-founder & CEO, MetMov LLP', href: 'https://metmov.com' },
                     { label: 'Experience', value: '15+ years in operations & transformation' },
                     { label: 'Certifications', value: 'PMP, Six Sigma Black Belt' },
                   ].map((item, i) => (
                     <div key={i} className="flex justify-between items-baseline gap-4">
                       <span className="text-sm text-accent/50 font-medium whitespace-nowrap">{item.label}</span>
-                      <span className="text-sm font-semibold text-accent text-right">{item.value}</span>
+                      <span className="text-sm font-semibold text-accent text-right">
+                        {item.href ? (
+                          <a href={item.href} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            {item.value}
+                          </a>
+                        ) : (
+                          item.value
+                        )}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -117,6 +125,21 @@ export default function About() {
                     </div>
                   ))}
                 </div>
+              </div>
+              <div className="bg-muted p-8 rounded-3xl border border-border/50">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-accent/40 mb-4">Also Operating</h3>
+                <p className="text-sm font-bold text-accent mb-2">MetMov LLP</p>
+                <p className="text-sm text-accent-light leading-relaxed mb-4">
+                  B2B consulting firm I co-founded. We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale.
+                </p>
+                <a
+                  href="https://metmov.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-accent hover:underline"
+                >
+                  Visit metmov.com <ArrowRight size={14} />
+                </a>
               </div>
               <div className="bg-accent/5 p-6 rounded-3xl border border-accent/10">
                 <div className="flex items-center gap-3 mb-3">
