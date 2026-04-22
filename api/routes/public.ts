@@ -117,6 +117,114 @@ router.get("/sitemap.xml", async (req, res) => {
   }
 });
 
+// Funnel tile — live public projection for Home.tsx "Now Building" card.
+// Phase F · Task 2. Mirrors the shape of funnel_summary_public.json but reads
+// Supabase server-side on each request, so we get live numbers without a
+// deploy-storm (no hourly commits to public/).
+//
+// Trust boundary (locked by Phase D decisions log 2026-04-20):
+//   - Allow-list projection. Only visits, signups, qualified, conversion_pct.
+//   - service_role stays server-side. Browser never sees the key.
+//   - Graceful hide: on any failure the endpoint returns 204 so the client
+//     can render nothing. No error detail leaks to the homepage.
+//
+// Column mapping: visits=page_view, signups=subscribe, qualified=confirm,
+// conversion_pct=end_to_end_rate*100. Same as emit_public_funnel.py v2.1.0.
+router.get("/funnel-public", async (req, res) => {
+  const supabaseUrl = process.env.SUPABASE_URL || "https://ydjauliaggmpunfehzzo.supabase.co";
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceKey) {
+    res.status(204).end();
+    return;
+  }
+
+  // Current ISO week (IST-bucketed to match the v1 view).
+  const IST_OFFSET_MIN = 330;
+  const nowIst = new Date(Date.now() + IST_OFFSET_MIN * 60_000);
+  const y = nowIst.getUTCFullYear();
+  const m = nowIst.getUTCMonth();
+  const d = nowIst.getUTCDate();
+  // Monday-of-week in IST (view uses Monday-start ISO weeks).
+  const dow = new Date(Date.UTC(y, m, d)).getUTCDay();           // 0=Sun..6=Sat
+  const offsetToMonday = (dow + 6) % 7;                          // Mon=0 ... Sun=6
+  const monday = new Date(Date.UTC(y, m, d - offsetToMonday));
+  const weekStart = monday.toISOString().slice(0, 10);           // YYYY-MM-DD
+
+  try {
+    const url = `${supabaseUrl.replace(/\/$/, "")}/rest/v1/funnel_summary_v1?week_start=eq.${weekStart}&limit=1`;
+    const upstream = await fetch(url, {
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+        Accept: "application/json",
+        "User-Agent": "anjanipandey-funnel-public/1.0.0",
+      },
+      // Vercel Node runtime has global fetch (Node 18+).
+      signal: AbortSignal.timeout(10_000),
+    });
+
+    if (!upstream.ok) {
+      res.status(204).end();
+      return;
+    }
+    const rows: any = await upstream.json();
+    if (!Array.isArray(rows) || rows.length === 0) {
+      res.status(204).end();
+      return;
+    }
+    const row = rows[0];
+    const visits = Number(row.page_view) || 0;
+    const signups = Number(row.subscribe) || 0;
+    const qualified = Number(row.confirm) || 0;
+    const e2e = row.end_to_end_rate;
+    const conversion_pct = e2e == null ? 0 : Math.round(Number(e2e) * 10000) / 100;
+
+    // Gate: visits=0 → hide (matches emitter exit code 3).
+    if (visits === 0 || conversion_pct < 0 || conversion_pct > 100) {
+      res.status(204).end();
+      return;
+    }
+
+    const today = new Date(Date.now() + IST_OFFSET_MIN * 60_000).toISOString().slice(0, 10);
+    const weekLabel = `${y}-W${String(getIsoWeek(monday)).padStart(2, "0")}`;
+
+    res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.json({
+      schema_version: "1.0.0",
+      as_of: today,
+      brief_id: weekLabel,
+      period: {
+        start: row.week_start,
+        end: row.week_end,
+        label: "last 7 days",
+      },
+      funnel: {
+        visits,
+        signups,
+        qualified,
+        conversion_pct,
+      },
+      notes: {
+        source: "live",
+        trust_boundary: "Server-side allow-list projection. Operator-only fields are never exposed. Allow-list: visits, signups, qualified, conversion_pct.",
+      },
+    });
+  } catch (_err) {
+    // Silent hide on network / parse failure — homepage must never surface errors.
+    res.status(204).end();
+  }
+});
+
+function getIsoWeek(mondayUtc: Date): number {
+  // Thursday of the same ISO week determines the ISO year/week.
+  const thursday = new Date(mondayUtc.getTime());
+  thursday.setUTCDate(mondayUtc.getUTCDate() + 3);
+  const jan1 = new Date(Date.UTC(thursday.getUTCFullYear(), 0, 1));
+  const days = Math.floor((thursday.getTime() - jan1.getTime()) / 86_400_000);
+  return Math.floor(days / 7) + 1;
+}
+
 // Diagnostic route (admin-only)
 router.get("/diagnostic", async (req, res, next) => {
   try {
@@ -223,6 +331,11 @@ router.get("/diagnostic", async (req, res, next) => {
     });
   } catch (err: any) {
     res.status(500).json({ status: "error", error: "Diagnostic failed", details: err.message });
+  }
+});
+
+export default router;
+d", details: err.message });
   }
 });
 

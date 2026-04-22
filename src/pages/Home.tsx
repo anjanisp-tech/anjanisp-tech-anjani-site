@@ -5,10 +5,17 @@ import { motion, AnimatePresence } from 'motion/react';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 import SEO from '../components/SEO';
 
+type FunnelTile = {
+  as_of: string;
+  period: { start: string; end: string; label: string };
+  funnel: { visits: number; signups: number; qualified: number; conversion_pct: number };
+};
+
 export default function Home() {
   const [posts, setPosts] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
+  const [funnel, setFunnel] = useState<FunnelTile | null>(null);
 
   const testimonials = [
     {
@@ -58,6 +65,28 @@ export default function Home() {
         }
       })
       .catch(err => console.error('Error fetching posts:', err));
+  }, []);
+
+  // Phase F funnel tile. Silent hide on any failure — homepage must never
+  // surface errors. The API route applies allow-list projection server-side.
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetch('/api/funnel-public', { signal: ctrl.signal })
+      .then(res => {
+        if (!res.ok || res.status === 204) return null;
+        return res.json();
+      })
+      .then((data: FunnelTile | null) => {
+        if (!data || !data.funnel || !data.period) return;
+        // 9-day staleness cutoff (matches Public Command Center tile).
+        const asOf = new Date(data.as_of);
+        const ageDays = (Date.now() - asOf.getTime()) / 86_400_000;
+        if (!Number.isFinite(ageDays) || ageDays > 9) return;
+        if ((data.funnel.visits ?? 0) <= 0) return;
+        setFunnel(data);
+      })
+      .catch(() => { /* silent hide */ });
+    return () => ctrl.abort();
   }, []);
 
   const nextSlide = () => {
@@ -146,9 +175,32 @@ export default function Home() {
                 <span className="text-xs font-bold uppercase tracking-widest text-accent/40">Now Building</span>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold mb-4">Personal OS</h2>
-              <p className="text-accent-light leading-relaxed mb-8 flex-grow">
+              <p className="text-accent-light leading-relaxed mb-6 flex-grow">
                 A working operating system for solo operators. Claude as the kernel, nine subsystems live, the architecture I run my own business on. Open the public command center.
               </p>
+
+              {funnel && (
+                <div className="mb-6 pt-4 border-t border-border/40">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-lg font-bold text-accent tabular-nums">{funnel.funnel.visits.toLocaleString('en-IN')}</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-accent/50">Visits</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-lg font-bold text-accent tabular-nums">{funnel.funnel.signups.toLocaleString('en-IN')}</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-accent/50">Signups</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-lg font-bold text-accent tabular-nums">{funnel.funnel.conversion_pct.toFixed(1)}%</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-accent/50">E2E</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-accent/40 mt-2 leading-tight">
+                    {funnel.period.label} · live from the operator database
+                  </p>
+                </div>
+              )}
+
               <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">
                 Open the OS <ArrowRight size={16} />
               </span>
