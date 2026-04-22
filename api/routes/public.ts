@@ -335,8 +335,3 @@ router.get("/diagnostic", async (req, res, next) => {
 });
 
 export default router;
-d", details: err.message });
-  }
-});
-
-export default router;
