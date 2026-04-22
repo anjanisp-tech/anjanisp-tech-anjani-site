@@ -15,7 +15,7 @@ export default function BookCall() {
     <div className="bg-white min-h-screen">
       <SEO
         title="Book a Fit Call | Anjani Pandey"
-        description="Book a 20-30 minute fit call with Anjani Pandey to discuss your scaling challenges. No sales pressure, clear next steps."
+        description="Book a 20-30 minute fit call with Anjani Pandey. Scope whether MetMov consulting, a Build Sprint, or Personal OS Care is the right fit. No sales pressure, clear next steps."
         canonical="https://www.anjanipandey.com/book"
       />
       <section className="pt-32 pb-20 md:pt-40 md:pb-32">
@@ -23,7 +23,7 @@ export default function BookCall() {
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="mb-8">Book a Fit Call</h1>
             <p className="text-xl md:text-2xl text-accent-light mb-12 leading-relaxed">
-              This 20-30 minute conversation is designed to qualify your current operating challenges against our ICP and identify if MetMov is the right fit for your scaling journey.
+              A 20-30 minute call. We'll map what you're actually solving for and see whether it's MetMov consulting, a Personal OS Build Sprint, or Care. If nothing fits, I'll say so.
             </p>
 
             {/* Reassurance Block */}
@@ -43,7 +43,7 @@ export default function BookCall() {
             <div className="mb-24 p-8 border border-border rounded-3xl bg-muted/30 text-left">
               <h3 className="text-xl font-bold mb-4">Why book this call?</h3>
               <p className="text-accent-light mb-0">
-                You'll be speaking directly with <strong>Anjani Pandey</strong>. With 14+ years of experience scaling operations at companies like <strong>Y-Not</strong>, <strong>Udaan</strong>, and <strong>BHEL</strong>, Anjani brings a unique blend of strategic design and hands-on execution discipline to help you solve your most complex scaling challenges.
+                You'll be speaking directly with <strong>Anjani Pandey</strong>. 15+ years scaling operations at <strong>Udaan</strong>, <strong>Y-Not</strong>, and <strong>BHEL</strong>. Now running <strong>MetMov</strong> (B2B consulting) and building <strong>Personal OS</strong> installs for operators who want to stop doing their own ops manually. Come with a specific problem; you'll leave with a clear read on whether we're a fit.
               </p>
             </div>
 
@@ -157,7 +157,7 @@ export default function BookCall() {
       <section className="bg-muted border-t border-border/50 py-20">
         <div className="container-custom text-center">
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-accent/30 mb-0">
-            Founder-Led Businesses • Structured Systems • Scalable Execution
+            Structured Systems • Scalable Execution • Personal OS
           </p>
         </div>
       </section>

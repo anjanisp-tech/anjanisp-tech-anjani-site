@@ -123,7 +123,7 @@ export default function Home() {
               Operations leader. Builder. Writing about systems, scale, and what AI changes about both.
             </p>
             <p className="text-base text-accent-light/60 leading-relaxed">
-              14+ years designing execution systems inside high-growth companies. Now building <a href="https://metmov.com" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov</a> to help founder-led businesses install the structural backbone they're missing. ISB alumnus. Based in Bengaluru.
+              15+ years designing execution systems inside high-growth companies. Now building <a href="https://metmov.com" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov</a> to help founder-led businesses install the structural backbone they're missing. ISB alumnus. Based in Bengaluru.
             </p>
           </div>
         </div>
