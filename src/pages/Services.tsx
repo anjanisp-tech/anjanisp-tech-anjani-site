@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Target, CheckCircle2, AlertCircle, Sparkles, Cpu, Layers, Wrench } from 'lucide-react';
-import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, LINKEDIN_URL } from '../constants';
+import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, BUILD_SPRINT_URL, CARE_URL, LINKEDIN_URL } from '../constants';
 import SEO from '../components/SEO';
 import { funnel } from '../lib/funnel';
 
@@ -381,7 +381,7 @@ export default function Services() {
                     <div className="text-3xl font-bold text-accent mb-1">&#8377;1,25,000</div>
                     <p className="text-sm text-accent-light">4-6 weeks. Done-with-you. Fixed scope.</p>
                   </div>
-                  <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="build_sprint" className="btn-primary gap-3 px-10">
+                  <a href={BUILD_SPRINT_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="build_sprint" className="btn-primary gap-3 px-10">
                     Book a Scoping Call
                     <ArrowRight size={20} />
                   </a>
@@ -443,7 +443,7 @@ export default function Services() {
                     <div className="text-3xl font-bold text-accent mb-1">&#8377;15,000<span className="text-base font-medium text-accent-light">/mo</span></div>
                     <p className="text-sm text-accent-light">3-month minimum. Quarterly prepay option: &#8377;40,000.</p>
                   </div>
-                  <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="os_care" className="btn-primary gap-3 px-10">
+                  <a href={CARE_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="os_care" className="btn-primary gap-3 px-10">
                     Talk About Care
                     <ArrowRight size={20} />
                   </a>

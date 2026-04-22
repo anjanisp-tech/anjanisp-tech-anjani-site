@@ -163,7 +163,7 @@ AI handles about 40-50% of total delivery effort. But it handles the *least diff
 A 3-person firm still needs invoicing, contracts, scheduling, reporting, and admin. These don\u2019t generate revenue but consume real hours.
 
 ### My Stack (Zero Code Required)
-- **Calendly** for scheduling. Point-and-click setup, done in 20 minutes.
+- **Cal.com** for scheduling. Point-and-click setup, done in 20 minutes.
 - **Google Workspace + Claude** for email management. I draft responses in Claude and paste them. For routine threads, Claude drafts the reply and I just review.
 - **Supabase** as a lightweight data layer. Okay, this one Claude actually built for me. I described what I needed ("a database to track clients, engagements, and pipeline") and Claude wrote the schema, the queries, everything. I deployed it by following Claude\u2019s step-by-step instructions. I still can\u2019t read the code it wrote. It works.
 - **Claude** for contract drafts, SOW generation, and policy documents. I describe the engagement terms in plain language, Claude generates the legal-ish document, and my actual lawyer reviews it.
@@ -225,7 +225,7 @@ That\u2019s **half the hours for the same (or better) output.** And remember: I 
 
 I offer a **1:1 AI Setup Sprint** where I personally help you build your Claude-based AI system. We go through your specific workflows, set up the tools, build your prompt library, and get you operational in 2-3 focused sessions. No technical knowledge required \u2014 that\u2019s literally the point.
 
-[Learn more about the AI Setup Sprint](/services) or [book a free call to see if it\u2019s a fit](https://calendly.com/metmovllp/30min).
+[Learn more about the AI Setup Sprint](/services) or [book a free call to see if it\u2019s a fit](https://cal.com/anjanipandey/ai-diagnostic).
 
 ---
 
@@ -237,7 +237,7 @@ You don\u2019t need to code. You need to think in systems. AI handles the rest.
 
 ---
 
-*Want to discuss how this applies to your work? [Book a call](https://calendly.com/metmovllp/30min) or [connect with me on LinkedIn](https://www.linkedin.com/in/anjanispandey/).*`,
+*Want to discuss how this applies to your work? [Book a call](https://cal.com/anjanipandey/ai-diagnostic) or [connect with me on LinkedIn](https://www.linkedin.com/in/anjanispandey/).*`,
   },
 ];
 
