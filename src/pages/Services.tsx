@@ -89,21 +89,86 @@ export default function Services() {
   return (
     <div className="bg-white min-h-screen">
       <SEO
-        title="Services | Operating Spine & Scaling | Anjani Pandey"
-        description="MetMov's operating spine methodology: we diagnose structural bottlenecks, install scalable systems, and embed them into your team. For $1M-$10M ARR businesses."
+        title="Services | Operating Spine & Personal OS | Anjani Pandey"
+        description="Two tracks. For businesses: MetMov's Operating Spine methodology. For operators: Personal OS Build Sprint and Care. AI setup sprints for individuals."
         canonical="https://www.anjanipandey.com/services"
         jsonLd={{
           "@context": "https://schema.org",
-          "@type": "Service",
-          "name": "Operating Spine Consulting",
-          "provider": {
-            "@type": "Organization",
-            "name": "MetMov LLP",
-            "url": "https://www.metmov.com"
-          },
-          "description": "Diagnose structural bottlenecks and install scalable operating systems for $1M-$10M ARR businesses.",
-          "areaServed": "Worldwide",
-          "serviceType": "Business Consulting"
+          "@graph": [
+            {
+              "@type": "Service",
+              "@id": "https://www.anjanipandey.com/services#operating-spine",
+              "name": "Operating Spine Consulting",
+              "description": "Diagnose structural bottlenecks and install scalable operating systems for $1M-$10M ARR businesses. Includes Diagnostic Sprint, Operating Spine Install, and Fractional COO engagements.",
+              "provider": {
+                "@type": "Organization",
+                "name": "MetMov LLP",
+                "url": "https://www.metmov.com"
+              },
+              "areaServed": "Worldwide",
+              "serviceType": "Business Consulting"
+            },
+            {
+              "@type": "Service",
+              "@id": "https://www.anjanipandey.com/services#ai-setup-sprint",
+              "name": "AI Setup Sprint",
+              "description": "2-3 focused 1:1 sessions to set up a Claude-based AI system tailored to the individual's work. Fixed price INR 25,000.",
+              "provider": {
+                "@type": "Person",
+                "name": "Anjani Pandey",
+                "url": "https://www.anjanipandey.com"
+              },
+              "areaServed": "Worldwide",
+              "serviceType": "AI Consulting",
+              "offers": {
+                "@type": "Offer",
+                "price": "25000",
+                "priceCurrency": "INR"
+              }
+            },
+            {
+              "@type": "Service",
+              "@id": "https://www.anjanipandey.com/services#personal-os-build-sprint",
+              "name": "Personal OS Build Sprint",
+              "description": "4-6 week done-with-you installation of a Personal OS. Kickoff, weekly pairing, async support, 30-day post-launch warranty. Fixed scope.",
+              "provider": {
+                "@type": "Person",
+                "name": "Anjani Pandey",
+                "url": "https://www.anjanipandey.com"
+              },
+              "areaServed": "Worldwide",
+              "serviceType": "AI Consulting",
+              "offers": {
+                "@type": "Offer",
+                "price": "125000",
+                "priceCurrency": "INR"
+              }
+            },
+            {
+              "@type": "Service",
+              "@id": "https://www.anjanipandey.com/services#personal-os-care",
+              "name": "Personal OS Care",
+              "description": "Monthly retainer for Personal OS maintenance and quarterly subsystem upgrades. 3-month minimum.",
+              "provider": {
+                "@type": "Person",
+                "name": "Anjani Pandey",
+                "url": "https://www.anjanipandey.com"
+              },
+              "areaServed": "Worldwide",
+              "serviceType": "AI Consulting",
+              "offers": {
+                "@type": "Offer",
+                "price": "15000",
+                "priceCurrency": "INR",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": "15000",
+                  "priceCurrency": "INR",
+                  "unitText": "MONTH"
+                }
+              }
+            }
+          ]
         }}
       />
       {/* ... header ... */}

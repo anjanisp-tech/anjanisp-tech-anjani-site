@@ -133,42 +133,8 @@ export default function Home() {
       <section className="bg-muted border-y border-border/50 py-20">
         <div className="container-custom">
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Card 1: What I'm Writing */}
-            <Link to="/writing" className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm flex flex-col">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-accent">
-                  <PenLine size={20} />
-                </div>
-                <span className="text-xs font-bold uppercase tracking-widest text-accent/40">What I'm Writing</span>
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">Systems, Scale, and AI</h2>
-              <p className="text-accent-light leading-relaxed mb-8 flex-grow">
-                Frameworks and observations from 14 years of operating experience. How businesses break, how they scale, and what changes when AI enters the picture.
-              </p>
-              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">
-                Read latest <ArrowRight size={16} />
-              </span>
-            </Link>
-
-            {/* Card 2: What I'm Building */}
-            <Link to="/services" className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm flex flex-col">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-accent">
-                  <Briefcase size={20} />
-                </div>
-                <span className="text-xs font-bold uppercase tracking-widest text-accent/40">What I'm Building</span>
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">MetMov LLP</h2>
-              <p className="text-accent-light leading-relaxed mb-8 flex-grow">
-                We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale without the founder being the system.
-              </p>
-              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">
-                See how we work <ArrowRight size={16} />
-              </span>
-            </Link>
-
-            {/* Card 3: Now Building — Personal OS */}
-            <a href="/os" className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm flex flex-col relative overflow-hidden">
+            {/* Card 1: Now Building — Personal OS (primary) */}
+            <a href="/os" className="bg-white p-10 rounded-3xl border border-accent/30 hover:border-accent transition-all group shadow-md flex flex-col relative overflow-hidden">
               <div className="absolute top-6 right-6 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Live
@@ -187,6 +153,40 @@ export default function Home() {
                 Open the OS <ArrowRight size={16} />
               </span>
             </a>
+
+            {/* Card 2: What I'm Building — MetMov */}
+            <Link to="/services" className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm flex flex-col">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-accent">
+                  <Briefcase size={20} />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest text-accent/40">What I'm Building</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">MetMov LLP</h2>
+              <p className="text-accent-light leading-relaxed mb-8 flex-grow">
+                We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale without the founder being the system.
+              </p>
+              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">
+                See how we work <ArrowRight size={16} />
+              </span>
+            </Link>
+
+            {/* Card 3: What I'm Writing */}
+            <Link to="/writing" className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm flex flex-col">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-accent">
+                  <PenLine size={20} />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest text-accent/40">What I'm Writing</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">Systems, Scale, and AI</h2>
+              <p className="text-accent-light leading-relaxed mb-8 flex-grow">
+                Frameworks and observations from 15+ years of operating experience. How businesses break, how they scale, and what changes when AI enters the picture.
+              </p>
+              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">
+                Read latest <ArrowRight size={16} />
+              </span>
+            </Link>
           </div>
         </div>
       </section>

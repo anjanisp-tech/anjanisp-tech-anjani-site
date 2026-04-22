@@ -85,7 +85,7 @@ export default function About() {
                   That conviction is why I co-founded <a href="https://metmov.com" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov LLP</a> with Chaitanya Eswarapragada and Antriksh Kumar. We help founder-led businesses diagnose structural diseases and install the operating spine that lets them run without the founder being the system.
                 </p>
                 <p>
-                  More recently, I've been building at the intersection of AI and operations -- not AI as a tool bolted on, but AI that changes how businesses need to be structured, made legible, and run. I'm writing about that intersection as I figure it out.
+                  More recently, I've been building at the intersection of AI and operations -- not AI as a tool bolted on, but AI that changes how businesses need to be structured, made legible, and run. My <a href="/os" className="text-accent font-semibold hover:underline">Personal OS</a> is the working proof: nine subsystems, Claude as the kernel, public metrics. I run three entities on it, and I install a version of it for operators who want the same.
                 </p>
               </div>
             </div>
@@ -128,18 +128,30 @@ export default function About() {
               </div>
               <div className="bg-muted p-8 rounded-3xl border border-border/50">
                 <h3 className="text-sm font-bold uppercase tracking-widest text-accent/40 mb-4">Also Operating</h3>
-                <p className="text-sm font-bold text-accent mb-2">MetMov LLP</p>
+                <p className="text-sm font-bold text-accent mb-2">Personal OS</p>
                 <p className="text-sm text-accent-light leading-relaxed mb-4">
-                  B2B consulting firm I co-founded. We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale.
+                  A live AI-native operating system. Nine subsystems, Claude as the kernel, public metrics. The architecture I run my own work on, and now install for other operators.
                 </p>
                 <a
-                  href="https://metmov.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-accent hover:underline"
+                  href="/os"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-accent hover:underline mb-6"
                 >
-                  Visit metmov.com <ArrowRight size={14} />
+                  Open the OS <ArrowRight size={14} />
                 </a>
+                <div className="pt-5 border-t border-border/50">
+                  <p className="text-sm font-bold text-accent mb-2">MetMov LLP</p>
+                  <p className="text-sm text-accent-light leading-relaxed mb-4">
+                    B2B consulting firm I co-founded. We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale.
+                  </p>
+                  <a
+                    href="https://metmov.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-accent hover:underline"
+                  >
+                    Visit metmov.com <ArrowRight size={14} />
+                  </a>
+                </div>
               </div>
               <div className="bg-accent/5 p-6 rounded-3xl border border-accent/10">
                 <div className="flex items-center gap-3 mb-3">
@@ -202,8 +214,8 @@ export default function About() {
                 desc: 'Why growing companies break, how to diagnose the structural diseases causing it, and what an operating spine actually looks like when installed.'
               },
               {
-                title: 'AI & Business Legibility',
-                desc: "What happens when machines need to read your business -- from the outside (AI search, retrieval) and the inside (workflows, operations). Still forming this thesis."
+                title: 'Personal OS Architecture',
+                desc: "What an AI-native operating system looks like for a solo operator. Claude as kernel, subsystems as organs, public metrics as accountability. I run three entities on mine; the design principles are published live at /os."
               },
               {
                 title: 'Systems Thinking & Execution',
