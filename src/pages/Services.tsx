@@ -506,7 +506,7 @@ export default function Services() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                   <div>
                     <div className="text-3xl font-bold text-accent mb-1">&#8377;15,000<span className="text-base font-medium text-accent-light">/mo</span></div>
-                    <p className="text-sm text-accent-light">3-month minimum. Quarterly prepay option: &#8377;40,000.</p>
+                    <p className="text-sm text-accent-light">3-month minimum.</p>
                   </div>
                   <a href={CARE_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="os_care" className="btn-primary gap-3 px-10">
                     Talk About Care
