@@ -868,11 +868,31 @@
           });
         }
       } else {
-        // Confirmed but no dl param — uncommon (would mean the storage call
-        // failed inside the edge function). Hide the download row and point
-        // the user at the form for support.
-        if (actions) actions.hidden = true;
-        subtitle.textContent = "We confirmed your email but couldn't generate a download link. Email contact@anjanipandey.com and I'll send the kit directly.";
+        // Phase A fallback: the `confirm` edge function does not yet sign
+        // Supabase Storage URLs (Phase B). Serve the Starter Kit from the
+        // static /resources/ path so confirmed subscribers receive the
+        // promised deliverable without a broken-looking error state.
+        const fallbackDl = '/resources/AI_for_Consultants_Starter_Guide.pdf';
+        if (subtitle) {
+          subtitle.textContent = "Click below to download the 4-page guide. You'll also hear from me periodically with operator notes. Unsubscribe any time.";
+        }
+        if (dlBtn) {
+          dlBtn.setAttribute('href', fallbackDl);
+          dlBtn.setAttribute('download', 'AI_for_Consultants_Starter_Guide.pdf');
+          dlBtn.addEventListener('click', () => {
+            try { FUNNEL.emit('downloaded', { trigger: 'manual_button', via: status, mode: 'static_fallback' }); } catch (_) {}
+          });
+        }
+        if (copyBtn) {
+          copyBtn.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(window.location.origin + fallbackDl);
+              const original = copyBtn.textContent || 'Copy download link';
+              copyBtn.textContent = 'Copied';
+              setTimeout(() => { copyBtn.textContent = original; }, 2500);
+            } catch (_) { /* silent */ }
+          });
+        }
       }
       banner.hidden = false;
     } else {
