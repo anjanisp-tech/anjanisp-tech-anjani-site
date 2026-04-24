@@ -47,13 +47,13 @@ const freeResources: Resource[] = [
     tag: 'LIVE',
   },
   {
-    title: 'AI for Consultants: A Practical Starter Guide',
+    title: 'Personal OS: A Practical Starter Kit for Operators',
     description:
-      'How solo consultants and small firms use AI as infrastructure, not just a tool. Real workflows, real stack.',
+      'The architecture I run three businesses on, condensed into a practical kit. Five subsystems, no code required, a first workflow you can build today.',
     format: 'PDF Guide',
     formatIcon: <FileText size={16} />,
     cta: 'Get Free Access',
-    downloadUrl: '/resources/AI_for_Consultants_Starter_Guide.pdf',
+    downloadUrl: '/resources/Personal_OS_Starter_Kit.pdf',
     gated: true,
     available: true,
     tag: 'FREE',

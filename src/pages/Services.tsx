@@ -455,6 +455,46 @@ export default function Services() {
                   Introductory rate for the first 5 sprints. We'll scope on a free 30-minute call before anyone commits.
                 </p>
               </div>
+
+              {/* Prerequisites */}
+              <div className="mt-10 bg-white border border-border rounded-2xl p-8">
+                <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent/60 bg-accent/5 border border-accent/15 rounded-full px-3 py-1 mb-4">
+                  <CheckCircle2 size={12} />
+                  Before We Start Building Together
+                </div>
+                <p className="text-sm text-accent-light leading-relaxed mb-4">
+                  A Build Sprint is collaborative. We pair on live Google Meet or Zoom sessions to install subsystems on your actual machine. You own the codebase, credentials, and SOPs at the end. To make that possible, a few baseline requirements:
+                </p>
+                <ul className="space-y-2 text-sm text-accent-light">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 size={14} className="text-accent/50 mt-1 flex-shrink-0" />
+                    <span><strong className="text-accent">Laptop with admin privileges.</strong> Personal or work. A locked-down corporate machine where you can't install software won't work.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 size={14} className="text-accent/50 mt-1 flex-shrink-0" />
+                    <span><strong className="text-accent">OS.</strong> Windows 10/11 or macOS 12 (Monterey) or later.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 size={14} className="text-accent/50 mt-1 flex-shrink-0" />
+                    <span><strong className="text-accent">Specs.</strong> 8 GB RAM minimum, 16 GB recommended. 20 GB free storage.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 size={14} className="text-accent/50 mt-1 flex-shrink-0" />
+                    <span><strong className="text-accent">Internet.</strong> Stable connection, 10 Mbps+ for screen-share pairing.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 size={14} className="text-accent/50 mt-1 flex-shrink-0" />
+                    <span><strong className="text-accent">Installed before we start.</strong> Claude Desktop (for Cowork), a code editor like VS Code, Chrome or Edge.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 size={14} className="text-accent/50 mt-1 flex-shrink-0" />
+                    <span><strong className="text-accent">Time commitment.</strong> 4 to 6 hours per week of live pairing sessions across 4 to 6 weeks. You bring your actual work; we build the subsystems around it.</span>
+                  </li>
+                </ul>
+                <p className="text-xs text-accent-light/60 mt-5 leading-relaxed">
+                  We cover all of this on the scoping call before you commit. If you're not sure any of it fits, book the call and we'll figure it out together.
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -872,13 +872,13 @@
         // Supabase Storage URLs (Phase B). Serve the Starter Kit from the
         // static /resources/ path so confirmed subscribers receive the
         // promised deliverable without a broken-looking error state.
-        const fallbackDl = '/resources/AI_for_Consultants_Starter_Guide.pdf';
+        const fallbackDl = '/resources/Personal_OS_Starter_Kit.pdf';
         if (subtitle) {
-          subtitle.textContent = "Click below to download the 4-page guide. You'll also hear from me periodically with operator notes. Unsubscribe any time.";
+          subtitle.textContent = "Click below to download the Starter Kit. You'll also hear from me periodically with operator notes. Unsubscribe any time.";
         }
         if (dlBtn) {
           dlBtn.setAttribute('href', fallbackDl);
-          dlBtn.setAttribute('download', 'AI_for_Consultants_Starter_Guide.pdf');
+          dlBtn.setAttribute('download', 'Personal_OS_Starter_Kit.pdf');
           dlBtn.addEventListener('click', () => {
             try { FUNNEL.emit('downloaded', { trigger: 'manual_button', via: status, mode: 'static_fallback' }); } catch (_) {}
           });
