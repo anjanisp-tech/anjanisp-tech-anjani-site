@@ -94,8 +94,8 @@ const paidResources: Resource[] = [
     cta: 'Buy on Gumroad',
     href: 'https://anjanipandey.gumroad.com/l/founder-scale',
     gated: false,
-    available: true,
-    tag: 'Rs.499',
+    available: false,
+    tag: 'COMING SOON',
   },
 ];
 
