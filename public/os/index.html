@@ -1031,7 +1031,11 @@
 <!-- Chat assistant: same Gemini-backed bot as anjanipandey.com.
      Bundled separately (src/chat-embed.tsx + vite.chat-embed.config.ts)
      so it can mount on this static page. -->
-<div id="chat-mount"></div>
+<!-- Theme tokens set inline so they cascade to every descendant of #chat-mount.
+     /os loads CDN Tailwind which can clobber chat-embed.css's :root tokens;
+     scoping here makes the bot's bg-accent / text-accent / border-border classes
+     resolve correctly regardless of /os's own design tokens. -->
+<div id="chat-mount" style="--color-accent:#0f172a;--color-accent-light:#475569;--color-primary:#0F766E;--color-surface:#ffffff;--color-muted:#f8fafc;--color-border:#e2e8f0"></div>
 <script type="module" src="/chat-embed.js"></script>
 <link rel="stylesheet" href="/chat-embed.css" />
 
