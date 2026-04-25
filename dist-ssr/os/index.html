@@ -517,6 +517,13 @@
           <a href="/book" class="btn-primary w-full text-center block">Book a diagnostic call</a>
           <p class="text-xs muted mt-3 text-center">Free · 30 minutes · No pitch if there's no fit.</p>
         </div>
+
+        <div class="card mt-6">
+          <p class="text-xs uppercase muted tracking-wider mb-2">Testimonials</p>
+          <p class="ink-soft text-sm italic">
+            — Testimonials slot (to be populated after first 3 build-outs).
+          </p>
+        </div>
       </aside>
     </div>
 
@@ -868,31 +875,11 @@
           });
         }
       } else {
-        // Phase A fallback: the `confirm` edge function does not yet sign
-        // Supabase Storage URLs (Phase B). Serve the Starter Kit from the
-        // static /resources/ path so confirmed subscribers receive the
-        // promised deliverable without a broken-looking error state.
-        const fallbackDl = '/resources/Personal_OS_Starter_Kit.pdf';
-        if (subtitle) {
-          subtitle.textContent = "Click below to download the Starter Kit. You'll also hear from me periodically with operator notes. Unsubscribe any time.";
-        }
-        if (dlBtn) {
-          dlBtn.setAttribute('href', fallbackDl);
-          dlBtn.setAttribute('download', 'Personal_OS_Starter_Kit.pdf');
-          dlBtn.addEventListener('click', () => {
-            try { FUNNEL.emit('downloaded', { trigger: 'manual_button', via: status, mode: 'static_fallback' }); } catch (_) {}
-          });
-        }
-        if (copyBtn) {
-          copyBtn.addEventListener('click', async () => {
-            try {
-              await navigator.clipboard.writeText(window.location.origin + fallbackDl);
-              const original = copyBtn.textContent || 'Copy download link';
-              copyBtn.textContent = 'Copied';
-              setTimeout(() => { copyBtn.textContent = original; }, 2500);
-            } catch (_) { /* silent */ }
-          });
-        }
+        // Confirmed but no dl param — uncommon (would mean the storage call
+        // failed inside the edge function). Hide the download row and point
+        // the user at the form for support.
+        if (actions) actions.hidden = true;
+        subtitle.textContent = "We confirmed your email but couldn't generate a download link. Email contact@anjanipandey.com and I'll send the kit directly.";
       }
       banner.hidden = false;
     } else {
@@ -1027,31 +1014,6 @@
     });
   }
 </script>
-
-<!-- Chat assistant: same Gemini-backed bot as anjanipandey.com.
-     Bundled separately (src/chat-embed.tsx + vite.chat-embed.config.ts)
-     so it can mount on this static page. -->
-<div id="chat-mount"></div>
-<script type="module" src="/chat-embed.js"></script>
-<link rel="stylesheet" href="/chat-embed.css" />
-
-</body>
-</html>
-ant: same Gemini-backed bot as the main site (anjanipandey.com),
-     bundled separately so it can mount on this static page.
-     Source: src/chat-embed.tsx + vite.chat-embed.config.ts -->
-<div id="chat-mount"></div>
-<script type="module" src="/chat-embed.js"></script>
-<link rel="stylesheet" href="/chat-embed.css" />
-
-</body>
-</html>
-ant: same Gemini-backed bot as anjanipandey.com.
-     Bundled separately (src/chat-embed.tsx + vite.chat-embed.config.ts)
-     so it can mount on this static page. -->
-<div id="chat-mount"></div>
-<script type="module" src="/chat-embed.js"></script>
-<link rel="stylesheet" href="/chat-embed.css" />
 
 </body>
 </html>

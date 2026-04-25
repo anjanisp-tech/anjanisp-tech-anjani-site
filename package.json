@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --import tsx server.ts",
     "start": "node --import tsx server.ts",
-    "build": "vite build && node --import tsx scripts/prerender.tsx",
+    "build": "vite build && vite build -c vite.chat-embed.config.ts && node --import tsx scripts/prerender.tsx",
+    "build:chat-embed": "vite build -c vite.chat-embed.config.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"

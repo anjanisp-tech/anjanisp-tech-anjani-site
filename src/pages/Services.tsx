@@ -130,43 +130,27 @@ export default function Services() {
               "@type": "Service",
               "@id": "https://www.anjanipandey.com/services#personal-os-build-sprint",
               "name": "Personal OS Build Sprint",
-              "description": "4-6 week done-with-you installation of a Personal OS. Kickoff, weekly pairing, async support, 30-day post-launch warranty. Fixed scope.",
+              "description": "Done-with-you installation of a Personal OS. Kickoff, weekly pairing, async support, 30-day post-launch warranty. Scope and pricing agreed on a fit call.",
               "provider": {
                 "@type": "Person",
                 "name": "Anjani Pandey",
                 "url": "https://www.anjanipandey.com"
               },
               "areaServed": "Worldwide",
-              "serviceType": "AI Consulting",
-              "offers": {
-                "@type": "Offer",
-                "price": "125000",
-                "priceCurrency": "INR"
-              }
+              "serviceType": "AI Consulting"
             },
             {
               "@type": "Service",
               "@id": "https://www.anjanipandey.com/services#personal-os-care",
               "name": "Personal OS Care",
-              "description": "Monthly retainer for Personal OS maintenance and quarterly subsystem upgrades.",
+              "description": "Ongoing maintenance for a live Personal OS, with periodic subsystem upgrades. Scope and pricing agreed on a fit call.",
               "provider": {
                 "@type": "Person",
                 "name": "Anjani Pandey",
                 "url": "https://www.anjanipandey.com"
               },
               "areaServed": "Worldwide",
-              "serviceType": "AI Consulting",
-              "offers": {
-                "@type": "Offer",
-                "price": "15000",
-                "priceCurrency": "INR",
-                "priceSpecification": {
-                  "@type": "UnitPriceSpecification",
-                  "price": "15000",
-                  "priceCurrency": "INR",
-                  "unitText": "MONTH"
-                }
-              }
+              "serviceType": "AI Consulting"
             }
           ]
         }}
@@ -439,12 +423,12 @@ export default function Services() {
                 </div>
               </div>
 
-              {/* Pricing & CTA */}
+              {/* Scope & CTA */}
               <div className="bg-muted/50 rounded-2xl p-8 border border-border/50">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                   <div>
-                    <div className="text-3xl font-bold text-accent mb-1">&#8377;1,25,000</div>
-                    <p className="text-sm text-accent-light">4-6 weeks. Done-with-you. Fixed scope.</p>
+                    <div className="text-lg font-semibold text-accent mb-1">By application</div>
+                    <p className="text-sm text-accent-light">Done-with-you. Scope and pricing agreed on a fit call.</p>
                   </div>
                   <a href={BUILD_SPRINT_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="build_sprint" className="btn-primary gap-3 px-10">
                     Book a Scoping Call
@@ -452,7 +436,7 @@ export default function Services() {
                   </a>
                 </div>
                 <p className="text-xs text-accent-light/50 mt-4 font-medium">
-                  Introductory rate for the first 5 sprints. We'll scope on a free 30-minute call before anyone commits.
+                  We'll scope on a free 30-minute call before anyone commits.
                 </p>
               </div>
 
@@ -541,11 +525,12 @@ export default function Services() {
                 </ul>
               </div>
 
-              {/* Pricing & CTA */}
+              {/* Scope & CTA */}
               <div className="bg-muted/50 rounded-2xl p-8 border border-border/50">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                   <div>
-                    <div className="text-3xl font-bold text-accent mb-1">&#8377;15,000<span className="text-base font-medium text-accent-light">/mo</span></div>
+                    <div className="text-lg font-semibold text-accent mb-1">By application</div>
+                    <p className="text-sm text-accent-light">Monthly retainer. Scope and pricing agreed on a fit call.</p>
                   </div>
                   <a href={CARE_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="os_care" className="btn-primary gap-3 px-10">
                     Talk About Care

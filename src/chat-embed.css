@@ -1,0 +1,25 @@
+/**
+ * Scoped CSS for the chat-embed bundle (used on /os).
+ *
+ * Why this file exists:
+ *  - The main app's `index.css` includes global `@layer base` rules
+ *    (body styles, heading defaults, etc.) that we MUST NOT inject into /os,
+ *    because /os has its own design tokens and base styles.
+ *  - But ChatAssistant uses Tailwind v4 `@theme`-defined tokens
+ *    (bg-accent, text-accent-light, bg-muted, border-border, etc.)
+ *    which require those tokens to be in scope at build time.
+ *
+ * This file imports Tailwind, redefines only the @theme tokens the chatbot uses,
+ * and stops there — no global resets, no body styles, no typography plugin.
+ */
+
+@import "tailwindcss";
+
+@theme {
+  --color-accent: #0f172a;
+  --color-accent-light: #475569;
+  --color-primary: #0F766E;
+  --color-surface: #ffffff;
+  --color-muted: #f8fafc;
+  --color-border: #e2e8f0;
+}
