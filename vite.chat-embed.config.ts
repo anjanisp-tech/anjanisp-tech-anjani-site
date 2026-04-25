@@ -24,6 +24,10 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), tailwindcss()],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      // Critical for lib mode: Vite app mode auto-replaces NODE_ENV but lib mode does NOT.
+      // Without this, React/motion/react-markdown reference `process.env.NODE_ENV` at runtime
+      // and crash with "process is not defined" before our mount code runs.
+      'process.env.NODE_ENV': JSON.stringify('production'),
     },
     build: {
       // Append to dist/ produced by the main `vite build` — do NOT wipe it.
