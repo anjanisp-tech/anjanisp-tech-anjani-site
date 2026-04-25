@@ -1031,10 +1031,19 @@
 <!-- Chat assistant: same Gemini-backed bot as anjanipandey.com.
      Bundled separately (src/chat-embed.tsx + vite.chat-embed.config.ts)
      so it can mount on this static page. -->
-<!-- Theme tokens set inline so they cascade to every descendant of #chat-mount.
-     /os loads CDN Tailwind which can clobber chat-embed.css's :root tokens;
-     scoping here makes the bot's bg-accent / text-accent / border-border classes
-     resolve correctly regardless of /os's own design tokens. -->
+<!-- Theme tokens set inline + !important overrides for the critical visual classes.
+     CDN Tailwind v3's preflight (loaded earlier in head) puts `button { background-color: transparent }`
+     in @layer base, which beats our chat-embed.css `.bg-accent` rule via layer-ordering rules.
+     Inline tokens cascade var(--color-accent) correctly, but the cross-layer cascade still
+     loses without !important. Surgical: only the classes ChatAssistant actually uses. -->
+<style>
+  #chat-mount .bg-accent { background-color: #0f172a !important; }
+  #chat-mount .bg-muted { background-color: #f8fafc !important; }
+  #chat-mount .text-accent { color: #0f172a !important; }
+  #chat-mount .text-accent-light { color: #475569 !important; }
+  #chat-mount .border-accent { border-color: #0f172a !important; }
+  #chat-mount .border-border { border-color: #e2e8f0 !important; }
+</style>
 <div id="chat-mount" style="--color-accent:#0f172a;--color-accent-light:#475569;--color-primary:#0F766E;--color-surface:#ffffff;--color-muted:#f8fafc;--color-border:#e2e8f0"></div>
 <script type="module" src="/chat-embed.js"></script>
 <link rel="stylesheet" href="/chat-embed.css" />
