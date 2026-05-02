@@ -37,44 +37,39 @@ router.get("/robots.txt", async (req, res) => {
 
 router.get("/sitemap.xml", async (req, res) => {
   try {
-    let urls = `
-  <url>
-    <loc>https://www.anjanipandey.com/</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://www.anjanipandey.com/services</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.anjanipandey.com/calculator</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.anjanipandey.com/resources</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.anjanipandey.com/blog</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.anjanipandey.com/book</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>`;
+    const today = new Date().toISOString().split('T')[0];
+    const baseUrl = "https://www.anjanipandey.com";
 
+    // Static routes — mirrors src/routes.ts staticRoutes (excludes /admin, /os, /sitemap)
+    // Note: /blog is intentionally absent — App.tsx redirects /blog to /writing.
+    // Individual posts live at /blog/<id>; that is the SEO-indexable canonical URL.
+    const staticEntries: Array<{ path: string; changefreq: string; priority: string }> = [
+      { path: "/",                              changefreq: "weekly",  priority: "1.0" },
+      { path: "/about",                         changefreq: "monthly", priority: "0.9" },
+      { path: "/services",                      changefreq: "monthly", priority: "0.8" },
+      { path: "/writing",                       changefreq: "weekly",  priority: "0.8" },
+      { path: "/calculator",                    changefreq: "monthly", priority: "0.7" },
+      { path: "/resources",                     changefreq: "weekly",  priority: "0.8" },
+      { path: "/resources/ai-consulting-stack", changefreq: "monthly", priority: "0.8" },
+      { path: "/book",                          changefreq: "monthly", priority: "0.7" },
+      { path: "/privacy",                       changefreq: "yearly",  priority: "0.3" },
+      { path: "/terms",                         changefreq: "yearly",  priority: "0.3" },
+    ];
+
+    let urls = "";
+    for (const e of staticEntries) {
+      urls += `
+  <url>
+    <loc>${baseUrl}${e.path}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${e.changefreq}</changefreq>
+    <priority>${e.priority}</priority>
+  </url>`;
+    }
+
+    // Dynamic /blog/<id> routes — single source of truth: posts table.
+    // Auto-updates on every POST publish because every request is a fresh DB read.
+    let postCount = 0;
     try {
       let posts = await db.query("SELECT id, created_at FROM posts ORDER BY created_at DESC");
 
@@ -83,34 +78,31 @@ router.get("/sitemap.xml", async (req, res) => {
       }
 
       for (const post of posts) {
-        const date = post.created_at ? new Date(post.created_at).toISOString().split('T')[0] : (post.date || new Date().toISOString().split('T')[0]);
+        const date = post.created_at
+          ? new Date(post.created_at).toISOString().split('T')[0]
+          : (post.date || today);
         urls += `
   <url>
-    <loc>https://www.anjanipandey.com/blog/${post.id}</loc>
+    <loc>${baseUrl}/blog/${post.id}</loc>
     <lastmod>${date}</lastmod>
-    <changefreq>yearly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>`;
+        postCount++;
       }
     } catch (err) {
-      console.error("Error fetching posts for sitemap:", err);
+      console.error("[sitemap.xml] Error fetching posts:", err);
     }
 
-    let content = `<?xml version="1.0" encoding="UTF-8"?>
+    const content = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}
 </urlset>`;
 
-    if (!content.includes('<url>')) {
-      const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
-      if (fs.existsSync(sitemapPath)) {
-        const fileContent = fs.readFileSync(sitemapPath, 'utf-8');
-        if (fileContent.includes('<url>')) {
-          content = fileContent;
-        }
-      }
-    }
-
+    // Diagnostic header so anjanipandey-seo-check can verify post coverage without re-parsing XML.
     res.setHeader('Content-Type', 'application/xml');
+    res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=3600');
+    res.setHeader('X-Sitemap-Posts', String(postCount));
+    res.setHeader('X-Sitemap-Static', String(staticEntries.length));
     res.send(content);
   } catch (err: any) {
     res.status(500).send("Error generating sitemap.xml");
