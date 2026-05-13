@@ -270,7 +270,7 @@ router.get("/diagnostic", async (req, res, next) => {
         const apiKey = geminiKey!.trim().replace(/^["']|["']$/g, '');
         const ai = new GoogleGenAI({ apiKey });
 
-        const models = ["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview", "gemini-2.5-flash-image"];
+        const models = ["gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.5-flash-image"];
         let errors: string[] = [];
 
         for (const modelName of models) {

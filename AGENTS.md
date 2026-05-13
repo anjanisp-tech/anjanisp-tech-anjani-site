@@ -13,4 +13,4 @@
 ## Technical Conventions
 - **Database**: Support both SQLite (local) and Postgres (production). Use the abstraction in `/api/db.ts`.
 - **Styling**: Use the established Tailwind theme in `src/index.css`.
-- **AI**: Use `gemini-3-flash-preview` for the chatbot.
+- **AI**: Chatbot primary `gemini-3.1-flash-lite` (GA), fallback `gemini-2.5-flash` (GA). Preview models retired 2026-05-12 after Google deprecation notice.

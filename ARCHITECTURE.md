@@ -11,7 +11,7 @@ The platform is designed to digitize and scale the MetMov methodology, which foc
   - **Development**: Better-SQLite3 (local file-based).
   - **Abstraction**: `/api/db.ts` handles the switching logic.
 - **AI Engine**: 
-  - **Model**: `gemini-3.1-flash-lite-preview` (Primary for speed), `gemini-3-flash-preview` (Fallback).
+  - **Model**: `gemini-3.1-flash-lite` (Primary for speed, GA), `gemini-2.5-flash` (Fallback, GA). Migrated off preview models 2026-05-12.
   - **Knowledge Base**: RAG (Retrieval-Augmented Generation) using Google Drive as the source.
 - **Email**: Resend API for notifications and diagnostics.
 - **Domain Management**: 
@@ -22,7 +22,7 @@ The platform is designed to digitize and scale the MetMov methodology, which foc
 
 ### 1. AI Chatbot (The Scaling Architect)
 - **Route**: `/api/chat`
-- **Logic**: Uses the `gemini-3.1-flash-lite-preview` model for ultra-low latency.
+- **Logic**: Uses the `gemini-3.1-flash-lite` model (GA) for ultra-low latency.
 - **Knowledge Base**: Synced from a Google Doc/Docx via Google Drive API.
 - **Tone**: High-status, clinical, authoritative, concise (bullet points).
 - **Performance**: Uses streaming responses and `ThinkingLevel.MINIMAL` for maximum speed.

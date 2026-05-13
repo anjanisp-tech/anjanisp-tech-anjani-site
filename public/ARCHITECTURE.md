@@ -65,7 +65,7 @@ The application uses a relational database with the following tables:
 - **Knowledge Source**: A Google Doc hosted on Google Drive.
 - **Sync Process**: The server fetches the doc content, cleans it, and caches it in memory.
 - **Retrieval**: When a user asks a question, the AI uses the cached knowledge as context to provide accurate, methodology-specific answers.
-- **Model**: Powered by Google's Gemini API (`gemini-3-flash-preview`).
+- **Model**: Powered by Google's Gemini API (primary `gemini-3.1-flash-lite` GA, fallback `gemini-2.5-flash` GA).
 
 ### Blog & Comments
 - **Markdown Support**: Articles are written and rendered in Markdown.
