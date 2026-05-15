@@ -270,7 +270,9 @@ router.get("/diagnostic", async (req, res, next) => {
         const apiKey = geminiKey!.trim().replace(/^["']|["']$/g, '');
         const ai = new GoogleGenAI({ apiKey });
 
-        const models = ["gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.5-flash-image"];
+        // 2026-05-15: removed gemini-2.5-flash-image (preview variant sunset 2026-01-15, broken).
+        // gemini-2.5-flash retained pending batch migration (sunset 2026-06-17, tracked in audit R2).
+        const models = ["gemini-3.1-flash-lite", "gemini-2.5-flash"];
         let errors: string[] = [];
 
         for (const modelName of models) {
