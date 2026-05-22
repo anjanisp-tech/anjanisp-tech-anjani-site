@@ -6,7 +6,7 @@
  */
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { build } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -41,8 +41,8 @@ async function prerender() {
     logLevel: 'warn',
   });
 
-  const { render } = await import(path.join(SSR_OUTDIR, 'entry-static.js'));
-  const { getPrerenderedRoutes } = await import(path.join(SSR_OUTDIR, 'routes.js'));
+  const { render } = await import(pathToFileURL(path.join(SSR_OUTDIR, 'entry-static.js')).href);
+  const { getPrerenderedRoutes } = await import(pathToFileURL(path.join(SSR_OUTDIR, 'routes.js')).href);
 
   const templatePath = path.join(DIST_DIR, 'index.html');
   if (!fs.existsSync(templatePath)) {
