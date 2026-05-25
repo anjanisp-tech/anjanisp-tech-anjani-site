@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Filter, X, Loader2, AlertCircle, Search } from 'lucide-react';
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import SEO from '../components/SEO';
+import { blogPosts as seedPosts } from '../data/blogData';
 
 interface BlogPost {
   id: string;
@@ -13,13 +14,15 @@ interface BlogPost {
 }
 
 export default function Blog() {
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isFetchingMore, setIsFetchingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [offset, setOffset] = useState(0);
   const LIMIT = 6;
+  // Seed from static blogData so the prerender (renderToString) captures real
+  // posts instead of a loading spinner. /api/posts still refreshes on mount.
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(seedPosts);
+  const [categories, setCategories] = useState<string[]>(() => Array.from(new Set(seedPosts.map(p => p.category))));
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(seedPosts.length === LIMIT);
+  const [offset, setOffset] = useState(0);
 
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -27,6 +30,10 @@ export default function Blog() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  // The first client refresh is a silent background refresh over the seeded
+  // posts; the spinner only shows for user-triggered filter/search refetches.
+  const initialFetchRef = useRef(true);
 
   // Debounce search
   useEffect(() => {
@@ -49,8 +56,14 @@ export default function Blog() {
   };
 
   const fetchPosts = useCallback(async (currentOffset: number, isInitial: boolean = false, category: string | null = null, search: string = '') => {
-    if (isInitial) setIsLoading(true);
-    else setIsFetchingMore(true);
+    // First initial fetch is a silent refresh over seeded posts (no spinner).
+    const silentRefresh = isInitial && initialFetchRef.current;
+    initialFetchRef.current = false;
+    if (isInitial) {
+      if (!silentRefresh) setIsLoading(true);
+    } else {
+      setIsFetchingMore(true);
+    }
 
     try {
       const params = new URLSearchParams({

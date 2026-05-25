@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2, Search, Layers, Rocket, ChevronLeft, ChevronR
 import { motion, AnimatePresence } from 'motion/react';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 import SEO from '../components/SEO';
+import { blogPosts as seedPosts } from '../data/blogData';
 
 type FunnelTile = {
   as_of: string;
@@ -12,7 +13,9 @@ type FunnelTile = {
 };
 
 export default function Home() {
-  const [posts, setPosts] = useState<any[]>([]);
+  // Seed from static blogData so the prerender (renderToString) captures the
+  // Latest Writing cards instead of "Loading...". /api/posts refreshes below.
+  const [posts, setPosts] = useState<any[]>(seedPosts);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [funnel, setFunnel] = useState<FunnelTile | null>(null);
