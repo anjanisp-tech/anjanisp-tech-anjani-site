@@ -37,11 +37,11 @@ const services = [
     ],
     outcomes: [
       'A functioning operating system embedded in your business',
-      'Not a document—a working rhythm',
+      'Not a document, a working rhythm',
       'Drastic reduction in internal friction',
       'A business that runs predictably without founder heroics'
     ],
-    expertiseSignal: 'Designed operating structures for growth-stage brands like Nori Next and Y-Not Design & Manufacturing.',
+    expertiseSignal: 'Designed operating structures for growth-stage consumer brands.',
     cta: 'Talk to Us',
     subtext: 'This typically follows a Diagnostic Sprint. Let\'s see where you are.'
   },

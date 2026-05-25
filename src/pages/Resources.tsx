@@ -8,8 +8,6 @@ import {
   Download,
   X,
   Sparkles,
-  ShoppingCart,
-  ExternalLink,
   Clock,
   Tag,
   Cpu,
@@ -81,21 +79,6 @@ const freeResources: Resource[] = [
     gated: true,
     available: true,
     tag: 'FREE',
-  },
-];
-
-const paidResources: Resource[] = [
-  {
-    title: "Why Your Rs.50 Cr Business Still Runs on You",
-    description:
-      "A founder's guide to building a business that scales without you. Diagnostic frameworks, operating architecture, decision maps, and a 90-day transition playbook.",
-    format: 'Ebook (PDF)',
-    formatIcon: <BookOpen size={16} />,
-    cta: 'Notify Me',
-    href: '/book',
-    gated: false,
-    available: false,
-    tag: 'COMING SOON',
   },
 ];
 
@@ -216,22 +199,6 @@ export default function Resources() {
                 </div>
               </Link>
             ))}
-
-            {/* Coming Soon placeholder if only one guide */}
-            {guides.length < 3 &&
-              Array.from({ length: 3 - guides.length }).map((_, i) => (
-                <div
-                  key={`placeholder-${i}`}
-                  className="border-2 border-dashed border-border/50 rounded-2xl p-8 flex flex-col items-center justify-center text-center min-h-[280px]"
-                >
-                  <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
-                    <BookOpen size={20} className="text-accent/20" />
-                  </div>
-                  <p className="text-sm font-bold text-accent/25 uppercase tracking-widest">
-                    Coming Soon
-                  </p>
-                </div>
-              ))}
           </div>
         </div>
       </section>
@@ -303,57 +270,6 @@ export default function Resources() {
                     Coming Soon
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Premium ─── */}
-      <section className="pb-20">
-        <div className="container-custom">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-accent/40 mb-10 flex items-center gap-2">
-            <ShoppingCart size={16} />
-            Premium
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {paidResources.map((resource, i) => (
-              <div
-                key={i}
-                className="relative bg-white border-2 border-accent/10 rounded-2xl p-8 flex flex-col transition-all hover:border-accent/30 hover:shadow-lg"
-              >
-                {resource.tag && (
-                  <div className="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-accent/5 text-accent border border-accent/15">
-                    {resource.tag}
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">
-                  {resource.formatIcon}
-                  {resource.format}
-                </div>
-
-                <h3 className="text-xl font-bold mb-3 pr-16">{resource.title}</h3>
-                <p className="text-accent-light text-sm leading-relaxed flex-grow mb-6">
-                  {resource.description}
-                </p>
-
-                <a
-                  href={resource.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => {
-                    if (typeof window.gtag === 'function') {
-                      window.gtag('event', 'ebook_cta_click', {
-                        resource_name: resource.title,
-                      });
-                    }
-                  }}
-                  className="btn-primary gap-2 w-full justify-center text-sm py-3"
-                >
-                  {resource.cta}
-                  <ExternalLink size={16} />
-                </a>
               </div>
             ))}
           </div>

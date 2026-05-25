@@ -85,10 +85,10 @@ export default function PrivacyPolicy() {
                 If you are located in the European Economic Area (EEA) or United Kingdom, personal data is processed under one or more of the following lawful bases:
               </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong>Consent</strong> — when you voluntarily submit information</li>
-                <li><strong>Legitimate Interest</strong> — to operate, improve, and secure the website</li>
-                <li><strong>Contractual Necessity</strong> — if you enter into a consulting engagement</li>
-                <li><strong>Legal Obligation</strong> — if required under applicable law</li>
+                <li><strong>Consent</strong>: when you voluntarily submit information</li>
+                <li><strong>Legitimate Interest</strong>: to operate, improve, and secure the website</li>
+                <li><strong>Contractual Necessity</strong>: if you enter into a consulting engagement</li>
+                <li><strong>Legal Obligation</strong>: if required under applicable law</li>
               </ul>
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">5. Purpose of Data Processing</h2>
