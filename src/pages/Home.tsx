@@ -591,6 +591,32 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Work with me — firewall-safe bridge to the MetMov offer */}
+      <section className="bg-white">
+        <div className="container-custom">
+          <div className="max-w-4xl mx-auto bg-muted border border-border rounded-3xl p-10 md:p-14">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-accent border border-border">
+                <Briefcase size={20} />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-accent/40">Work with me</span>
+            </div>
+            <p className="text-xl md:text-2xl text-accent-light leading-relaxed mb-8 max-w-2xl">
+              Beyond writing and building in public, I run MetMov, where we install the operating spine in founder-led firms so they can scale without the founder as the bottleneck. If your business has hit that ceiling, that is the work.
+            </p>
+            <a
+              href="https://metmov.com/operating-spine"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary inline-flex items-center gap-3"
+            >
+              See Operating Spine Install
+              <ArrowRight size={18} />
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="bg-accent text-white py-24">
         <div className="container-custom text-center">
