@@ -12,3 +12,6 @@ coverage/
 
 # Script backups
 *.bak-*
+
+# SSR prerender output (regenerated each build)
+dist-ssr/
