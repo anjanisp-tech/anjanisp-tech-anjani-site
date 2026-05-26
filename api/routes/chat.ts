@@ -59,7 +59,7 @@ router.post("/chat", async (req, res) => {
 
 WHO ANJANI IS:
 - Operations and transformation leader with 14+ years of experience
-- Co-founder & CEO of MetMov LLP (B2B consulting firm, Bengaluru)
+- Founder & CEO of MetMov LLP (B2B consulting firm, Bengaluru)
 - Builder of Personal OS for individual operators -- Level4-OS is his own running proof
 - ISB alumnus (MBA), background in Manufacturing Engineering
 - Previously at BHEL, Udaan, Y-NOT

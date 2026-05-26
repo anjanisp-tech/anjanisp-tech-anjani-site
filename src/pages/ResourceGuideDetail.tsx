@@ -196,7 +196,7 @@ export default function ResourceGuideDetail() {
                   <div>
                     <div className="font-bold text-lg">Anjani Pandey</div>
                     <div className="text-sm text-accent-light">
-                      Operations leader. Builder. Co-founder, MetMov LLP.
+                      Operations leader. Builder. Founder, MetMov LLP.
                     </div>
                   </div>
                 </div>

@@ -89,7 +89,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div>
               <div className="text-xl font-bold tracking-tighter mb-4">ANJANI PANDEY</div>
               <p className="text-sm text-accent-light/70 max-w-xs mb-8">
-                Operations leader. Builder. Writing about systems, scale, and what AI changes about both. Co-founder, MetMov LLP.
+                Operations leader. Builder. Writing about systems, scale, and what AI changes about both. Founder, MetMov LLP.
               </p>
               <div className="mb-8">
                 <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary py-3 px-8 text-sm inline-block">
@@ -130,7 +130,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex flex-col gap-1">
               <p>© 2026 Anjani Pandey. All rights reserved.</p>
             </div>
-            <p>Co-founder, MetMov LLP | Bengaluru</p>
+            <p>Founder, MetMov LLP | Bengaluru</p>
           </div>
         </div>
       </footer>

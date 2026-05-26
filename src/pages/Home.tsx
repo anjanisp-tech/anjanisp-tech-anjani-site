@@ -121,7 +121,7 @@ export default function Home() {
           "@type": "Person",
           "name": "Anjani Pandey",
           "url": "https://www.anjanipandey.com",
-          "jobTitle": "Co-founder & CEO",
+          "jobTitle": "Founder & CEO",
           "worksFor": {
             "@type": "Organization",
             "name": "MetMov LLP",
@@ -385,7 +385,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
-              <h3 className="text-2xl font-bold">Three Partners. 45+ Years of Operating Experience.</h3>
+              <h3 className="text-2xl font-bold">Two Partners. 30+ Years of Operating Experience.</h3>
               <p className="text-lg text-accent-light leading-relaxed">
                 We've scaled logistics networks, built financial control systems, and designed execution architecture inside high-growth companies. We didn't learn this from textbooks. We built it under pressure.
               </p>
@@ -413,7 +413,7 @@ export default function Home() {
                 <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-white font-bold">AP</div>
                 <div>
                   <div className="font-bold">Anjani Pandey</div>
-                  <div className="text-sm text-accent-light">CEO, MetMov LLP | ISB Alumnus</div>
+                  <div className="text-sm text-accent-light">Founder & CEO, MetMov LLP | ISB Alumnus</div>
                 </div>
               </div>
             </div>

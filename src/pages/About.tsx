@@ -64,7 +64,7 @@ export default function About() {
     <div className="bg-white min-h-screen">
       <SEO
         title="About | Anjani Pandey"
-        description="Operations and AI transformation leader. 15+ years designing execution systems for global supply chains and high-growth platforms. Co-founder, MetMov LLP. ISB alumnus. PMP, Six Sigma Black Belt. Based in Bengaluru."
+        description="Operations and AI transformation leader. 15+ years designing execution systems for global supply chains and high-growth platforms. Founder, MetMov LLP. ISB alumnus. PMP, Six Sigma Black Belt. Based in Bengaluru."
         canonical="https://www.anjanipandey.com/about"
       />
 
@@ -82,7 +82,7 @@ export default function About() {
                   I've spent most of my career inside companies -- at BHEL, Udaan, Y-NOT -- building the structural backbone that lets organizations scale without breaking. The pattern I kept seeing: businesses don't fail from lack of vision. They fail from absence of internal structural support.
                 </p>
                 <p>
-                  That conviction is why I co-founded <a href="https://metmov.com" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov LLP</a> with Chaitanya Eswarapragada and Antriksh Kumar. We help founder-led businesses diagnose structural diseases and install the operating spine that lets them run without the founder being the system.
+                  That conviction is why I founded <a href="https://metmov.com" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov LLP</a>, which I run with my partner Chaitanya Eswarapragada. We help founder-led businesses diagnose structural diseases and install the operating spine that lets them run without the founder being the system.
                 </p>
                 <p>
                   More recently, I've been building at the intersection of AI and operations -- not AI as a tool bolted on, but AI that changes how businesses need to be structured, made legible, and run. My <a href="/os" className="text-accent font-semibold hover:underline">Personal OS</a> is the working proof: nine subsystems, Claude as the kernel, public metrics. I run three entities on it, and I install a version of it for operators who want the same.
@@ -97,7 +97,7 @@ export default function About() {
                     { label: 'Based in', value: 'Bengaluru, India' },
                     { label: 'Education', value: 'MBA, Indian School of Business (ISB)' },
                     { label: 'Background', value: 'Manufacturing Engineering' },
-                    { label: 'Current', value: 'Co-founder & CEO, MetMov LLP', href: 'https://metmov.com' },
+                    { label: 'Current', value: 'Founder & CEO, MetMov LLP', href: 'https://metmov.com' },
                     { label: 'Experience', value: '15+ years in operations & transformation' },
                     { label: 'Certifications', value: 'PMP, Six Sigma Black Belt' },
                   ].map((item, i) => (
@@ -141,7 +141,7 @@ export default function About() {
                 <div className="pt-5 border-t border-border/50">
                   <p className="text-sm font-bold text-accent mb-2">MetMov LLP</p>
                   <p className="text-sm text-accent-light leading-relaxed mb-4">
-                    B2B consulting firm I co-founded. We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale.
+                    B2B consulting firm I founded. We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale.
                   </p>
                   <a
                     href="https://metmov.com"
