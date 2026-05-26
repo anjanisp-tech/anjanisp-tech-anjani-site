@@ -137,7 +137,7 @@ export default function Home() {
             "addressCountry": "IN"
           },
           "sameAs": [
-            "https://www.linkedin.com/in/anjanipandey/",
+            "https://www.linkedin.com/in/anjanispandey/",
             "https://www.metmov.com"
           ],
           "knowsAbout": ["Operations", "Business Scaling", "AI", "Systems Thinking", "B2B Consulting"]
