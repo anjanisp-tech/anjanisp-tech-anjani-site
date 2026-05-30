@@ -90,7 +90,7 @@ ${currentXml}
 Return ONLY the updated XML content. No markdown blocks.`;
 
     const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.1-flash-lite",
       contents: [{ role: "user", parts: [{ text: prompt }] }]
     });
     const updatedXml = result.text.trim().replace(/^```[a-z]*\n/i, '').replace(/\n```$/i, '');
@@ -158,7 +158,7 @@ ${appContent}
 Return ONLY the updated App.tsx code. No markdown blocks.`;
 
     const appResult = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.1-flash-lite",
       contents: [{ role: "user", parts: [{ text: appPrompt }] }]
     });
     const updatedApp = appResult.text.trim().replace(/^```[a-z]*\n/i, '').replace(/\n```$/i, '');
@@ -238,7 +238,7 @@ Return ONLY the updated code. No markdown blocks, no explanations.`;
     fs.appendFileSync(logPath, `[SEO EXECUTOR][${timestamp}] Calling Gemini API for ${target}...\n`);
     
     result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.1-flash-lite",
       contents: prompt
     });
     

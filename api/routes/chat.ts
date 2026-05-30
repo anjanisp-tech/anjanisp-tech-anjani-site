@@ -53,7 +53,7 @@ router.post("/chat", async (req, res) => {
     const { GoogleGenAI } = await import("@google/genai");
     const ai = new GoogleGenAI({ apiKey });
 
-    const models = ["gemini-3.1-flash-lite", "gemini-2.5-flash"];
+    const models = ["gemini-3.1-flash-lite"];
 
     const systemInstruction = `You are Anjani's AI assistant on anjanipandey.com -- the personal website of Anjani Pandey.
 
