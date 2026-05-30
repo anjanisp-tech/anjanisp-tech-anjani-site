@@ -3,6 +3,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Linkedin, Globe, BookOpen, ArrowLeft, MessageCircle } from 'lucide-react';
 import { FIT_CALL_URL, LINKEDIN_URL, WHATSAPP_URL, METMOV_URL } from '../constants';
+import WhatsAppButton from './WhatsAppButton';
 
 // Lazy-load ChatAssistant to keep motion, react-markdown, @google/genai out of the main chunk
 const ChatAssistant = lazy(() => import('./ChatAssistant'));
@@ -74,6 +75,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <ChatAssistant />
       </Suspense>
 
+      <WhatsAppButton />
+
       {/* Back to Top Button */}
       <button 
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -137,3 +140,4 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
