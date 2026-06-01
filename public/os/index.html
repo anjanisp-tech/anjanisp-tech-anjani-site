@@ -6,6 +6,40 @@
 <title>Anjani Pandey — Personal OS Architect</title>
 <meta name="description" content="I build Personal Operating Systems for operators and solopreneurs. Claude is the kernel. Level4-OS is the proof." />
 <meta name="author" content="Anjani Pandey" />
+<!-- SEO added 2026-06-01: /os is a flat static page outside the React app, so it does not
+     get canonical/OG/Twitter/JSON-LD from the React SEO component. Added here directly. -->
+<link rel="canonical" href="https://www.anjanipandey.com/os" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Anjani Pandey - Personal OS Architect" />
+<meta property="og:description" content="I build Personal Operating Systems for operators and solopreneurs. Claude is the kernel. Level4-OS is the proof." />
+<meta property="og:url" content="https://www.anjanipandey.com/os" />
+<meta property="og:image" content="https://www.anjanipandey.com/og-image.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Anjani Pandey - Personal OS Architect" />
+<meta name="twitter:description" content="I build Personal Operating Systems for operators and solopreneurs. Claude is the kernel. Level4-OS is the proof." />
+<meta name="twitter:image" content="https://www.anjanipandey.com/og-image.png" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "name": "Anjani Pandey",
+      "url": "https://www.anjanipandey.com/",
+      "jobTitle": "Founder & CEO",
+      "worksFor": { "@type": "Organization", "name": "MetMov LLP", "url": "https://metmov.com/" },
+      "sameAs": ["https://www.linkedin.com/in/anjanispandey/", "https://metmov.com/"]
+    },
+    {
+      "@type": "WebPage",
+      "name": "Anjani Pandey - Personal OS Architect",
+      "url": "https://www.anjanipandey.com/os",
+      "description": "I build Personal Operating Systems for operators and solopreneurs. Claude is the kernel. Level4-OS is the proof.",
+      "isPartOf": { "@type": "WebSite", "name": "anjanipandey.com", "url": "https://www.anjanipandey.com/" }
+    }
+  ]
+}
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
@@ -74,9 +108,17 @@
 <header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b hairline">
   <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <div class="w-7 h-7 rounded-md bg-stone-900 text-white flex items-center justify-center text-xs font-bold">A</div>
-      <span class="font-medium">Anjani Pandey</span>
+      <a href="https://www.anjanipandey.com/" style="display:flex;align-items:center;gap:0.5rem;text-decoration:none;color:inherit;" aria-label="anjanipandey.com home">
+        <div class="w-7 h-7 rounded-md bg-stone-900 text-white flex items-center justify-center text-xs font-bold">A</div>
+        <span class="font-medium">Anjani Pandey</span>
+      </a>
       <span class="muted text-sm hidden sm:inline">· Personal OS Architect</span>
+      <nav class="hidden md:flex items-center gap-3" style="margin-left:0.75rem;font-size:0.8rem;" aria-label="Site">
+        <a href="https://www.anjanipandey.com/about" style="color:#78716c;text-decoration:none;">About</a>
+        <a href="https://www.anjanipandey.com/services" style="color:#78716c;text-decoration:none;">Work With Me</a>
+        <a href="https://www.anjanipandey.com/writing" style="color:#78716c;text-decoration:none;">Writing</a>
+        <a href="https://cal.com/anjanipandey/ai-diagnostic" style="color:#78716c;text-decoration:none;">Book a Call</a>
+      </nav>
     </div>
     <nav class="flex items-center gap-1 overflow-x-auto">
       <button class="tab-btn active" data-tab="manifesto">Manifesto</button>

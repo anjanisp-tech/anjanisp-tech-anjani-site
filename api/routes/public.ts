@@ -40,13 +40,16 @@ router.get("/sitemap.xml", async (req, res) => {
     const today = new Date().toISOString().split('T')[0];
     const baseUrl = "https://www.anjanipandey.com";
 
-    // Static routes — mirrors src/routes.ts staticRoutes (excludes /admin, /os, /sitemap)
+    // Static routes — mirrors src/routes.ts staticRoutes (excludes /admin, /sitemap).
+    // /os added 2026-06-01: it is a flat static page in public/os/ (not a React route),
+    // but it is a public SEO-indexable revenue page and belongs in the sitemap.
     // Note: /blog is intentionally absent — App.tsx redirects /blog to /writing.
     // Individual posts live at /blog/<id>; that is the SEO-indexable canonical URL.
     const staticEntries: Array<{ path: string; changefreq: string; priority: string }> = [
       { path: "/",                              changefreq: "weekly",  priority: "1.0" },
       { path: "/about",                         changefreq: "monthly", priority: "0.9" },
       { path: "/services",                      changefreq: "monthly", priority: "0.8" },
+      { path: "/os",                            changefreq: "monthly", priority: "0.8" },
       { path: "/writing",                       changefreq: "weekly",  priority: "0.8" },
       { path: "/calculator",                    changefreq: "monthly", priority: "0.7" },
       { path: "/resources",                     changefreq: "weekly",  priority: "0.8" },
