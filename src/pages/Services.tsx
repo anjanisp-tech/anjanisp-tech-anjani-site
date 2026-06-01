@@ -332,7 +332,7 @@ export default function Services() {
                     <div className="text-3xl font-bold text-accent mb-1">&#8377;25,000</div>
                     <p className="text-sm text-accent-light">Fixed price. 2-3 sessions. No ongoing commitment.</p>
                   </div>
-                  <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary gap-3 px-10">
+                  <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="ai_setup_sprint" className="btn-primary gap-3 px-10">
                     Book a Free Intro Call
                     <ArrowRight size={20} />
                   </a>
@@ -369,7 +369,7 @@ export default function Services() {
               </div>
               <div className="flex items-center gap-3 text-sm font-bold text-accent/40">
                 <div className="w-8 h-px bg-accent/20" />
-                I run three entities on this architecture. I'll install it on yours, with you.
+                I run three entities on this architecture. I architect your build, pair with you to install it, and sign off on the result myself.
               </div>
               <p className="text-sm text-accent-light/70 mt-4 leading-relaxed">
                 See the live architecture powering this on my <a href="/os" className="text-primary font-semibold hover:underline">Personal OS</a> &mdash; nine subsystems, public dashboard, real metrics.
@@ -427,8 +427,8 @@ export default function Services() {
               <div className="bg-muted/50 rounded-2xl p-8 border border-border/50">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                   <div>
-                    <div className="text-lg font-semibold text-accent mb-1">By application</div>
-                    <p className="text-sm text-accent-light">Done-with-you. Scope and pricing agreed on a fit call.</p>
+                    <div className="text-3xl font-bold text-accent mb-1">From &#8377;1.5L</div>
+                    <p className="text-sm text-accent-light">One-time, done-with-you. Final scope and price agreed on a scoping call.</p>
                   </div>
                   <a href={BUILD_SPRINT_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="build_sprint" className="btn-primary gap-3 px-10">
                     Book a Scoping Call
@@ -515,7 +515,7 @@ export default function Services() {
                     "Monthly 60-minute audit call. What's decaying, what's upgradable, what's next.",
                     'One new or upgraded subsystem every quarter. You pick the priority.',
                     'Model upgrades, bug fixes, and prompt refresh as kernels evolve.',
-                    'Priority async response on Slack or WhatsApp.',
+                    'Priority async response on Slack or WhatsApp, within one business day.',
                   ].map((item, idx) => (
                     <li key={idx} className="flex items-start gap-3 text-accent-light">
                       <CheckCircle2 size={18} className="text-primary mt-0.5 flex-shrink-0" />
@@ -529,8 +529,8 @@ export default function Services() {
               <div className="bg-muted/50 rounded-2xl p-8 border border-border/50">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                   <div>
-                    <div className="text-lg font-semibold text-accent mb-1">By application</div>
-                    <p className="text-sm text-accent-light">Monthly retainer. Scope and pricing agreed on a fit call.</p>
+                    <div className="text-3xl font-bold text-accent mb-1">&#8377;25k<span className="text-lg font-semibold">/mo</span></div>
+                    <p className="text-sm text-accent-light">Monthly retainer. Final scope agreed on a fit call.</p>
                   </div>
                   <a href={CARE_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="os_care" className="btn-primary gap-3 px-10">
                     Talk About Care
@@ -542,6 +542,54 @@ export default function Services() {
           </div>
         </div>
       </section>
+      {/* Cross-brand ladder (positioning lock 2026-05-31). Firewall: rungs 1-2 are anjanipandey personal; MetMov is cross-linked only at the top rung. */}
+      <section className="border-t border-border/50 py-20 md:py-32">
+        <div className="container-custom">
+          <div className="max-w-3xl mb-14">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent/40 mb-4">How it ladders</p>
+            <h2 className="text-3xl md:text-4xl mb-6">From a first AI system to a firm that runs without you</h2>
+            <p className="text-lg text-accent-light leading-relaxed">
+              Each rung stands on its own. Together they run from your first AI setup, to a full Personal OS, to the operating backbone of the business itself.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6 md:gap-4 items-stretch">
+            {/* Rung 1 */}
+            <div className="bg-white border border-border rounded-2xl p-8 flex flex-col">
+              <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center text-primary mb-6">
+                <Sparkles size={22} />
+              </div>
+              <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-2">For individuals</div>
+              <h3 className="text-xl font-bold mb-2">AI Setup Sprint</h3>
+              <div className="text-sm font-semibold text-accent mb-4">&#8377;25,000</div>
+              <p className="text-sm text-accent-light leading-relaxed flex-grow">A working Claude-based AI system built around how you work. The entry rung.</p>
+            </div>
+            {/* Rung 2 */}
+            <div className="bg-white border border-accent/30 rounded-2xl p-8 flex flex-col shadow-md">
+              <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center text-primary mb-6">
+                <Layers size={22} />
+              </div>
+              <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-2">For operators</div>
+              <h3 className="text-xl font-bold mb-2">Build Sprint + Care</h3>
+              <div className="text-sm font-semibold text-accent mb-4">from &#8377;1.5L + &#8377;25k/mo</div>
+              <p className="text-sm text-accent-light leading-relaxed flex-grow">Install a full Personal OS, then keep it compounding instead of decaying.</p>
+            </div>
+            {/* Rung 3 — MetMov (the only cross-brand link; firewall held) */}
+            <div className="bg-accent text-white rounded-2xl p-8 flex flex-col">
+              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-white mb-6">
+                <Target size={22} />
+              </div>
+              <div className="text-xs font-bold uppercase tracking-widest text-white/50 mb-2">For the business</div>
+              <h3 className="text-xl font-bold mb-2">Operating Spine Install</h3>
+              <div className="text-sm font-semibold text-white/70 mb-4">MetMov &middot; senior tier</div>
+              <p className="text-sm text-white/70 leading-relaxed mb-6 flex-grow">When the firm, not just the operator, needs the structural backbone to scale without the founder as the system.</p>
+              <a href="https://metmov.com/operating-spine" target="_blank" rel="noopener noreferrer" data-cta-surface="ladder_operating_spine" className="text-sm font-bold flex items-center gap-2 text-white hover:gap-3 transition-all">
+                See Operating Spine Install <ArrowRight size={16} />
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="bg-muted border-t border-border/50">
         <div className="container-custom text-center">
