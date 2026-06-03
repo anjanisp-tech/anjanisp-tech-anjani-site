@@ -61,7 +61,7 @@ const services = [
       'High-performance culture of ownership',
       'Consistent hitting of strategic targets'
     ],
-    expertiseSignal: 'Built central PMO architectures at Udaan enabling expansion into 28 markets in 15 months.',
+    expertiseSignal: 'Built central PMO architectures at Udaan enabling rapid expansion across more than two dozen markets.',
     cta: 'Talk to Us',
     subtext: 'For businesses that need embedded operating leadership.'
   }
