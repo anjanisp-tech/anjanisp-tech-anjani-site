@@ -32,9 +32,9 @@ const careerTimeline = [
     company: 'Udaan',
     type: 'E-Commerce / Tech',
     highlights: [
-      'Introduced 5S/Lean Program across Supply Chain -- INR 120 Crore annual savings',
-      'Opened 28 new markets in 15 months, driving INR 2400 Crore GMV growth',
-      'Deployed Asset Tracking for INR 200 Crore assets -- 95% loss reduction',
+      'Introduced 5S/Lean Program across Supply Chain -- over a hundred crore in annual savings',
+      'Opened more than two dozen new markets, driving multi-thousand-crore GMV growth',
+      'Deployed Asset Tracking across a multi-hundred-crore asset base, sharply reducing losses',
     ],
   },
   {
@@ -43,8 +43,8 @@ const careerTimeline = [
     company: 'OYO',
     type: 'Hospitality / Tech',
     highlights: [
-      'Directed 250-member team managing 9,000 beds, INR 36 Crore annual revenue',
-      'Improved NPS from -35% to +26% in 4 months',
+      'Directed a large team managing thousands of beds and tens of crore in annual revenue',
+      'Turned NPS from deeply negative to strongly positive within months',
     ],
   },
   {
@@ -53,7 +53,7 @@ const careerTimeline = [
     company: 'BHEL',
     type: 'Manufacturing / Energy',
     highlights: [
-      'Managed 20+ Captive Power Projects -- 1000 MW capacity, INR 900 Crore turnover',
+      'Managed 20+ Captive Power Projects across a multi-hundred-MW portfolio and multi-hundred-crore turnover',
       'Led 200+ cross-functional team members',
     ],
   },
