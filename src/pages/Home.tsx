@@ -117,12 +117,14 @@ export default function Home() {
         description="Operations leader. Builder. Writing about systems, scale, and what AI changes about both. Founder, MetMov LLP. Based in Bengaluru."
         canonical="https://www.anjanipandey.com/"
         jsonLd={{
-          // kernel: anjanipandey v1.1 (2026-06-04), section 7 entity seed.
+          // kernel: anjanipandey v1.2 (2026-06-04), section 7 entity seed.
           "@context": "https://schema.org",
           "@type": "Person",
           "@id": "https://www.anjanipandey.com/#person",
           "name": "Anjani Pandey",
           "url": "https://www.anjanipandey.com",
+          // Rich Results warning fix (W3): image on the Person entity.
+          "image": "https://www.anjanipandey.com/og-image.png",
           "jobTitle": "Founder & CEO",
           "description": "The AI-OS operator. Builds operating systems, including his own multi-subsystem Claude-kernel OS, run in public with real metrics. Founder, MetMov LLP.",
           "worksFor": {

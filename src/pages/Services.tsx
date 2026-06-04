@@ -5,6 +5,42 @@ import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, BUILD_SPRINT_URL, CARE_URL, LINKEDIN
 import SEO from '../components/SEO';
 import { funnel } from '../lib/funnel';
 
+// W3 AEO pass. Single source of truth for the /services FAQ: drives both the
+// visible section and the FAQPage JSON-LD node in the @graph below.
+// Answers sourced from brand kernel: anjanipandey v1.2 (signed 2026-06-04).
+// Ladder rule held: A1-A6 are MetMov-free (rungs 1-2); A7 is the rung-3 cross-link.
+// All answers price-free in schema per the 2026-06-04 decision.
+const servicesFaqs: { q: string; a: string }[] = [
+  {
+    q: 'What is a Personal OS?',
+    a: 'A Personal OS is an AI operating system built around one person\'s work: standing agents, scheduled automations, and a memory layer that carry the recurring load. The test is what runs while the owner is not typing. I build Personal OS systems on Claude, and I run my own in public, with live metrics on this site.',
+  },
+  {
+    q: 'What does the AI Setup Sprint include?',
+    a: 'Two to three focused one-on-one sessions that end with a working Claude-based system shaped to your actual work: projects, prompts, and the first automations. It is the entry rung of the ladder; current pricing is on this page.',
+  },
+  {
+    q: 'How is a Personal OS different from using ChatGPT or Claude directly?',
+    a: 'A chat window answers when asked. An operating system runs on cadence: standing agents, scheduled tasks, and memory that persist between sessions. The difference shows up in what moves while no one is prompting. My own system\'s live metrics are published on this site; that is the standard a Personal OS is built to.',
+  },
+  {
+    q: 'Who delivers the Personal OS Build Sprint?',
+    a: 'I do. I architect the build, pair with you weekly, and sign off on the system myself. The sprint includes kickoff, weekly pairing, async support, and a 30-day post-launch warranty.',
+  },
+  {
+    q: 'What does Personal OS Care cover?',
+    a: 'Ongoing maintenance for a live Personal OS: a monthly audit call, one new or upgraded subsystem each quarter, model upgrades, bug fixes, and prompt refresh as the underlying models evolve. Support is async, with responses within one business day.',
+  },
+  {
+    q: 'Does Anjani Pandey run his own Personal OS?',
+    a: 'Yes. My own multi-subsystem AI operating system runs my consulting practice, my content pipeline, and my personal systems, and it runs in public: the live metrics are on this site. It is both the product and the proof.',
+  },
+  {
+    q: 'Does Anjani Pandey also work with businesses?',
+    a: 'Yes, through MetMov, the firm I founded. MetMov installs the operating spine for founder-led firms in a senior-led, 90-day engagement; details at metmov.com. The Personal OS line on this page is for individuals and operators; MetMov is the track for the business itself.',
+  },
+];
+
 const services = [
   {
     title: 'Diagnostic Sprint',
@@ -93,7 +129,7 @@ export default function Services() {
         description="Two tracks. For businesses: MetMov's Operating Spine methodology. For operators: Personal OS Build Sprint and Care. AI setup sprints for individuals."
         canonical="https://www.anjanipandey.com/services"
         jsonLd={{
-          // kernel: anjanipandey v1.1 (2026-06-04). All offers price-free in schema
+          // kernel: anjanipandey v1.2 (2026-06-04). All offers price-free in schema
           // (Anjani decision 2026-06-04, extends the 2026-06-01 from-anchored rule to AI Setup Sprint).
           "@context": "https://schema.org",
           "@graph": [
@@ -113,6 +149,7 @@ export default function Services() {
             {
               "@type": ["Service", "ProfessionalService"],
               "@id": "https://www.anjanipandey.com/services#ai-setup-sprint",
+              "image": "https://www.anjanipandey.com/og-image.png",
               "name": "AI Setup Sprint",
               "description": "2-3 focused 1:1 sessions to set up a Claude-based AI system tailored to the individual's work. Fixed-price entry engagement; current price on this page.",
               "provider": {
@@ -127,6 +164,7 @@ export default function Services() {
             {
               "@type": ["Service", "ProfessionalService"],
               "@id": "https://www.anjanipandey.com/services#personal-os-build-sprint",
+              "image": "https://www.anjanipandey.com/og-image.png",
               "name": "Personal OS Build Sprint",
               "description": "Done-with-you installation of a Personal OS. Kickoff, weekly pairing, async support, 30-day post-launch warranty. Pricing from-anchored; scope agreed on a fit call.",
               "provider": {
@@ -141,6 +179,7 @@ export default function Services() {
             {
               "@type": ["Service", "ProfessionalService"],
               "@id": "https://www.anjanipandey.com/services#personal-os-care",
+              "image": "https://www.anjanipandey.com/og-image.png",
               "name": "Personal OS Care",
               "description": "Ongoing maintenance for a live Personal OS, with periodic subsystem upgrades. Scope and pricing agreed on a fit call.",
               "provider": {
@@ -151,6 +190,15 @@ export default function Services() {
               },
               "areaServed": "Worldwide",
               "serviceType": "AI Consulting"
+            },
+            {
+              "@type": "FAQPage",
+              "@id": "https://www.anjanipandey.com/services#faq",
+              "mainEntity": servicesFaqs.map((f) => ({
+                "@type": "Question",
+                "name": f.q,
+                "acceptedAnswer": { "@type": "Answer", "text": f.a },
+              })),
             }
           ]
         }}
@@ -586,6 +634,24 @@ export default function Services() {
                 See Operating Spine Install <ArrowRight size={16} />
               </a>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* W3 AEO FAQ. kernel: anjanipandey v1.2 (2026-06-04). Rungs 1-2 MetMov-free; final question is the rung-3 cross-link. */}
+      <section className="border-t border-border/50 py-20 md:py-32">
+        <div className="container-custom">
+          <div className="max-w-3xl mb-14">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent/40 mb-4">Questions</p>
+            <h2 className="text-3xl md:text-4xl mb-6">What people ask before they start</h2>
+          </div>
+          <div className="max-w-3xl space-y-4">
+            {servicesFaqs.map((f, idx) => (
+              <div key={idx} className="bg-white border border-border rounded-2xl p-8">
+                <h3 className="text-lg font-bold mb-3">{f.q}</h3>
+                <p className="text-accent-light leading-relaxed">{f.a}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
