@@ -171,11 +171,12 @@ export function renderDay7(params: { email: string }): NurtureRender {
     If you're past those, you're already operating differently than you were last week. That's the entire point.
   </p>
   <p style="font-size: 16px; line-height: 1.7; color: #1c1917;">
-    Two things from here:
+    Three paths from here:
   </p>
   <p style="font-size: 16px; line-height: 1.7; color: #1c1917; padding-left: 16px; border-left: 3px solid #0c0a09; margin: 20px 0;">
     <strong>(1)</strong> Reply with the one prompt or skill you built. I'll send back one specific suggestion to make it sharper. No upsell.<br><br>
-    <strong>(2)</strong> If you want this done with you — designed, deployed, and operationalized for your business — <a href="${BOOK_URL}" style="color:#1e3a8a;">book a 30-min call</a>.
+    <strong>(2)</strong> If you run a business or a team and want the full system installed around your actual work (memory, router, scheduled automations, observability, done with you in 2-3 weeks), that's the <strong>Personal OS Build Sprint</strong>, with monthly <strong>Care</strong> to keep it compounding. <a href="${BOOK_URL}" style="color:#1e3a8a;">Book a 30-min scoping call</a>. We map your stack on the call; you leave with the 2-3 highest-leverage installs named, whether or not we work together.<br><br>
+    <strong>(3)</strong> Still at the starting line and want guided setup rather than a system build? The <a href="${SITE_URL}/services#ai-setup-sprint" style="color:#1e3a8a;">AI Setup Sprint</a> is the entry path. Self-serve, no call needed: two lines by email gets you an answer within 24 hours.
   </p>
   <p style="font-size: 16px; line-height: 1.7; color: #1c1917;">
     Either way, thanks for taking it seriously.
@@ -195,10 +196,11 @@ export function renderDay7(params: { email: string }): NurtureRender {
     "",
     "If you're past those, you're already operating differently than you were last week. That's the entire point.",
     "",
-    "Two things from here:",
+    "Three paths from here:",
     "",
     `  (1) Reply with the one prompt or skill you built. I'll send back one specific suggestion to make it sharper. No upsell.`,
-    `  (2) If you want this done with you — designed, deployed, and operationalized for your business — book a 30-min call: ${BOOK_URL}`,
+    `  (2) If you run a business or a team and want the full system installed around your actual work (memory, router, scheduled automations, observability, done with you in 2-3 weeks), that's the Personal OS Build Sprint, with monthly Care to keep it compounding. Book a 30-min scoping call: ${BOOK_URL} . We map your stack on the call; you leave with the 2-3 highest-leverage installs named, whether or not we work together.`,
+    `  (3) Still at the starting line and want guided setup rather than a system build? The AI Setup Sprint is the entry path. Self-serve, no call needed: two lines by email gets you an answer within 24 hours. ${SITE_URL}/services#ai-setup-sprint`,
     "",
     "Either way, thanks for taking it seriously.",
     "",

@@ -298,7 +298,7 @@ export default function Services() {
       </div>
 
       {/* AI Setup Sprint */}
-      <section className="border-t border-border/50 py-20 md:py-32">
+      <section id="ai-setup-sprint" className="border-t border-border/50 py-20 md:py-32">
         <div className="container-custom">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-24">
             {/* Left Column */}
@@ -380,13 +380,13 @@ export default function Services() {
                     <div className="text-3xl font-bold text-accent mb-1">&#8377;25,000</div>
                     <p className="text-sm text-accent-light">Fixed price. 2-3 sessions. No ongoing commitment.</p>
                   </div>
-                  <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="ai_setup_sprint" className="btn-primary gap-3 px-10">
-                    Book a Free Intro Call
+                  <a href="mailto:contact@anjanipandey.com?subject=AI%20Setup%20Sprint" data-cta-surface="ai_setup_sprint" className="btn-primary gap-3 px-10">
+                    Start by Email
                     <ArrowRight size={20} />
                   </a>
                 </div>
                 <p className="text-xs text-accent-light/50 mt-4 font-medium">
-                  We'll start with a free 20-minute call to understand your workflow and see if this is the right fit.
+                  Self-serve start, no call needed: send two lines about your work and what you've tried. I reply within 24 hours with a clear yes, no, or a better path.
                 </p>
               </div>
             </div>

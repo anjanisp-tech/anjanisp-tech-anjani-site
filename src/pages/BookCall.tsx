@@ -14,16 +14,22 @@ export default function BookCall() {
   return (
     <div className="bg-white min-h-screen">
       <SEO
-        title="Book a Fit Call | Anjani Pandey"
-        description="Book a 20-30 minute fit call with Anjani Pandey. Scope whether MetMov consulting, a Build Sprint, or Personal OS Care is the right fit. No sales pressure, clear next steps."
+        title="Book a Scoping Call | Anjani Pandey"
+        description="Book a 30-minute scoping call with Anjani Pandey for the Personal OS Build Sprint, Care, or MetMov consulting. We map your stack and find the highest-leverage installs. No sales pressure."
         canonical="https://www.anjanipandey.com/book"
       />
       <section className="pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="mb-8">Book a Fit Call</h1>
+            <h1 className="mb-8">Book a Scoping Call</h1>
             <p className="text-xl md:text-2xl text-accent-light mb-12 leading-relaxed">
-              A 20-30 minute call. We'll map what you're actually solving for and see whether it's MetMov consulting, a Personal OS Build Sprint, or Care. If nothing fits, I'll say so.
+              A 30-minute scoping call. We'll map your current stack and what you're solving for, find the 2-3 highest-leverage installs, and confirm whether the Personal OS Build Sprint, Care, or MetMov consulting is the right fit. If nothing fits, I'll say so.
+            </p>
+
+            <p className="text-sm text-accent-light/70 mb-12 -mt-6">
+              Starting from zero with AI? You don't need a call. The{' '}
+              <a href="/services#ai-setup-sprint" className="text-primary font-semibold hover:underline">AI Setup Sprint</a>{' '}
+              is the entry path; two lines by email gets you started.
             </p>
 
             {/* Reassurance Block */}
