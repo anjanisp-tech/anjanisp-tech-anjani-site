@@ -117,13 +117,17 @@ export default function Home() {
         description="Operations leader. Builder. Writing about systems, scale, and what AI changes about both. Founder, MetMov LLP. Based in Bengaluru."
         canonical="https://www.anjanipandey.com/"
         jsonLd={{
+          // kernel: anjanipandey v1.1 (2026-06-04), section 7 entity seed.
           "@context": "https://schema.org",
           "@type": "Person",
+          "@id": "https://www.anjanipandey.com/#person",
           "name": "Anjani Pandey",
           "url": "https://www.anjanipandey.com",
           "jobTitle": "Founder & CEO",
+          "description": "The AI-OS operator. Builds operating systems, including his own multi-subsystem Claude-kernel OS, run in public with real metrics. Founder, MetMov LLP.",
           "worksFor": {
             "@type": "Organization",
+            "@id": "https://metmov.com/#organization",
             "name": "MetMov LLP",
             "url": "https://www.metmov.com"
           },
@@ -138,9 +142,10 @@ export default function Home() {
           },
           "sameAs": [
             "https://www.linkedin.com/in/anjanispandey/",
+            "https://github.com/anjanisp-tech",
             "https://www.metmov.com"
           ],
-          "knowsAbout": ["Operations", "Business Scaling", "AI", "Systems Thinking", "B2B Consulting"]
+          "knowsAbout": ["AI operating systems", "Operations", "Business Scaling", "Systems Thinking", "B2B Consulting"]
         }}
       />
 

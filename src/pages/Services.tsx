@@ -93,6 +93,8 @@ export default function Services() {
         description="Two tracks. For businesses: MetMov's Operating Spine methodology. For operators: Personal OS Build Sprint and Care. AI setup sprints for individuals."
         canonical="https://www.anjanipandey.com/services"
         jsonLd={{
+          // kernel: anjanipandey v1.1 (2026-06-04). All offers price-free in schema
+          // (Anjani decision 2026-06-04, extends the 2026-06-01 from-anchored rule to AI Setup Sprint).
           "@context": "https://schema.org",
           "@graph": [
             {
@@ -109,30 +111,13 @@ export default function Services() {
               "serviceType": "Business Consulting"
             },
             {
-              "@type": "Service",
+              "@type": ["Service", "ProfessionalService"],
               "@id": "https://www.anjanipandey.com/services#ai-setup-sprint",
               "name": "AI Setup Sprint",
               "description": "2-3 focused 1:1 sessions to set up a Claude-based AI system tailored to the individual's work. Fixed price INR 25,000.",
               "provider": {
                 "@type": "Person",
-                "name": "Anjani Pandey",
-                "url": "https://www.anjanipandey.com"
-              },
-              "areaServed": "Worldwide",
-              "serviceType": "AI Consulting",
-              "offers": {
-                "@type": "Offer",
-                "price": "25000",
-                "priceCurrency": "INR"
-              }
-            },
-            {
-              "@type": "Service",
-              "@id": "https://www.anjanipandey.com/services#personal-os-build-sprint",
-              "name": "Personal OS Build Sprint",
-              "description": "Done-with-you installation of a Personal OS. Kickoff, weekly pairing, async support, 30-day post-launch warranty. Scope and pricing agreed on a fit call.",
-              "provider": {
-                "@type": "Person",
+                "@id": "https://www.anjanipandey.com/#person",
                 "name": "Anjani Pandey",
                 "url": "https://www.anjanipandey.com"
               },
@@ -140,12 +125,27 @@ export default function Services() {
               "serviceType": "AI Consulting"
             },
             {
-              "@type": "Service",
+              "@type": ["Service", "ProfessionalService"],
+              "@id": "https://www.anjanipandey.com/services#personal-os-build-sprint",
+              "name": "Personal OS Build Sprint",
+              "description": "Done-with-you installation of a Personal OS. Kickoff, weekly pairing, async support, 30-day post-launch warranty. Pricing from-anchored; scope agreed on a fit call.",
+              "provider": {
+                "@type": "Person",
+                "@id": "https://www.anjanipandey.com/#person",
+                "name": "Anjani Pandey",
+                "url": "https://www.anjanipandey.com"
+              },
+              "areaServed": "Worldwide",
+              "serviceType": "AI Consulting"
+            },
+            {
+              "@type": ["Service", "ProfessionalService"],
               "@id": "https://www.anjanipandey.com/services#personal-os-care",
               "name": "Personal OS Care",
               "description": "Ongoing maintenance for a live Personal OS, with periodic subsystem upgrades. Scope and pricing agreed on a fit call.",
               "provider": {
                 "@type": "Person",
+                "@id": "https://www.anjanipandey.com/#person",
                 "name": "Anjani Pandey",
                 "url": "https://www.anjanipandey.com"
               },
