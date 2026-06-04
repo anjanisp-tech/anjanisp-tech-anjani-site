@@ -114,7 +114,7 @@ export default function Services() {
               "@type": ["Service", "ProfessionalService"],
               "@id": "https://www.anjanipandey.com/services#ai-setup-sprint",
               "name": "AI Setup Sprint",
-              "description": "2-3 focused 1:1 sessions to set up a Claude-based AI system tailored to the individual's work. Fixed price INR 25,000.",
+              "description": "2-3 focused 1:1 sessions to set up a Claude-based AI system tailored to the individual's work. Fixed-price entry engagement; current price on this page.",
               "provider": {
                 "@type": "Person",
                 "@id": "https://www.anjanipandey.com/#person",
