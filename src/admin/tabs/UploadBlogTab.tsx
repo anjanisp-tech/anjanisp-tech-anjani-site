@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FileText, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { adminPost } from '../useAdminApi';
+import ImageUpload from '../ImageUpload';
 import type { BlogFormData, StatusMessage } from '../types';
 
 interface Props {
@@ -19,6 +20,7 @@ function defaultFormData(): BlogFormData {
     excerpt: '',
     content: '',
     is_premium: false,
+    img: '',
   };
 }
 
@@ -142,6 +144,12 @@ export default function UploadBlogTab({ editData, onEditComplete }: Props) {
               className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all resize-none"
             />
           </div>
+
+          <ImageUpload
+            label="Cover Image (optional)"
+            value={blogForm.img || ''}
+            onChange={(url) => setBlogForm({ ...blogForm, img: url })}
+          />
 
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-widest text-accent/40 ml-1">Full Blog Content * (Markdown supported)</label>

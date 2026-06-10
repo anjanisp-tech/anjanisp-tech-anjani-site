@@ -28,6 +28,7 @@ interface BlogPost {
   excerpt: string;
   content: string;
   is_premium?: number;
+  img?: string;
 }
 
 export default function BlogPostDetail() {
@@ -217,6 +218,13 @@ export default function BlogPostDetail() {
                 {post.excerpt}
               </p>
             </header>
+
+            {/* Cover Image */}
+            {post.img && (
+              <div className="aspect-video rounded-3xl overflow-hidden shadow-xl mb-16">
+                <img src={post.img} alt={post.title} className="w-full h-full object-cover" />
+              </div>
+            )}
 
             {/* Content */}
             <div className="relative">

@@ -58,7 +58,21 @@ export function getSqliteDb() {
         excerpt TEXT NOT NULL,
         content TEXT NOT NULL,
         is_premium INTEGER DEFAULT 0,
+        img TEXT DEFAULT '',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS case_studies (
+        slug TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        excerpt TEXT NOT NULL DEFAULT '',
+        img TEXT NOT NULL DEFAULT '',
+        category TEXT NOT NULL DEFAULT '',
+        client TEXT NOT NULL DEFAULT '',
+        period TEXT NOT NULL DEFAULT '',
+        results TEXT NOT NULL DEFAULT '[]',
+        content TEXT NOT NULL DEFAULT '',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
       CREATE TABLE IF NOT EXISTS comments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

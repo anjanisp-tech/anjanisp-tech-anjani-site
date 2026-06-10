@@ -365,7 +365,7 @@ router.post("/posts", async (req, res, next) => {
   const { adminAuth } = await getUtils();
   adminAuth(req, res, next);
 }, async (req, res) => {
-  const { title, date, category, excerpt, content, is_premium } = req.body;
+  const { title, date, category, excerpt, content, is_premium, img } = req.body;
   const id = title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
   try {
     const dbType = await db.getDbType();
@@ -373,19 +373,19 @@ router.post("/posts", async (req, res, next) => {
     if (dbType === 'postgres') {
       // Postgres: upsert with ON CONFLICT
       const rows = await db.queryDual(
-        `INSERT INTO posts (id, title, date, category, excerpt, content, is_premium) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, date = EXCLUDED.date, category = EXCLUDED.category, excerpt = EXCLUDED.excerpt, content = EXCLUDED.content, is_premium = EXCLUDED.is_premium RETURNING *`,
+        `INSERT INTO posts (id, title, date, category, excerpt, content, is_premium, img) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, date = EXCLUDED.date, category = EXCLUDED.category, excerpt = EXCLUDED.excerpt, content = EXCLUDED.content, is_premium = EXCLUDED.is_premium, img = EXCLUDED.img RETURNING *`,
         `SELECT 1`, // unused, handled below
-        [id, title, date, category, excerpt, content, is_premium ? 1 : 0]
+        [id, title, date, category, excerpt, content, is_premium ? 1 : 0, img || '']
       );
       post = rows[0];
     } else {
       await db.execute(
-        "INSERT OR REPLACE INTO posts (id, title, date, category, excerpt, content, is_premium) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [id, title, date, category, excerpt, content, is_premium ? 1 : 0]
+        "INSERT OR REPLACE INTO posts (id, title, date, category, excerpt, content, is_premium, img) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [id, title, date, category, excerpt, content, is_premium ? 1 : 0, img || '']
       );
       post = await db.queryOne("SELECT * FROM posts WHERE id = ?", [id]);
     }
-    if (!post) post = { id, title, date, category, excerpt, content, is_premium };
+    if (!post) post = { id, title, date, category, excerpt, content, is_premium, img };
     return res.status(201).json(post);
   } catch (err: any) {
     res.status(500).json({ error: "Failed to save post", details: err.message });
@@ -619,5 +619,97 @@ router.get("/dashboard", async (req, res, next) => {
     res.status(500).json({ error: "Failed to fetch dashboard", details: err.message });
   }
 });
+
+// ── Image / infographic upload → Vercel Blob (OIDC via BLOB_STORE_ID) ──
+// Body: { filename, dataUrl: "data:image/png;base64,..." }
+router.post("/upload", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  try {
+    const { filename, dataUrl } = req.body || {};
+    if (!dataUrl || typeof dataUrl !== 'string') return res.status(400).json({ error: "dataUrl required" });
+    if (!process.env.BLOB_READ_WRITE_TOKEN && !process.env.BLOB_STORE_ID) {
+      return res.status(503).json({ error: "Image storage not configured (connect a Vercel Blob store to this project)." });
+    }
+    const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) return res.status(400).json({ error: "Invalid data URL" });
+    const contentType = match[1];
+    const buffer = Buffer.from(match[2], 'base64');
+    if (buffer.length > 10 * 1024 * 1024) return res.status(413).json({ error: "Image exceeds 10MB." });
+    const ext = (contentType.split('/')[1] || 'png').replace('+xml', '');
+    const base = (filename || 'upload').replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '-').slice(0, 60);
+    const key = `cms/${Date.now()}-${base}.${ext}`;
+    const { put } = await import('@vercel/blob');
+    const blob = await put(key, buffer, { access: 'public', contentType });
+    res.json({ url: blob.url });
+  } catch (err: any) {
+    res.status(500).json({ error: "Upload failed", details: err.message });
+  }
+});
+
+// ── Case Studies CRUD (admin) ─────────────────────────────────────
+function slugifyCs(s: string): string {
+  return (s || '').toLowerCase().trim().replace(/[^\w\s-]+/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+}
+
+router.get("/casestudies", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (_req, res) => {
+  try {
+    const rows = await db.query("SELECT * FROM case_studies ORDER BY created_at DESC");
+    res.json(rows.map(parseCaseRow));
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to fetch case studies", details: err.message });
+  }
+});
+
+router.post("/casestudies", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  const b = req.body || {};
+  const slug = (b.slug && b.slug.trim()) || slugifyCs(b.title);
+  const results = JSON.stringify(Array.isArray(b.results) ? b.results : []);
+  try {
+    const dbType = await db.getDbType();
+    if (dbType === 'postgres') {
+      await db.queryDual(
+        `INSERT INTO case_studies (slug, title, excerpt, img, category, client, period, results, content, updated_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, CURRENT_TIMESTAMP)
+         ON CONFLICT (slug) DO UPDATE SET title=EXCLUDED.title, excerpt=EXCLUDED.excerpt, img=EXCLUDED.img, category=EXCLUDED.category, client=EXCLUDED.client, period=EXCLUDED.period, results=EXCLUDED.results, content=EXCLUDED.content, updated_at=CURRENT_TIMESTAMP RETURNING *`,
+        `SELECT 1`,
+        [slug, b.title || '', b.excerpt || '', b.img || '', b.category || '', b.client || '', b.period || '', results, b.content || '']
+      );
+    } else {
+      await db.execute(
+        `INSERT OR REPLACE INTO case_studies (slug, title, excerpt, img, category, client, period, results, content, updated_at) VALUES (?,?,?,?,?,?,?,?,?, CURRENT_TIMESTAMP)`,
+        [slug, b.title || '', b.excerpt || '', b.img || '', b.category || '', b.client || '', b.period || '', results, b.content || '']
+      );
+    }
+    const row = await db.queryOne("SELECT * FROM case_studies WHERE slug = ?", [slug]);
+    res.status(201).json(row ? parseCaseRow(row) : { slug });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to save case study", details: err.message });
+  }
+});
+
+router.delete("/casestudies/:slug", async (req, res, next) => {
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
+  try {
+    await db.execute("DELETE FROM case_studies WHERE slug = ?", [req.params.slug]);
+    res.json({ success: true, deleted: req.params.slug });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to delete case study", details: err.message });
+  }
+});
+
+function parseCaseRow(r: any) {
+  return { ...r, results: typeof r.results === 'string' ? safeArr(r.results) : (r.results || []) };
+}
+function safeArr(s: string) { try { const v = JSON.parse(s); return Array.isArray(v) ? v : []; } catch { return []; } }
 
 export default router;

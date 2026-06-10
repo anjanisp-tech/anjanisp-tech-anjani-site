@@ -270,8 +270,11 @@ export async function initAllTables(): Promise<string> {
     await client.query(`CREATE TABLE IF NOT EXISTS analytics_calculator (id SERIAL PRIMARY KEY, currency TEXT NOT NULL, revenue REAL NOT NULL, team_size INTEGER NOT NULL, heroic_hours REAL NOT NULL, total_tax REAL NOT NULL, email TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
     await client.query(`CREATE TABLE IF NOT EXISTS chatbot_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, query TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
     await client.query(`CREATE TABLE IF NOT EXISTS resource_leads (id SERIAL PRIMARY KEY, email TEXT NOT NULL, resource_name TEXT, created_at TIMESTAMP DEFAULT NOW())`);
-    // Migration: add is_premium if missing
+    await client.query(`CREATE TABLE IF NOT EXISTS case_studies (slug TEXT PRIMARY KEY, title TEXT NOT NULL, excerpt TEXT NOT NULL DEFAULT '', img TEXT NOT NULL DEFAULT '', category TEXT NOT NULL DEFAULT '', client TEXT NOT NULL DEFAULT '', period TEXT NOT NULL DEFAULT '', results JSONB NOT NULL DEFAULT '[]', content TEXT NOT NULL DEFAULT '', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
+    // Migrations: add columns if missing
     await client.query(`ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_premium INTEGER DEFAULT 0`);
+    await client.query(`ALTER TABLE posts ADD COLUMN IF NOT EXISTS img TEXT DEFAULT ''`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_case_studies_created_at ON case_studies (created_at)`);
     await ensureIndexes();
     return "Postgres tables initialized (with migrations and indexes)";
   }

@@ -17,6 +17,7 @@ export const staticRoutes: RouteEntry[] = [
   { path: '/about', prerender: true },
   { path: '/services', prerender: true },
   { path: '/writing', prerender: true },
+  { path: '/case-studies', prerender: true },
   { path: '/book', prerender: true },
   { path: '/calculator', prerender: true },
   { path: '/resources', prerender: true },

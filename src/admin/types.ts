@@ -18,6 +18,31 @@ export interface BlogPost {
   excerpt: string;
   content: string;
   is_premium?: boolean;
+  img?: string;
+}
+
+export interface CaseStudy {
+  slug: string;
+  title: string;
+  excerpt: string;
+  img: string;
+  category: string;
+  client: string;
+  period: string;
+  results: string[];
+  content: string;
+}
+
+export interface CaseStudyFormData {
+  slug?: string;
+  title: string;
+  excerpt: string;
+  img: string;
+  category: string;
+  client: string;
+  period: string;
+  results: string[];
+  content: string;
 }
 
 export interface BlogFormData {
@@ -27,6 +52,7 @@ export interface BlogFormData {
   excerpt: string;
   content: string;
   is_premium: boolean;
+  img?: string;
 }
 
 export interface Subscriber {
@@ -79,4 +105,4 @@ export interface StatusMessage {
   message: string;
 }
 
-export type AdminTab = 'dashboard' | 'comments' | 'upload' | 'subscribers' | 'system' | 'manage' | 'knowledge' | 'analytics' | 'ai-debug' | 'seo' | 'all-emails';
+export type AdminTab = 'dashboard' | 'comments' | 'upload' | 'subscribers' | 'system' | 'manage' | 'knowledge' | 'analytics' | 'ai-debug' | 'seo' | 'all-emails' | 'casestudies';

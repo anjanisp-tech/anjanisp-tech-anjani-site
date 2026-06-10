@@ -11,6 +11,7 @@ interface BlogPost {
   category: string;
   excerpt: string;
   content: string;
+  img?: string;
 }
 
 export default function Blog() {
@@ -236,6 +237,11 @@ export default function Blog() {
                       </div>
                     </div>
                     <div className="md:w-3/4">
+                      {post.img && (
+                        <Link to={`/blog/${post.id}`} className="block mb-6 rounded-2xl overflow-hidden aspect-[16/9]">
+                          <img src={post.img} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </Link>
+                      )}
                       <h2 className="text-2xl md:text-3xl font-bold mb-4 group-hover:text-accent-light transition-colors">
                         <Link to={`/blog/${post.id}`}>{post.title}</Link>
                       </h2>

@@ -16,6 +16,8 @@ const BottleneckCostCalculator = lazy(() => import('./pages/BottleneckCostCalcul
 const Resources = lazy(() => import('./pages/Resources'));
 const ResourceGuideDetail = lazy(() => import('./pages/ResourceGuideDetail'));
 const About = lazy(() => import('./pages/About'));
+const CaseStudies = lazy(() => import('./pages/CaseStudies'));
+const CaseStudyDetail = lazy(() => import('./pages/CaseStudyDetail'));
 
 function Analytics() {
   const location = useLocation();
@@ -55,6 +57,8 @@ export default function App() {
             <Route path="/writing" element={<Blog />} />
             <Route path="/blog" element={<Navigate to="/writing" replace />} />
             <Route path="/blog/:id" element={<BlogPostDetail />} />
+            <Route path="/case-studies" element={<CaseStudies />} />
+            <Route path="/case-studies/:slug" element={<CaseStudyDetail />} />
             <Route path="/book" element={<BookCall />} />
             <Route path="/book-call" element={<Navigate to="/book" replace />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />

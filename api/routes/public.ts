@@ -51,6 +51,7 @@ router.get("/sitemap.xml", async (req, res) => {
       { path: "/services",                      changefreq: "monthly", priority: "0.8" },
       { path: "/os",                            changefreq: "monthly", priority: "0.8" },
       { path: "/writing",                       changefreq: "weekly",  priority: "0.8" },
+      { path: "/case-studies",                  changefreq: "weekly",  priority: "0.8" },
       { path: "/calculator",                    changefreq: "monthly", priority: "0.7" },
       { path: "/resources",                     changefreq: "weekly",  priority: "0.8" },
       { path: "/resources/ai-consulting-stack", changefreq: "monthly", priority: "0.8" },
@@ -95,6 +96,25 @@ router.get("/sitemap.xml", async (req, res) => {
       }
     } catch (err) {
       console.error("[sitemap.xml] Error fetching posts:", err);
+    }
+
+    // Dynamic /case-studies/<slug> routes — from case_studies table.
+    let caseCount = 0;
+    try {
+      const cases = await db.query("SELECT slug, created_at FROM case_studies ORDER BY created_at DESC");
+      for (const cs of cases) {
+        const date = cs.created_at ? new Date(cs.created_at).toISOString().split('T')[0] : today;
+        urls += `
+  <url>
+    <loc>${baseUrl}/case-studies/${cs.slug}</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+        caseCount++;
+      }
+    } catch (err) {
+      // Table may not exist yet (pre init-db) — skip silently.
     }
 
     const content = `<?xml version="1.0" encoding="UTF-8"?>
@@ -328,6 +348,33 @@ router.get("/diagnostic", async (req, res, next) => {
     });
   } catch (err: any) {
     res.status(500).json({ status: "error", error: "Diagnostic failed", details: err.message });
+  }
+});
+
+// ── Case Studies (public read) ────────────────────────────────────
+function csRow(r: any) {
+  let results = r.results;
+  if (typeof results === 'string') { try { results = JSON.parse(results); } catch { results = []; } }
+  return { ...r, results: Array.isArray(results) ? results : [] };
+}
+
+router.get("/casestudies", async (_req, res) => {
+  try {
+    const rows = await db.query("SELECT * FROM case_studies ORDER BY created_at DESC");
+    res.json(rows.map(csRow));
+  } catch (err: any) {
+    // Table may not exist yet (pre init-db) — return empty list, never 500 the public page.
+    res.json([]);
+  }
+});
+
+router.get("/casestudies/:slug", async (req, res) => {
+  try {
+    const row = await db.queryOne("SELECT * FROM case_studies WHERE slug = ?", [req.params.slug]);
+    if (!row) return res.status(404).json({ error: "Case study not found" });
+    res.json(csRow(row));
+  } catch (err: any) {
+    res.status(404).json({ error: "Case study not found" });
   }
 });
 

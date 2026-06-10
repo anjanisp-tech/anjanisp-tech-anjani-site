@@ -50,7 +50,8 @@ export default function ManageBlogsTab({ onEditBlog, onNavigate }: Props) {
       category: post.category,
       excerpt: post.excerpt,
       content: post.content,
-      is_premium: !!post.is_premium
+      is_premium: !!post.is_premium,
+      img: post.img || ''
     });
     onNavigate('upload');
     window.scrollTo({ top: 0, behavior: 'smooth' });

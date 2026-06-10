@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, FileText, PlusCircle, Mail, Rocket, Database, BarChart3, Globe, Users, LayoutDashboard, AlertCircle, Loader2 } from 'lucide-react';
+import { MessageSquare, FileText, PlusCircle, Mail, Rocket, Database, BarChart3, Globe, Users, LayoutDashboard, AlertCircle, Loader2, Layers } from 'lucide-react';
 import { checkSession, adminPost } from '../admin/useAdminApi';
 import type { AdminTab, BlogFormData } from '../admin/types';
 
@@ -15,12 +15,14 @@ import SystemTab from '../admin/tabs/SystemTab';
 import AnalyticsTab from '../admin/tabs/AnalyticsTab';
 import SeoTab from '../admin/tabs/SeoTab';
 import AiDebugTab from '../admin/tabs/AiDebugTab';
+import CaseStudiesTab from '../admin/tabs/CaseStudiesTab';
 
 const TAB_CONFIG: { id: AdminTab; label: string; icon: React.ReactNode }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
   { id: 'comments', label: 'Comments', icon: <MessageSquare size={18} /> },
   { id: 'upload', label: 'Upload Blog', icon: <PlusCircle size={18} /> },
   { id: 'manage', label: 'Manage Blogs', icon: <FileText size={18} /> },
+  { id: 'casestudies', label: 'Case Studies', icon: <Layers size={18} /> },
   { id: 'subscribers', label: 'Subscribers', icon: <Mail size={18} /> },
   { id: 'all-emails', label: 'All Emails', icon: <Users size={18} /> },
   { id: 'knowledge', label: 'Knowledge', icon: <Database size={18} /> },
@@ -141,6 +143,8 @@ export default function Admin() {
         );
       case 'manage':
         return <ManageBlogsTab onEditBlog={handleEditBlog} onNavigate={setActiveTab} />;
+      case 'casestudies':
+        return <CaseStudiesTab />;
       case 'knowledge':
         return <KnowledgeTab />;
       case 'subscribers':
