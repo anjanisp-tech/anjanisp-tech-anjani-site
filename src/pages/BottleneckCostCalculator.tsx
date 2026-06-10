@@ -105,6 +105,8 @@ export default function BottleneckCostCalculator() {
     await logResults(email);
     setIsSubmitting(false);
     setHasSubmittedLead(true);
+    // GA4 key event: a qualified lead captured email after seeing the bottleneck cost result.
+    (window as any).gtag?.('event', 'qualify_lead', { method: 'bottleneck_calculator', form: 'calculator' });
   };
 
   const formatCurrency = (val: number) => {

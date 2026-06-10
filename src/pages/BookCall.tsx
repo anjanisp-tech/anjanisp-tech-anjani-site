@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Calendar, Mail, Building, User, MessageSquare, Send, ShieldCheck, Zap, Coffee } from 'lucide-react';
 import { FIT_CALL_URL } from '../constants';
 import SEO from '../components/SEO';
@@ -6,9 +6,30 @@ import SEO from '../components/SEO';
 export default function BookCall() {
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    // GA4 key event: best-effort capture of a confirmed Cal.com booking made in the embedded scheduler.
+    // The Cal link is a bare iframe (no embed SDK), so we listen for Cal.com's postMessage booking signal.
+    // Origin-gated and marker-gated so unrelated messages can never trigger it; fires at most once.
+    let fired = false;
+    const onMessage = (e: MessageEvent) => {
+      if (fired || typeof e.origin !== 'string' || !e.origin.includes('cal.com')) return;
+      let payload = '';
+      try { payload = typeof e.data === 'string' ? e.data : JSON.stringify(e.data); } catch { return; }
+      const p = payload.toLowerCase();
+      if (p.includes('booking') && (p.includes('success') || p.includes('scheduled') || p.includes('confirmed'))) {
+        fired = true;
+        (window as any).gtag?.('event', 'close_convert_lead', { method: 'cal_booking' });
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
+    // GA4 key event: scoping-call inquiry submitted (the convert action available in our own code).
+    (window as any).gtag?.('event', 'close_convert_lead', { method: 'inquiry_form' });
   };
 
   return (
