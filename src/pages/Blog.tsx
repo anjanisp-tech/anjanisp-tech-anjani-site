@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Filter, X, Loader2, AlertCircle, Search } from 'lucide-react';
+import { ArrowRight, Filter, X, Loader2, AlertCircle, Search, ArrowDownWideNarrow } from 'lucide-react';
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import SEO from '../components/SEO';
 import { blogPosts as seedPosts } from '../data/blogData';
@@ -14,12 +14,24 @@ interface BlogPost {
   img?: string;
 }
 
+type SortOrder = 'newest' | 'oldest' | 'title';
+
+// Sort options for the blog. The values are sent to /api/posts?sort= and must
+// stay in sync with the SORT_CLAUSES whitelist in api/routes/blog.ts.
+const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
+  { value: 'newest', label: 'Newest first' },
+  { value: 'oldest', label: 'Oldest first' },
+  { value: 'title', label: 'Title (A–Z)' },
+];
+
 export default function Blog() {
   const LIMIT = 6;
   // Seed from static blogData so the prerender (renderToString) captures real
   // posts instead of a loading spinner. /api/posts still refreshes on mount.
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(seedPosts);
-  const [categories, setCategories] = useState<string[]>(() => Array.from(new Set(seedPosts.map(p => p.category))));
+  const [categories, setCategories] = useState<string[]>(
+    () => Array.from(new Set(seedPosts.map(p => p.category))).sort((a, b) => a.localeCompare(b))
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [hasMore, setHasMore] = useState(seedPosts.length === LIMIT);
@@ -27,6 +39,7 @@ export default function Blog() {
 
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [newsletterEmail, setNewsletterEmail] = useState('');
@@ -49,14 +62,16 @@ export default function Blog() {
       const res = await fetch('/api/categories');
       if (res.ok) {
         const data = await res.json();
-        setCategories(data);
+        if (Array.isArray(data)) {
+          setCategories([...data].filter(Boolean).sort((a, b) => String(a).localeCompare(String(b))));
+        }
       }
     } catch (err) {
       console.error("Failed to fetch categories", err);
     }
   };
 
-  const fetchPosts = useCallback(async (currentOffset: number, isInitial: boolean = false, category: string | null = null, search: string = '') => {
+  const fetchPosts = useCallback(async (currentOffset: number, isInitial: boolean = false, category: string | null = null, search: string = '', sort: SortOrder = 'newest') => {
     // First initial fetch is a silent refresh over seeded posts (no spinner).
     const silentRefresh = isInitial && initialFetchRef.current;
     initialFetchRef.current = false;
@@ -73,6 +88,7 @@ export default function Blog() {
       });
       if (category) params.append('category', category);
       if (search) params.append('search', search);
+      if (sort) params.append('sort', sort);
 
       const res = await fetch(`/api/posts?${params.toString()}`);
       if (!res.ok) {
@@ -109,11 +125,11 @@ export default function Blog() {
   }, []);
 
   useEffect(() => {
-    fetchPosts(0, true, selectedCategory, debouncedSearch);
-  }, [selectedCategory, debouncedSearch, fetchPosts]);
+    fetchPosts(0, true, selectedCategory, debouncedSearch, sortOrder);
+  }, [selectedCategory, debouncedSearch, sortOrder, fetchPosts]);
 
   const handleLoadMore = () => {
-    fetchPosts(offset, false, selectedCategory, debouncedSearch);
+    fetchPosts(offset, false, selectedCategory, debouncedSearch, sortOrder);
   };
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
@@ -210,8 +226,24 @@ export default function Blog() {
                 </div>
               </div>
 
+              <div className="space-y-3">
+                <label htmlFor="blog-sort" className="text-xs font-bold uppercase tracking-widest text-accent/40 flex items-center gap-2">
+                  <ArrowDownWideNarrow size={14} /> Sort
+                </label>
+                <select
+                  id="blog-sort"
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value as SortOrder)}
+                  className="px-4 py-2 rounded-full text-xs font-bold bg-muted text-accent/70 border border-border/50 outline-none focus:border-primary transition-all appearance-none cursor-pointer"
+                >
+                  {SORT_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
               {(selectedCategory || searchQuery) && (
-                <button 
+                <button
                   onClick={clearFilters}
                   className="flex items-center gap-2 text-xs font-bold text-accent/40 hover:text-accent transition-colors pb-2"
                 >
