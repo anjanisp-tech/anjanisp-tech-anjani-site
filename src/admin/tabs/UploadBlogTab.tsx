@@ -12,6 +12,11 @@ interface Props {
   onEditComplete?: () => void;
 }
 
+// Base categories always offered in the picker. Live categories already in use
+// by published posts are merged in on top of these (see the effect below), so
+// the list stays in sync with the public blog filter instead of drifting.
+const BASE_CATEGORIES = ['AI', 'Operations', 'Scaling', 'Leadership', 'Strategy'];
+
 function defaultFormData(): BlogFormData {
   return {
     title: '',
@@ -28,6 +33,7 @@ export default function UploadBlogTab({ editData, onEditComplete }: Props) {
   const [blogForm, setBlogForm] = useState<BlogFormData>(editData || defaultFormData());
   const [showPreview, setShowPreview] = useState(false);
   const [status, setStatus] = useState<StatusMessage>({ type: 'idle', message: '' });
+  const [categoryOptions, setCategoryOptions] = useState<string[]>(BASE_CATEGORIES);
 
   // Re-initialize form when editData changes (e.g. user clicks Edit from Manage tab)
   useEffect(() => {
@@ -35,6 +41,27 @@ export default function UploadBlogTab({ editData, onEditComplete }: Props) {
       setBlogForm(editData);
     }
   }, [editData]);
+
+  // Auto-generate the category list: base categories + every category already in
+  // use by published posts (so admin and the public filter never drift apart).
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/categories');
+        if (!res.ok || !active) return;
+        const live = await res.json();
+        if (!active || !Array.isArray(live)) return;
+        const merged = Array.from(new Set([...BASE_CATEGORIES, ...live]))
+          .filter(Boolean)
+          .sort((a: string, b: string) => a.localeCompare(b));
+        setCategoryOptions(merged);
+      } catch {
+        // Keep BASE_CATEGORIES on failure — picker stays usable offline.
+      }
+    })();
+    return () => { active = false; };
+  }, []);
 
   const isEditing = !!editData;
 
@@ -113,10 +140,13 @@ export default function UploadBlogTab({ editData, onEditComplete }: Props) {
               onChange={(e) => setBlogForm({ ...blogForm, category: e.target.value })}
               className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent outline-none transition-all appearance-none bg-white"
             >
-              <option value="Scaling">Scaling</option>
-              <option value="Operations">Operations</option>
-              <option value="Leadership">Leadership</option>
-              <option value="Strategy">Strategy</option>
+              {/* Keep the current value selectable even if it predates the list */}
+              {blogForm.category && !categoryOptions.includes(blogForm.category) && (
+                <option value={blogForm.category}>{blogForm.category}</option>
+              )}
+              {categoryOptions.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
             </select>
           </div>
 

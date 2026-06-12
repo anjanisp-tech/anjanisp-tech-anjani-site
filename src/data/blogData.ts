@@ -9,6 +9,67 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    id: "ai-without-the-hype",
+    title: "WHERE AI ACTUALLY BELONGS IN A FOUNDER-LED BUSINESS",
+    date: "10-Jun-2026",
+    category: "AI",
+    excerpt: "AI does not fix a broken operating system. It amplifies whatever structure already exists. Here is how to place AI where it compounds leverage instead of multiplying chaos.",
+    content: `
+Most founders adopt AI the way they adopt headcount. They bolt it onto a process that was never designed, expect relief, and get noise instead.
+
+AI is not a strategy. It is an amplifier. Point it at a clear system and it compounds leverage. Point it at an undefined one and it scales the confusion.
+
+Here is the pattern that separates the two outcomes.
+
+### WHERE FOUNDERS MISFIRE
+
+The common failures look productive on the surface:
+
+*   Tools added before the workflow is defined
+*   AI used to draft decisions no one owns
+*   Automations layered on top of broken handoffs
+*   Output volume rising while quality stays flat
+
+Each of these treats AI as a substitute for structure. It is not.
+
+### THE MECHANISM
+
+AI removes the cost of producing a unit of work. It does not decide which units are worth producing. That judgment still lives in your operating design.
+
+When ownership, triggers, and decision rules are clear, AI executes inside known boundaries. When they are unclear, AI generates plausible work that no one can validate, and review load shifts back to the founder.
+
+The bottleneck does not disappear. It moves to the only person who can still tell good from bad.
+
+### WHERE AI ACTUALLY BELONGS
+
+Place AI on the high-volume, low-judgment edges of a defined process:
+
+*   Drafting first passes against a fixed template
+*   Summarizing inputs into a standard decision format
+*   Classifying, tagging, and routing by explicit rules
+*   Surfacing exceptions instead of handling them silently
+
+In every case the system owns the judgment. AI owns the throughput.
+
+### THE SEQUENCE
+
+1.  **Define the process.** Ownership, inputs, outputs, decision rules.
+2.  **Stabilize it.** Make it repeatable without AI first.
+3.  **Insert AI at the throughput edges.** Never at the judgment core.
+4.  **Keep a human gate** on anything that ships, sends, or spends.
+
+This order keeps AI accountable to a system instead of replacing one.
+
+### PRINCIPLE
+
+AI multiplies your operating design. Multiply structure and you get leverage. Multiply chaos and you get faster chaos.
+
+### PUNCHLINE
+
+If AI is making your business harder to run, the problem was never the AI. It was the system you pointed it at.
+    `
+  },
+  {
     id: "founder-overload-map",
     title: "THE FOUNDER OVERLOAD MAP",
     date: "18-Feb-2026",

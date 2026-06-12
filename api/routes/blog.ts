@@ -5,48 +5,68 @@ import * as db from "../dbService.js";
 const router = express.Router();
 
 // Blog Posts
+// Whitelisted sort orders. Keys are the values the client sends; values are the
+// SQL ORDER BY clauses. Never interpolate raw query input into ORDER BY.
+const SORT_CLAUSES: Record<string, string> = {
+  newest: "created_at DESC",
+  oldest: "created_at ASC",
+  title: "title ASC",
+};
+
 router.get("/posts", async (req, res) => {
   try {
     const limit = parseInt(req.query.limit as string) || 100;
     const offset = parseInt(req.query.offset as string) || 0;
     const search = (req.query.search as string) || "";
     const category = (req.query.category as string) || "";
+    const sort = (req.query.sort as string) || "newest";
+    const orderBy = SORT_CLAUSES[sort] || SORT_CLAUSES.newest;
 
     let posts: any[];
     if (search && category) {
       posts = await db.queryDual(
-        `SELECT * FROM posts WHERE category = $1 AND (title ILIKE $2 OR content ILIKE $3) ORDER BY created_at DESC LIMIT $4 OFFSET $5`,
-        `SELECT * FROM posts WHERE category = ? AND (title LIKE ? OR content LIKE ?) ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        `SELECT * FROM posts WHERE category = $1 AND (title ILIKE $2 OR content ILIKE $3) ORDER BY ${orderBy} LIMIT $4 OFFSET $5`,
+        `SELECT * FROM posts WHERE category = ? AND (title LIKE ? OR content LIKE ?) ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
         [category, `%${search}%`, `%${search}%`, limit, offset]
       );
     } else if (search) {
       posts = await db.queryDual(
-        `SELECT * FROM posts WHERE (title ILIKE $1 OR content ILIKE $2) ORDER BY created_at DESC LIMIT $3 OFFSET $4`,
-        `SELECT * FROM posts WHERE (title LIKE ? OR content LIKE ?) ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        `SELECT * FROM posts WHERE (title ILIKE $1 OR content ILIKE $2) ORDER BY ${orderBy} LIMIT $3 OFFSET $4`,
+        `SELECT * FROM posts WHERE (title LIKE ? OR content LIKE ?) ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
         [`%${search}%`, `%${search}%`, limit, offset]
       );
     } else if (category) {
       posts = await db.query(
-        "SELECT * FROM posts WHERE category = ? ORDER BY created_at DESC LIMIT ? OFFSET ?",
+        `SELECT * FROM posts WHERE category = ? ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
         [category, limit, offset]
       );
     } else {
       posts = await db.query(
-        "SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?",
+        `SELECT * FROM posts ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
         [limit, offset]
       );
     }
 
-    // Fallback to initial posts if DB returned nothing (mock mode)
-    if (posts.length === 0 && !search && !category) {
+    // Fallback to initial posts when the DB has nothing to serve. This covers
+    // both the unfiltered prerender path and mock mode (no real DB), where the
+    // category/search filters must still be honoured against the seed set.
+    const noRealDb = (await db.getDbType()) === "mock";
+    if (posts.length === 0 && (noRealDb || (!search && !category))) {
       const initialPosts = await db.getInitialPosts();
-      let filtered = initialPosts;
+      let filtered = [...initialPosts];
       if (category) {
         filtered = filtered.filter((p: any) => p.category === category);
       }
       if (search) {
         const s = search.toLowerCase();
         filtered = filtered.filter((p: any) => p.title.toLowerCase().includes(s) || p.content.toLowerCase().includes(s));
+      }
+      if (sort === "title") {
+        filtered.sort((a: any, b: any) => String(a.title).localeCompare(String(b.title)));
+      } else if (sort === "oldest") {
+        filtered.sort((a: any, b: any) => String(a.date).localeCompare(String(b.date)));
+      } else {
+        filtered.sort((a: any, b: any) => String(b.date).localeCompare(String(a.date)));
       }
       return res.json(filtered.slice(offset, offset + limit));
     }
@@ -59,7 +79,7 @@ router.get("/posts", async (req, res) => {
 
 router.get("/categories", async (req, res) => {
   try {
-    const rows = await db.query("SELECT DISTINCT category FROM posts WHERE category IS NOT NULL AND category != ''");
+    const rows = await db.query("SELECT DISTINCT category FROM posts WHERE category IS NOT NULL AND category != '' ORDER BY category ASC");
 
     if (rows.length > 0) {
       return res.json(rows.map((r: any) => r.category));
@@ -67,7 +87,9 @@ router.get("/categories", async (req, res) => {
 
     // Fallback to initial posts
     const initialPosts = await db.getInitialPosts();
-    const categories = Array.from(new Set(initialPosts.map((p: any) => p.category))).filter(Boolean);
+    const categories = Array.from(new Set(initialPosts.map((p: any) => p.category)))
+      .filter(Boolean)
+      .sort((a: any, b: any) => String(a).localeCompare(String(b)));
     res.json(categories);
   } catch (err: any) {
     res.status(500).json({ error: "Failed to fetch categories", details: err.message });

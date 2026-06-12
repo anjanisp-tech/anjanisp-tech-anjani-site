@@ -147,6 +147,14 @@ export function getSqliteDb() {
 
 export const initialPosts = [
   {
+    id: "ai-without-the-hype",
+    title: "WHERE AI ACTUALLY BELONGS IN A FOUNDER-LED BUSINESS",
+    date: "2026-06-10",
+    category: "AI",
+    excerpt: "AI does not fix a broken operating system. It amplifies whatever structure already exists. Here is how to place AI where it compounds leverage.",
+    content: "AI is not a strategy. It is an amplifier. Point it at a clear system and it compounds leverage. Point it at an undefined one and it scales the confusion. Place AI on the high-volume, low-judgment edges of a defined process and keep a human gate on anything that ships, sends, or spends."
+  },
+  {
     id: "founder-overload-map",
     title: "THE FOUNDER OVERLOAD MAP",
     date: "2024-03-25",
