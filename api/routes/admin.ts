@@ -1,7 +1,7 @@
 import express from "express";
 import { getUtils, getKnowledge } from "../helpers.js";
 import * as db from "../dbService.js";
-import { generateCardUrl } from "../autocard.js";
+import { generateCardUrl } from "../_autocard.js";
 
 const router = express.Router();
 
