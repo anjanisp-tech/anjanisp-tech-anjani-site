@@ -1,6 +1,7 @@
 import express from "express";
 import { getUtils, getKnowledge } from "../helpers.js";
 import * as db from "../dbService.js";
+import { generateCardUrl } from "../autocard.js";
 
 const router = express.Router();
 
@@ -367,6 +368,11 @@ router.post("/posts", async (req, res, next) => {
 }, async (req, res) => {
   const { title, date, category, excerpt, content, is_premium, img } = req.body;
   const id = title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
+  // Auto-generate a branded cover when none was supplied.
+  let coverImg = (img || '').trim();
+  if (!coverImg) {
+    coverImg = await generateCardUrl({ kind: 'blog', title, category, slug: id });
+  }
   try {
     const dbType = await db.getDbType();
     let post;
@@ -375,17 +381,17 @@ router.post("/posts", async (req, res, next) => {
       const rows = await db.queryDual(
         `INSERT INTO posts (id, title, date, category, excerpt, content, is_premium, img) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, date = EXCLUDED.date, category = EXCLUDED.category, excerpt = EXCLUDED.excerpt, content = EXCLUDED.content, is_premium = EXCLUDED.is_premium, img = EXCLUDED.img RETURNING *`,
         `SELECT 1`, // unused, handled below
-        [id, title, date, category, excerpt, content, is_premium ? 1 : 0, img || '']
+        [id, title, date, category, excerpt, content, is_premium ? 1 : 0, coverImg]
       );
       post = rows[0];
     } else {
       await db.execute(
         "INSERT OR REPLACE INTO posts (id, title, date, category, excerpt, content, is_premium, img) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        [id, title, date, category, excerpt, content, is_premium ? 1 : 0, img || '']
+        [id, title, date, category, excerpt, content, is_premium ? 1 : 0, coverImg]
       );
       post = await db.queryOne("SELECT * FROM posts WHERE id = ?", [id]);
     }
-    if (!post) post = { id, title, date, category, excerpt, content, is_premium, img };
+    if (!post) post = { id, title, date, category, excerpt, content, is_premium, img: coverImg };
     return res.status(201).json(post);
   } catch (err: any) {
     res.status(500).json({ error: "Failed to save post", details: err.message });
@@ -672,6 +678,11 @@ router.post("/casestudies", async (req, res, next) => {
   const b = req.body || {};
   const slug = (b.slug && b.slug.trim()) || slugifyCs(b.title);
   const results = JSON.stringify(Array.isArray(b.results) ? b.results : []);
+  // Auto-generate a branded cover when none was supplied.
+  let coverImg = (b.img || '').trim();
+  if (!coverImg) {
+    coverImg = await generateCardUrl({ kind: 'case', title: b.title, category: b.category, slug });
+  }
   try {
     const dbType = await db.getDbType();
     if (dbType === 'postgres') {
@@ -680,12 +691,12 @@ router.post("/casestudies", async (req, res, next) => {
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, CURRENT_TIMESTAMP)
          ON CONFLICT (slug) DO UPDATE SET title=EXCLUDED.title, excerpt=EXCLUDED.excerpt, img=EXCLUDED.img, category=EXCLUDED.category, client=EXCLUDED.client, period=EXCLUDED.period, results=EXCLUDED.results, content=EXCLUDED.content, updated_at=CURRENT_TIMESTAMP RETURNING *`,
         `SELECT 1`,
-        [slug, b.title || '', b.excerpt || '', b.img || '', b.category || '', b.client || '', b.period || '', results, b.content || '']
+        [slug, b.title || '', b.excerpt || '', coverImg, b.category || '', b.client || '', b.period || '', results, b.content || '']
       );
     } else {
       await db.execute(
         `INSERT OR REPLACE INTO case_studies (slug, title, excerpt, img, category, client, period, results, content, updated_at) VALUES (?,?,?,?,?,?,?,?,?, CURRENT_TIMESTAMP)`,
-        [slug, b.title || '', b.excerpt || '', b.img || '', b.category || '', b.client || '', b.period || '', results, b.content || '']
+        [slug, b.title || '', b.excerpt || '', coverImg, b.category || '', b.client || '', b.period || '', results, b.content || '']
       );
     }
     const row = await db.queryOne("SELECT * FROM case_studies WHERE slug = ?", [slug]);
