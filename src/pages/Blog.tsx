@@ -261,23 +261,33 @@ export default function Blog() {
             ) : blogPosts.length > 0 ? (
               blogPosts.map((post) => (
                 <article key={post.id} className="group">
-                  <div className="flex flex-col md:flex-row gap-8 items-start">
-                    <div className="md:w-1/4">
-                      <div className="text-sm font-bold uppercase tracking-widest text-accent/40 mb-2">{post.date}</div>
-                      <div className="inline-block px-3 py-1 bg-muted rounded-full text-xs font-bold text-accent/60 uppercase tracking-wider">
-                        {post.category}
-                      </div>
-                    </div>
-                    <div className="md:w-3/4">
+                  <div className="flex flex-col sm:flex-row gap-6 md:gap-8 items-start">
+                    {/* Thumbnail on the left (small, native card ratio so nothing is cropped) */}
+                    <Link
+                      to={`/blog/${post.id}`}
+                      className="block w-full sm:w-48 md:w-60 shrink-0 rounded-xl overflow-hidden border border-border/60 aspect-[1200/630] bg-muted"
+                    >
                       {post.img && (
-                        <Link to={`/blog/${post.id}`} className="block mb-6 rounded-2xl overflow-hidden aspect-[16/9]">
-                          <img src={post.img} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        </Link>
+                        <img
+                          src={post.img}
+                          alt={post.title}
+                          loading="lazy"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
                       )}
-                      <h2 className="text-2xl md:text-3xl font-bold mb-4 group-hover:text-accent-light transition-colors">
+                    </Link>
+                    {/* Content on the right */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
+                        <span className="text-sm font-bold uppercase tracking-widest text-accent/40">{post.date}</span>
+                        <span className="inline-block px-3 py-1 bg-muted rounded-full text-xs font-bold text-accent/60 uppercase tracking-wider">
+                          {post.category}
+                        </span>
+                      </div>
+                      <h2 className="text-2xl md:text-3xl font-bold mb-3 group-hover:text-accent-light transition-colors">
                         <Link to={`/blog/${post.id}`}>{post.title}</Link>
                       </h2>
-                      <p className="text-lg text-accent-light mb-6 leading-relaxed">
+                      <p className="text-lg text-accent-light mb-4 leading-relaxed">
                         {post.excerpt}
                       </p>
                       <Link to={`/blog/${post.id}`} className="inline-flex items-center gap-2 font-bold text-primary hover:gap-3 transition-all">
@@ -285,7 +295,7 @@ export default function Blog() {
                       </Link>
                     </div>
                   </div>
-                  <div className="h-px bg-border/50 mt-16" />
+                  <div className="h-px bg-border/50 mt-12" />
                 </article>
               ))
             ) : (
