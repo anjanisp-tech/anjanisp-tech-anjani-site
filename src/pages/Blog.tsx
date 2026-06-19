@@ -261,18 +261,20 @@ export default function Blog() {
             ) : blogPosts.length > 0 ? (
               blogPosts.map((post) => (
                 <article key={post.id} className="group">
-                  <div className="flex flex-col sm:flex-row gap-6 md:gap-8 items-start">
-                    {/* Thumbnail on the left (small, native card ratio so nothing is cropped) */}
+                  <div className="flex flex-col sm:flex-row gap-6 md:gap-8 items-start sm:items-stretch">
+                    {/* Thumbnail on the left. On mobile it keeps the card's native
+                        ratio; on sm+ it stretches to match the text-block height
+                        (object-left keeps the wordmark + title start visible). */}
                     <Link
                       to={`/blog/${post.id}`}
-                      className="block w-full sm:w-48 md:w-60 shrink-0 rounded-xl overflow-hidden border border-border/60 aspect-[1200/630] bg-muted"
+                      className="block w-full sm:w-48 md:w-60 shrink-0 rounded-xl overflow-hidden border border-border/60 bg-muted aspect-[1200/630] sm:aspect-auto"
                     >
                       {post.img && (
                         <img
                           src={post.img}
                           alt={post.title}
                           loading="lazy"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover object-left group-hover:scale-105 transition-transform duration-500"
                         />
                       )}
                     </Link>
