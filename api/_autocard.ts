@@ -1,136 +1,110 @@
-// api/autocard.ts — auto-generated branded cover/OG card.
-// When a blog post or case study is published WITHOUT a cover image, we render
-// a branded 1200x630 card from the title + category, rasterise it to PNG with
-// sharp, store it on Vercel Blob, and return the public URL. The result is a
-// normal image URL, so the public grid thumbnails and the prerendered og:image
-// both work unchanged.
+// api/_autocard.ts — auto-generated cover art for blog posts / case studies.
 //
-// Fails soft: on any error (Blob not configured, sharp missing, render error)
-// it returns '' so publishing is never blocked — the site falls back to its
-// existing static placeholder exactly as before.
+// Pipeline (shared by publish-time and the backfill script):
+//   1) Gemini turns the title (+summary) into a jargon-free ABSTRACT visual
+//      concept — this is what prevents Imagen from baking text into the image.
+//   2) Imagen 4 renders that concept in a locked navy/slate + TEAL editorial
+//      style (gold/amber/orange explicitly forbidden so it stays on-brand).
+//   3) sharp resizes to 1200x630 and recompresses (~150-250KB).
+//
+// Private module ("_" prefix) so Vercel does NOT build it as its own
+// serverless function; it is imported by api/routes/admin.ts (publish) and by
+// scripts/backfill-ai-thumbnails.mjs (backfill).
+//
+// Fails soft everywhere: any error returns null/'' and the caller falls back to
+// the existing placeholder — image generation never blocks publishing.
 
-const BRAND = {
-  name: 'ANJANI PANDEY',
-  domain: 'anjanipandey.com',
-  bg: '#0f172a',        // deep navy (matches --color-accent)
-  bgDeep: '#0b1220',    // darker gradient stop
-  accent: '#2dd4bf',    // bright teal for legibility on dark (primary is #0F766E)
-  accentSoft: 'rgba(45,212,191,0.10)',
-  text: '#f8fafc',
-  textDim: '#94a3b8',
-};
+import { GoogleGenAI } from '@google/genai';
 
 interface CardOpts {
   kind: 'blog' | 'case';
   title: string;
   category?: string;
   slug: string;
+  summary?: string;
 }
 
-function escapeXml(s: string): string {
-  return (s || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+const STYLE =
+  "Abstract minimalist conceptual artwork, premium matte 3D render aesthetic. Smooth sculptural geometric forms and flowing lines. " +
+  "Deep navy and slate color palette with a single restrained TEAL / CYAN accent only. " +
+  "Soft studio lighting, generous negative space, clean composition, subtle grain. " +
+  "Strictly NO gold, NO amber, NO orange, NO yellow, NO warm metallics. " +
+  "Purely abstract: no text, no letters, no numbers, no people, no faces, no devices, no laptops, no buildings, no charts, no logos.";
+
+function geminiKey(): string {
+  return (process.env.GEMINI_API_KEY || '').trim().replace(/^["']|["']$/g, '');
 }
 
-// Greedy word-wrap. SVG <text> doesn't wrap, so we split into lines by an
-// approximate character budget derived from the font size and content width.
-function wrapText(text: string, fontSize: number, maxWidth: number, maxLines: number): string[] {
-  const charW = fontSize * 0.56; // rough avg glyph width for a bold sans-serif
-  const maxChars = Math.max(8, Math.floor(maxWidth / charW));
-  const words = (text || '').trim().split(/\s+/);
-  const lines: string[] = [];
-  let line = '';
-  for (const w of words) {
-    const candidate = line ? `${line} ${w}` : w;
-    if (candidate.length <= maxChars) {
-      line = candidate;
-    } else {
-      if (line) lines.push(line);
-      line = w;
-      if (lines.length === maxLines - 1) break;
+async function buildConcept(ai: GoogleGenAI, title: string, summary: string): Promise<string> {
+  try {
+    const r = await ai.models.generateContent({
+      model: 'gemini-3.1-flash-lite',
+      contents:
+        `Article title: "${title}". Summary: "${summary}".\n` +
+        `In ONE vivid sentence, describe a PURELY ABSTRACT visual metaphor for cover art using only sculptural shapes, lines, light and motion. ` +
+        `Absolutely no words, letters, numbers or text in the image; no brand names; no people or faces; no devices, laptops, phones; no buildings; no charts or graphs; no business jargon. Just abstract form and metaphor.`,
+      config: { temperature: 0.7 },
+    });
+    return (r.text || '').trim().replace(/\s+/g, ' ').slice(0, 400) ||
+      'Smooth abstract sculptural forms and flowing lines in balanced tension.';
+  } catch {
+    return 'Smooth abstract sculptural forms and flowing lines in balanced tension.';
+  }
+}
+
+async function generateImageBytes(ai: GoogleGenAI, prompt: string): Promise<Buffer | null> {
+  for (const model of ['imagen-4.0-fast-generate-001', 'imagen-4.0-generate-001']) {
+    try {
+      const r = await ai.models.generateImages({ model, prompt, config: { numberOfImages: 1, aspectRatio: '16:9' } });
+      const b64 = r.generatedImages?.[0]?.image?.imageBytes;
+      if (b64) return Buffer.from(b64, 'base64');
+    } catch (e: any) {
+      console.error('[autocard] imagen', model, 'failed:', e?.message || e);
     }
   }
-  if (line && lines.length < maxLines) lines.push(line);
-  // Ellipsise if we ran out of lines
-  if (lines.length === maxLines) {
-    const used = lines.join(' ').split(/\s+/).length;
-    const total = (text || '').trim().split(/\s+/).length;
-    if (used < total) lines[maxLines - 1] = lines[maxLines - 1].replace(/[.,;:]?$/, '') + '…';
-  }
-  return lines.length ? lines : [''];
-}
-
-function buildSvg(opts: CardOpts): string {
-  const W = 1200, H = 630, PAD = 80, CONTENT_W = W - PAD * 2;
-  const title = (opts.title || 'Untitled').trim();
-
-  // Title size tiers by length
-  let fs = 70;
-  if (title.length > 38) fs = 58;
-  if (title.length > 72) fs = 48;
-  if (title.length > 110) fs = 40;
-  const lineH = Math.round(fs * 1.18);
-  const lines = wrapText(title, fs, CONTENT_W, 4);
-
-  const kindLabel = opts.kind === 'case' ? 'CASE STUDY' : 'ARTICLE';
-  const category = (opts.category || '').trim().toUpperCase();
-
-  // Vertical layout: block of title lines centred around the middle, eyebrow
-  // above the first line, footer pinned to the bottom.
-  const blockH = lines.length * lineH;
-  const titleTop = Math.round((H - blockH) / 2) + fs * 0.7;
-  const eyebrowY = titleTop - fs - 26;
-
-  const titleTspans = lines
-    .map((ln, i) => `<text x="${PAD}" y="${titleTop + i * lineH}" font-size="${fs}" font-weight="800" fill="${BRAND.text}" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" letter-spacing="-1">${escapeXml(ln)}</text>`)
-    .join('\n    ');
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="${BRAND.bg}"/>
-      <stop offset="1" stop-color="${BRAND.bgDeep}"/>
-    </linearGradient>
-    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-      <path d="M60 0H0V60" fill="none" stroke="${BRAND.accent}" stroke-opacity="0.06" stroke-width="1"/>
-    </pattern>
-  </defs>
-  <rect width="${W}" height="${H}" fill="url(#bg)"/>
-  <rect width="${W}" height="${H}" fill="url(#grid)"/>
-  <rect x="0" y="0" width="10" height="${H}" fill="${BRAND.accent}"/>
-
-  <!-- header: wordmark + kind pill -->
-  <text x="${PAD}" y="118" font-size="30" font-weight="800" fill="${BRAND.text}" font-family="Inter, Arial, sans-serif" letter-spacing="3">${escapeXml(BRAND.name)}</text>
-  <rect x="${W - PAD - 196}" y="92" width="196" height="40" rx="20" fill="${BRAND.accentSoft}" stroke="${BRAND.accent}" stroke-opacity="0.5"/>
-  <text x="${W - PAD - 98}" y="118" font-size="19" font-weight="700" fill="${BRAND.accent}" font-family="Inter, Arial, sans-serif" letter-spacing="3" text-anchor="middle">${escapeXml(kindLabel)}</text>
-
-  <!-- eyebrow category -->
-  ${category ? `<text x="${PAD}" y="${eyebrowY}" font-size="24" font-weight="700" fill="${BRAND.accent}" font-family="Inter, Arial, sans-serif" letter-spacing="5">${escapeXml(category)}</text>` : ''}
-
-  <!-- title -->
-  ${titleTspans}
-
-  <!-- footer -->
-  <rect x="${PAD}" y="${H - 96}" width="56" height="4" rx="2" fill="${BRAND.accent}"/>
-  <text x="${PAD}" y="${H - 56}" font-size="24" font-weight="600" fill="${BRAND.textDim}" font-family="Inter, Arial, sans-serif" letter-spacing="1">${escapeXml(BRAND.domain)}</text>
-</svg>`;
+  return null;
 }
 
 /**
- * Render a branded card for a post/case study and store it on Vercel Blob.
+ * Generate an optimized branded cover PNG (1200x630, ~150-250KB) for a post.
+ * Returns the PNG buffer, or null on any failure. No Blob/storage involved —
+ * used both by the backfill script (writes to disk) and by generateCardUrl.
+ */
+export async function generateCardBuffer(opts: { title: string; category?: string; summary?: string }): Promise<Buffer | null> {
+  const key = geminiKey();
+  if (!key) return null;
+  try {
+    const ai = new GoogleGenAI({ apiKey: key });
+    const concept = await buildConcept(ai, opts.title, opts.summary || opts.category || '');
+    const raw = await generateImageBytes(ai, `${STYLE} Concept: ${concept}`);
+    if (!raw) return null;
+    const sharp = (await import('sharp')).default;
+    // Navy -> teal duotone. Imagen doesn't reliably honor negative colour
+    // instructions (it sometimes injects gold/amber), so we enforce the brand
+    // palette deterministically: desaturate, then tint to teal. Guarantees every
+    // cover is on-brand regardless of what the model produced.
+    return await sharp(raw)
+      .resize({ width: 1200, height: 630, fit: 'cover', position: 'left' })
+      .modulate({ saturation: 0.15 })
+      .tint({ r: 56, g: 189, b: 178 })
+      .png({ quality: 80, effort: 9, palette: true, compressionLevel: 9 })
+      .toBuffer();
+  } catch (e: any) {
+    console.error('[autocard] buffer generation failed:', e?.message || e);
+    return null;
+  }
+}
+
+/**
+ * Generate a cover for a post/case study and store it on Vercel Blob.
  * Returns the public PNG URL, or '' on any failure (caller falls back to the
  * existing placeholder).
  */
 export async function generateCardUrl(opts: CardOpts): Promise<string> {
   try {
     if (!process.env.BLOB_READ_WRITE_TOKEN && !process.env.BLOB_STORE_ID) return '';
-    const svg = buildSvg(opts);
-    const sharp = (await import('sharp')).default;
-    const png = await sharp(Buffer.from(svg)).png().toBuffer();
+    const png = await generateCardBuffer({ title: opts.title, category: opts.category, summary: opts.summary });
+    if (!png) return '';
     const { put } = await import('@vercel/blob');
     const key = `cms/auto/${opts.kind}-${opts.slug || Date.now()}.png`;
     const blob = await put(key, png, {
@@ -145,6 +119,3 @@ export async function generateCardUrl(opts: CardOpts): Promise<string> {
     return '';
   }
 }
-
-// Exposed for local/offline testing (returns the raw SVG string).
-export const __buildSvgForTest = buildSvg;

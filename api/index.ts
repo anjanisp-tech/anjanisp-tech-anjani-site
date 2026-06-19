@@ -34,4 +34,8 @@ apiApp.use((err: any, req: any, res: any, next: any) => {
   });
 });
 
+// Publishing a post generates AI cover art (Gemini concept + Imagen + upload),
+// which can take ~10-15s; raise the function limit so the save doesn't time out.
+export const maxDuration = 60;
+
 export default apiApp;

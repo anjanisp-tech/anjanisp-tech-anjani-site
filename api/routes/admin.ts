@@ -371,7 +371,7 @@ router.post("/posts", async (req, res, next) => {
   // Auto-generate a branded cover when none was supplied.
   let coverImg = (img || '').trim();
   if (!coverImg) {
-    coverImg = await generateCardUrl({ kind: 'blog', title, category, slug: id });
+    coverImg = await generateCardUrl({ kind: 'blog', title, category, slug: id, summary: excerpt });
   }
   try {
     const dbType = await db.getDbType();
@@ -681,7 +681,7 @@ router.post("/casestudies", async (req, res, next) => {
   // Auto-generate a branded cover when none was supplied.
   let coverImg = (b.img || '').trim();
   if (!coverImg) {
-    coverImg = await generateCardUrl({ kind: 'case', title: b.title, category: b.category, slug });
+    coverImg = await generateCardUrl({ kind: 'case', title: b.title, category: b.category, slug, summary: b.excerpt });
   }
   try {
     const dbType = await db.getDbType();
