@@ -178,7 +178,10 @@ export default function Blog() {
         description="Insights on scaling operations, building systems, and breaking free from the founder trap. By Anjani Pandey."
         canonical="https://www.anjanipandey.com/writing"
       />
-      <section className="pt-32 pb-4 md:pt-40 md:pb-6">
+      {/* Plain <div>s, not <section>: a global unlayered `section{py-24}` rule
+          overrides Tailwind padding utilities, which would re-introduce a large
+          dead gap here. */}
+      <div className="pt-32 pb-4 md:pt-40 md:pb-6">
         <div className="container-custom">
           <div className="max-w-3xl">
             <h1 className="mb-6">Writing</h1>
@@ -187,9 +190,9 @@ export default function Blog() {
             </p>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section className="pt-0 pb-24">
+      <div className="pb-24">
         <div className="container-custom">
           {/* Search & Filters */}
           <div className="mb-16 space-y-8 border-b border-border pb-8">
@@ -365,7 +368,7 @@ export default function Blog() {
             )}
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
