@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
 import Layout from './components/Layout';
+import ConsentBanner from './components/ConsentBanner';
 
 // Lazy load pages to reduce initial bundle size
 const Home = lazy(() => import('./pages/Home'));
@@ -48,6 +49,7 @@ export default function App() {
   return (
     <Router>
       <Analytics />
+      <ConsentBanner />
       <Layout>
         <Suspense fallback={<PageLoader />}>
           <Routes>
