@@ -277,7 +277,7 @@ export default function Home() {
                     <CheckCircle2 size={20} />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-lg text-accent-light font-medium">If {point.symptom.toLowerCase().replace('.', '')},</p>
+                    <p className="text-lg text-accent-light font-medium">If {point.symptom.toLowerCase().replace(/\.\s+/g, ', ').replace(/\.+$/, '')},</p>
                     <p className="text-sm font-bold uppercase tracking-widest text-accent">You may be experiencing: {point.disease}</p>
                   </div>
                 </div>
@@ -300,7 +300,7 @@ export default function Home() {
                 What is your <span className="text-white/60 italic">Bottleneck Cost?</span>
               </h2>
               <p className="text-xl text-white/70 mb-8 leading-relaxed">
-                Being the "Hero" of your company isn't just exhausting -- it's expensive.
+                Being the "Hero" of your company isn't just exhausting. It's expensive.
                 Our interactive calculator quantifies the specific financial loss caused by structural gaps.
               </p>
               <Link to="/calculator" className="bg-white text-accent hover:bg-muted px-10 py-4 rounded-md font-bold text-lg transition-all inline-flex items-center gap-3 shadow-xl">
@@ -309,18 +309,22 @@ export default function Home() {
               </Link>
             </div>
             <div className="bg-white/10 backdrop-blur-sm border border-white/10 p-8 rounded-3xl">
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Example result</span>
+                <span className="text-[10px] font-medium text-white/40">₹5 Cr revenue · team of 5 · 15 hrs/wk</span>
+              </div>
               <div className="space-y-6">
                 <div className="flex justify-between items-center border-b border-white/10 pb-4">
                   <span className="text-sm font-medium text-white/60">Time Drain</span>
-                  <span className="text-xl font-mono font-bold">$XX,XXX</span>
+                  <span className="text-xl font-mono font-bold">₹1.6 Cr</span>
                 </div>
                 <div className="flex justify-between items-center border-b border-white/10 pb-4">
                   <span className="text-sm font-medium text-white/60">Growth Cap</span>
-                  <span className="text-xl font-mono font-bold">$XXX,XXX</span>
+                  <span className="text-xl font-mono font-bold">₹65 L</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-white/60">Total Bottleneck Cost</span>
-                  <span className="text-3xl font-mono font-bold text-white">$XXX,XXX</span>
+                  <span className="text-3xl font-mono font-bold text-white">₹2.7 Cr</span>
                 </div>
                 <div className="pt-4">
                   <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
@@ -347,7 +351,7 @@ export default function Home() {
               {
                 title: 'Install',
                 icon: Layers,
-                desc: 'We design and install the Operating Spine -- cadence, accountability, decision rights, KPIs, escalation protocols. Not a report. A working system.'
+                desc: 'We design and install the Operating Spine: cadence, accountability, decision rights, KPIs, escalation protocols. Not a report. A working system.'
               },
               {
                 title: 'Embed',
@@ -484,7 +488,7 @@ export default function Home() {
                 </div>
 
                 {/* Next Testimonial (Preview) */}
-                <div className="bg-muted p-10 rounded-3xl border border-border/50 flex flex-col h-full relative hidden md:flex opacity-40">
+                <div className="bg-muted p-10 rounded-3xl border border-border/50 flex flex-col h-full relative hidden md:flex opacity-70">
                   <Quote className="absolute top-8 right-8 text-accent/5" size={48} />
                   <p className="text-xl text-accent-light mb-8 italic leading-relaxed flex-grow relative z-10">
                     "{testimonials[(testimonialIndex + 1) % testimonials.length].quote}"
