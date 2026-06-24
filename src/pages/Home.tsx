@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Search, Layers, Rocket, ChevronLeft, ChevronRight, Quote, PenLine, Briefcase } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Search, Layers, Rocket, ChevronLeft, ChevronRight, Quote, Briefcase, Sparkles, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 import SEO from '../components/SEO';
@@ -151,104 +151,118 @@ export default function Home() {
         }}
       />
 
-      {/* SECTION 1 - Personal Hero */}
-      <section className="bg-white pt-32 pb-16 md:pt-40 md:pb-24">
+      {/* SECTION 1 - Thesis Hero (balanced two-column, /os visual language) */}
+      <section className="bg-white pt-32 pb-16 md:pt-40 md:pb-20">
         <div className="container-custom">
-          <div className="max-w-3xl">
-            <h1 className="text-5xl md:text-7xl mb-6">
-              Anjani Pandey
-            </h1>
-            <p className="text-xl md:text-2xl text-accent-light mb-6 leading-relaxed">
-              Operations leader. Builder. Writing about systems, scale, and what AI changes about both.
-            </p>
-            <p className="text-base text-accent-light/60 leading-relaxed">
-              15+ years designing execution systems inside high-growth companies. Now building <a href="https://metmov.com" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov</a> to help founder-led businesses install the structural backbone they're missing. ISB alumnus. Based in Bengaluru.
-            </p>
+          <div className="grid lg:grid-cols-5 gap-12 lg:gap-16 items-start">
+            {/* Left: thesis + CTA */}
+            <div className="lg:col-span-3">
+              <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1.5 mb-6">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Operating in public · Level4-OS, 9 live subsystems
+              </div>
+              <h1 className="text-4xl md:text-6xl leading-[1.05] mb-6">
+                A company of one,<br />run like an institution.
+              </h1>
+              <p className="text-xl md:text-2xl text-accent-light mb-6 leading-relaxed max-w-2xl">
+                The operating model is the asset. I design the systems that let founder-led businesses, and my own, scale without the founder as the bottleneck.
+              </p>
+              <p className="text-base text-accent-light/60 leading-relaxed max-w-2xl mb-8">
+                I'm Anjani Pandey. 15+ years building execution systems inside high-growth companies, now installing them for others through <a href="https://metmov.com" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov</a> and running my own AI operating system in public. ISB alumnus. Bengaluru.
+              </p>
+              <div className="flex flex-wrap items-center gap-5">
+                <Link to="/services" className="btn-primary inline-flex items-center gap-2">
+                  See how we'd work together
+                  <ArrowRight size={18} />
+                </Link>
+                <a href="/os" className="inline-flex items-center gap-2 text-sm font-bold text-accent hover:gap-3 transition-all">
+                  Open the OS
+                  <ArrowRight size={16} />
+                </a>
+              </div>
+
+              {funnel && (
+                <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border/50 pt-5">
+                  <span className="text-sm text-accent/70"><strong className="text-accent tabular-nums">{funnel.funnel.visits.toLocaleString('en-IN')}</strong> visits</span>
+                  <span className="text-sm text-accent/70"><strong className="text-accent tabular-nums">{funnel.funnel.signups.toLocaleString('en-IN')}</strong> signups</span>
+                  <span className="text-sm text-accent/70"><strong className="text-accent tabular-nums">{funnel.funnel.conversion_pct.toFixed(1)}%</strong> end-to-end</span>
+                  <span className="text-xs text-accent/40">{funnel.period.label} · live from the operator database</span>
+                </div>
+              )}
+            </div>
+
+            {/* Right: what clients hire me for (kills the empty-right layout) */}
+            <div className="lg:col-span-2">
+              <div className="bg-muted border border-border rounded-3xl p-8 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-5">What clients hire me for</p>
+                <ul className="space-y-4">
+                  {[
+                    'Diagnosing the structural diseases that keep founders in the work',
+                    'Installing the operating spine: cadence, accountability, decision rights',
+                    'Designing the memory and capability layer for an AI-run back office',
+                    'Reclaiming 8-15 hrs/week of operating load through standing automations'
+                  ].map((item, i) => (
+                    <li key={i} className="flex gap-3 text-accent-light">
+                      <span className="text-accent/30 font-mono text-sm font-bold pt-0.5">{String(i + 1).padStart(2, '0')}</span>
+                      <span className="leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="border-t border-border/50 mt-6 pt-5">
+                  <p className="text-xs text-accent/50">Bengaluru · ISB alumnus · Founder, MetMov LLP</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION 2 - Three Cards: Writing + Building + Now Building */}
+      {/* SECTION 2 - The ladder (offers grid). Mirrors /services canonical ladder; firewall: rungs 1-2 personal, MetMov cross-link only at rung 3. */}
       <section className="bg-muted border-y border-border/50 py-20">
         <div className="container-custom">
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Card 1: Now Building — Personal OS (primary) */}
-            <a href="/os" className="bg-white p-10 rounded-3xl border border-accent/30 hover:border-accent transition-all group shadow-md flex flex-col relative overflow-hidden">
-              <div className="absolute top-6 right-6 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live
+          <div className="max-w-3xl mb-12">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent/40 mb-4">How to work with me</p>
+            <h2 className="mb-4">From a first AI system to a firm that runs without you</h2>
+            <p className="text-lg text-accent-light leading-relaxed">
+              Three rungs. Each stands on its own. Together they run from your first AI setup, to a full Personal OS, to the operating backbone of the business itself.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6 md:gap-4 items-stretch">
+            {/* Rung 1 — For individuals */}
+            <Link to="/services" className="bg-white border border-border rounded-2xl p-8 flex flex-col hover:border-accent transition-all group">
+              <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center text-primary mb-6">
+                <Sparkles size={22} />
               </div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-accent">
-                  <Layers size={20} />
-                </div>
-                <span className="text-xs font-bold uppercase tracking-widest text-accent/40">Now Building</span>
+              <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-2">For individuals</div>
+              <h3 className="text-xl font-bold mb-2">AI Setup Sprint</h3>
+              <div className="text-sm font-semibold text-accent mb-4">₹25,000</div>
+              <p className="text-sm text-accent-light leading-relaxed flex-grow mb-6">A working Claude-based AI system built around how you work. The entry rung.</p>
+              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">Explore <ArrowRight size={16} /></span>
+            </Link>
+
+            {/* Rung 2 — For operators */}
+            <Link to="/services" className="bg-white border border-accent/30 rounded-2xl p-8 flex flex-col shadow-md hover:border-accent transition-all group">
+              <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center text-primary mb-6">
+                <Layers size={22} />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">Personal OS</h2>
-              <p className="text-accent-light leading-relaxed mb-6 flex-grow">
-                A working operating system for solo operators. Claude as the kernel, nine subsystems live, the architecture I run my own business on. Open the public command center.
-              </p>
+              <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-2">For operators</div>
+              <h3 className="text-xl font-bold mb-2">Build Sprint + Care</h3>
+              <div className="text-sm font-semibold text-accent mb-4">from ₹1.5L + ₹25k/mo</div>
+              <p className="text-sm text-accent-light leading-relaxed flex-grow mb-6">Install a full Personal OS, then keep it compounding instead of decaying.</p>
+              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">Explore <ArrowRight size={16} /></span>
+            </Link>
 
-              {funnel && (
-                <div className="mb-6 pt-4 border-t border-border/40">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <div className="flex flex-col">
-                      <span className="text-lg font-bold text-accent tabular-nums">{funnel.funnel.visits.toLocaleString('en-IN')}</span>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-accent/50">Visits</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-lg font-bold text-accent tabular-nums">{funnel.funnel.signups.toLocaleString('en-IN')}</span>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-accent/50">Signups</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-lg font-bold text-accent tabular-nums">{funnel.funnel.conversion_pct.toFixed(1)}%</span>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-accent/50">E2E</span>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-accent/40 mt-2 leading-tight">
-                    {funnel.period.label} · live from the operator database
-                  </p>
-                </div>
-              )}
-
-              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">
-                Open the OS <ArrowRight size={16} />
-              </span>
+            {/* Rung 3 — MetMov (the only cross-brand link; firewall held) */}
+            <a href="https://metmov.com/operating-spine" target="_blank" rel="noopener noreferrer" className="bg-accent text-white rounded-2xl p-8 flex flex-col group">
+              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-white mb-6">
+                <Target size={22} />
+              </div>
+              <div className="text-xs font-bold uppercase tracking-widest text-white/50 mb-2">For the business</div>
+              <h3 className="text-xl font-bold mb-2">Operating Spine Install</h3>
+              <div className="text-sm font-semibold text-white/70 mb-4">MetMov · senior tier</div>
+              <p className="text-sm text-white/70 leading-relaxed flex-grow mb-6">When the firm, not just the operator, needs the structural backbone to scale without the founder as the system.</p>
+              <span className="text-sm font-bold flex items-center gap-2 text-white group-hover:gap-3 transition-all">See Operating Spine Install <ArrowRight size={16} /></span>
             </a>
-
-            {/* Card 2: What I'm Building — MetMov */}
-            <Link to="/services" className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm flex flex-col">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-accent">
-                  <Briefcase size={20} />
-                </div>
-                <span className="text-xs font-bold uppercase tracking-widest text-accent/40">What I'm Building</span>
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">MetMov LLP</h2>
-              <p className="text-accent-light leading-relaxed mb-8 flex-grow">
-                We diagnose structural diseases in founder-led businesses and install the operating spine that lets them scale without the founder being the system.
-              </p>
-              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">
-                See how we work <ArrowRight size={16} />
-              </span>
-            </Link>
-
-            {/* Card 3: What I'm Writing */}
-            <Link to="/writing" className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm flex flex-col">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-accent">
-                  <PenLine size={20} />
-                </div>
-                <span className="text-xs font-bold uppercase tracking-widest text-accent/40">What I'm Writing</span>
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">Systems, Scale, and AI</h2>
-              <p className="text-accent-light leading-relaxed mb-8 flex-grow">
-                Frameworks and observations from 15+ years of operating experience. How businesses break, how they scale, and what changes when AI enters the picture.
-              </p>
-              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">
-                Read latest <ArrowRight size={16} />
-              </span>
-            </Link>
           </div>
         </div>
       </section>
