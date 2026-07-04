@@ -35,6 +35,29 @@ function Analytics() {
     }
   }, [location]);
 
+  // Primary-path funnel instrumentation (added 2026-07-04).
+  // Most "Book a Call" CTAs (header/footer/hero/About) link straight to Cal.com in a new tab,
+  // bypassing /book — so close_convert_lead never fired for the path most users take.
+  // This delegated, capture-phase listener fires an ADDITIVE top-of-funnel intent event on any
+  // outbound Cal.com click. It never preventDefaults (navigation is untouched) and does NOT
+  // replace close_convert_lead, which still marks a confirmed booking/inquiry on /book.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement)?.closest?.('a');
+      if (!anchor) return;
+      const href = anchor.getAttribute('href') || '';
+      if (href.includes('cal.com/anjanipandey') && typeof window.gtag === 'function') {
+        window.gtag('event', 'book_call_click', {
+          method: 'cta_outbound',
+          destination: href,
+          page_path: window.location.pathname
+        });
+      }
+    };
+    document.addEventListener('click', onClick, true);
+    return () => document.removeEventListener('click', onClick, true);
+  }, []);
+
   return null;
 }
 
