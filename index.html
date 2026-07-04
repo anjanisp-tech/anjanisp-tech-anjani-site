@@ -35,17 +35,44 @@
         debug_mode: false
       });
     </script>
+    <!-- Global entity graph: one canonical Person (#person) on EVERY page so Google
+         resolves "Anjani Pandey" to a single strong entity, not scattered weak signals. -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Anjani Pandey",
-        "url": "https://www.anjanipandey.com",
-        "description": "Personal website of Anjani Pandey - Operations leader, builder, and writer. Founder, MetMov LLP.",
-        "publisher": {
-          "@type": "Person",
-          "name": "Anjani Pandey"
-        }
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://www.anjanipandey.com/#website",
+            "name": "Anjani Pandey",
+            "url": "https://www.anjanipandey.com",
+            "description": "Personal website of Anjani Pandey - Operations leader, builder, and writer. Founder, MetMov LLP.",
+            "publisher": { "@id": "https://www.anjanipandey.com/#person" }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://www.anjanipandey.com/#person",
+            "name": "Anjani Pandey",
+            "url": "https://www.anjanipandey.com",
+            "image": "https://www.anjanipandey.com/og-image.png",
+            "jobTitle": "Founder & CEO",
+            "description": "The AI-OS operator. Founder, MetMov LLP. Installs operating systems for founder-led businesses so they scale without the founder as the bottleneck. ISB alumnus, Bengaluru.",
+            "worksFor": {
+              "@type": "Organization",
+              "@id": "https://metmov.com/#organization",
+              "name": "MetMov LLP",
+              "url": "https://www.metmov.com"
+            },
+            "alumniOf": { "@type": "EducationalOrganization", "name": "Indian School of Business" },
+            "address": { "@type": "PostalAddress", "addressLocality": "Bengaluru", "addressCountry": "IN" },
+            "sameAs": [
+              "https://www.linkedin.com/in/anjanispandey/",
+              "https://github.com/anjanisp-tech",
+              "https://www.metmov.com"
+            ],
+            "knowsAbout": ["AI operating systems", "Operations", "Business Scaling", "Systems Thinking", "B2B Consulting"]
+          }
+        ]
       }
     </script>
   </head>
