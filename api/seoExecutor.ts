@@ -30,7 +30,8 @@ export async function executeSeoInstruction(instruction: any) {
     const { isPostgres, getSqliteDb } = dbModule;
     
     if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
+      const { neon } = await import("@neondatabase/serverless");
+      const sql = neon(process.env.POSTGRES_URL as string, { fullResults: true });
       await sql`INSERT INTO settings (key, value) VALUES ('robots_txt', ${payload.content}) 
                 ON CONFLICT (key) DO UPDATE SET value = ${payload.content}, updated_at = CURRENT_TIMESTAMP`;
     } else {
@@ -58,7 +59,8 @@ export async function executeSeoInstruction(instruction: any) {
     
     // Try database first
     if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
+      const { neon } = await import("@neondatabase/serverless");
+      const sql = neon(process.env.POSTGRES_URL as string, { fullResults: true });
       const { rows } = await sql`SELECT value FROM settings WHERE key = 'sitemap_xml'`;
       currentXml = rows[0]?.value;
     } else {
@@ -97,7 +99,8 @@ Return ONLY the updated XML content. No markdown blocks.`;
     
     // Save back to database
     if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
+      const { neon } = await import("@neondatabase/serverless");
+      const sql = neon(process.env.POSTGRES_URL as string, { fullResults: true });
       await sql`INSERT INTO settings (key, value) VALUES ('sitemap_xml', ${updatedXml}) 
                 ON CONFLICT (key) DO UPDATE SET value = ${updatedXml}, updated_at = CURRENT_TIMESTAMP`;
     } else {

@@ -21,8 +21,11 @@ async function loadDb() {
 let _pgClient: any = null;
 async function pg() {
   if (!_pgClient) {
-    const mod = await import("@vercel/postgres");
-    _pgClient = mod.sql;
+    // Neon serverless HTTP driver. fullResults:true makes both the tagged-template
+    // form and the .query(text, params) form return node-postgres-style
+    // { rows, rowCount } objects, matching the prior @vercel/postgres surface.
+    const { neon } = await import("@neondatabase/serverless");
+    _pgClient = neon(process.env.POSTGRES_URL as string, { fullResults: true });
   }
   return _pgClient;
 }

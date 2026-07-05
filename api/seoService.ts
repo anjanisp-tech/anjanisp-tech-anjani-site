@@ -29,7 +29,8 @@ export async function getSeoFolderId(): Promise<string | undefined> {
     
     let dbId: string | undefined;
     if (isPostgres) {
-      const { sql } = await import("@vercel/postgres");
+      const { neon } = await import("@neondatabase/serverless");
+      const sql = neon(process.env.POSTGRES_URL as string, { fullResults: true });
       const { rows } = await sql`SELECT value FROM settings WHERE key = 'GOOGLE_DRIVE_SEO_FOLDER_ID'`;
       dbId = rows[0]?.value;
     } else {
