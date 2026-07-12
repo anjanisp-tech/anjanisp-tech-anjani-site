@@ -20,14 +20,30 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){window.dataLayer.push(arguments);}
       window.gtag = gtag;
+      // Consent Mode v2, region-scoped (2026-07-13): analytics granted by default outside
+      // EEA/UK/CH (most traffic is India; blanket-deny meant GA4 key events never recorded),
+      // denied by default where consent law requires it. Ad signals stay denied everywhere.
+      // The banner remains the opt-out: a stored 'denied' choice is re-applied below.
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'granted',
+        wait_for_update: 500
+      });
       gtag('consent', 'default', {
         ad_storage: 'denied',
         ad_user_data: 'denied',
         ad_personalization: 'denied',
         analytics_storage: 'denied',
-        wait_for_update: 500
+        wait_for_update: 500,
+        region: ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
       });
-      try { if (localStorage.getItem('ap-cookie-consent') === 'granted') { gtag('consent', 'update', { analytics_storage: 'granted', ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted' }); } } catch (e) {}
+      try {
+        var apConsent = localStorage.getItem('ap-cookie-consent');
+        if (apConsent === 'granted') { gtag('consent', 'update', { analytics_storage: 'granted', ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted' }); }
+        if (apConsent === 'denied') { gtag('consent', 'update', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' }); }
+      } catch (e) {}
       gtag('js', new Date());
       // Initial config call
       gtag('config', 'G-2WDLCDDDDC', {
