@@ -16,6 +16,11 @@
       "source": "/blog",
       "destination": "/writing",
       "permanent": true
+    },
+    {
+      "source": "/blog/a-redirect-can-work-perfectly-and-still-be-wrong-the-difference-is-one-digit",
+      "destination": "/blog/a-redirect-can-work-perfectly-and-still-be-wrong-the-whole-difference-is-one-digit",
+      "permanent": true
     }
   ],
   "rewrites": [
