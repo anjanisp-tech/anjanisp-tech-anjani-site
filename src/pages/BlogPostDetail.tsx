@@ -33,7 +33,7 @@ interface BlogPost {
 
 export default function BlogPostDetail() {
   const { id } = useParams<{ id: string }>();
-  const [post, setPost] = useState<BlogPost | null>(null);
+  const [post, setPost] = useState<BlogPost | null>(() => blogPosts.find((p) => p.id === id) ?? null);
   const [isLoading, setIsLoading] = useState(true);
 
   const [comments, setComments] = useState<Comment[]>([]);
