@@ -1,0 +1,39 @@
+name: Prerender refresh
+
+# Rebuilds the site ONLY when published content changed, so new/edited CMS posts
+# get pre-rendered without a manual deploy. Self-contained: no secrets; reads the
+# public API, and pushes with the built-in GITHUB_TOKEN which Vercel deploys on.
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # every 6 hours
+  workflow_dispatch:          # allow manual run
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prerender-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Compute live content signature
+        run: node scripts/content-signature.mjs
+      - name: Rebuild if content changed
+        run: |
+          if [ -n "$(git status --porcelain .content-signature.json)" ]; then
+            git config user.name "prerender-refresh[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .content-signature.json
+            git commit -m "chore: prerender refresh (published content changed)"
+            git push
+            echo "content changed -> pushed; Vercel will rebuild and re-prerender"
+          else
+            echo "no content change; nothing to rebuild"
+          fi
