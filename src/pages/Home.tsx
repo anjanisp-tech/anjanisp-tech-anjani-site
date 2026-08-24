@@ -157,11 +157,14 @@ export default function Home() {
           <div className="grid lg:grid-cols-5 gap-12 lg:gap-16 items-start">
             {/* Left: thesis + CTA */}
             <div className="lg:col-span-3">
-              <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1.5 mb-6">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              {/* Charter rank 3 (2026-08-20): the emerald status pill is gone. It was the
+                  one place on this page running a second accent colour, and the pulsing
+                  dot was a template flourish. Same words, quiet line, more room for the
+                  headline. */}
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent/40 mb-8">
                 Operating in public · Level4-OS, 9 live subsystems
-              </div>
-              <h1 className="text-4xl md:text-6xl leading-[1.05] mb-6">
+              </p>
+              <h1 className="text-4xl md:text-6xl leading-[1.05] mb-8">
                 A company of one,<br />run like an institution.
               </h1>
               <p className="text-xl md:text-2xl text-accent-light mb-6 leading-relaxed max-w-2xl">
@@ -307,7 +310,7 @@ export default function Home() {
         <div className="container-custom relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-[10px] font-bold uppercase tracking-widest mb-6 border border-white/10">
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-white/50 mb-6">
                 Interactive Tool
               </div>
               <h2 className="text-4xl md:text-5xl text-white mb-6 leading-tight">
