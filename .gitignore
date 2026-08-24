@@ -15,3 +15,6 @@ coverage/
 
 # SSR prerender output (regenerated each build)
 dist-ssr/
+
+# Local Claude Code settings
+.claude/settings.local.json
