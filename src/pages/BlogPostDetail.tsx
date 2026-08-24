@@ -5,7 +5,7 @@ import remarkBreaks from 'remark-breaks';
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { blogPosts } from '../data/blogData';
-import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
+import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, OPERATING_SPINE_URL } from '../constants';
 import SEO from '../components/SEO';
 
 interface Comment {
@@ -244,8 +244,8 @@ export default function BlogPostDetail() {
                     </div>
                     <h2 className="text-3xl font-bold mb-4">This is Premium Content</h2>
                     <p className="text-accent-light mb-8 max-w-md mx-auto">
-                      This framework is part of our high-value "metmov" resources. 
-                      Join our newsletter to unlock this article and get weekly scaling frameworks.
+                      This one is part of the Operating Spine library.
+                      Join the newsletter to unlock it and get one framework a week.
                     </p>
                     
                     <form onSubmit={(e) => handleNewsletterSubmit(e, true)} className="max-w-md mx-auto space-y-4">
@@ -289,16 +289,37 @@ export default function BlogPostDetail() {
               )}
             </div>
 
-            {/* Content-to-Funnel Bridge */}
+            {/* Content-to-Funnel Bridge. Charter rank 1 (2026-08-20): the primary
+                route out of a post is the Operating Spine scoping call. The free
+                diagnostic stays, but it is no longer the only door. */}
             <div className="py-12 border-y border-border/50 mb-24">
-              <h3 className="text-2xl font-bold mb-4">Wondering if this applies to your business?</h3>
-              <p className="text-accent-light mb-8">
-                Identify the structural diseases slowing your growth with our 5-minute diagnostic.
+              <h3 className="text-2xl font-bold mb-4">Want this installed in your business?</h3>
+              <p className="text-accent-light mb-8 max-w-2xl">
+                Operating Spine Install puts the cadence, one source of truth for the numbers,
+                and clear decision rights inside your company in 90 days, run by your own team.
+                A short scoping call is where we work out whether it fits.
               </p>
-              <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="btn-primary inline-flex items-center gap-2 px-8">
-                Take the Free Diagnostic
-                <ArrowRight size={18} />
-              </a>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+                <a
+                  href={OPERATING_SPINE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-cta="operating-spine"
+                  className="btn-primary inline-flex items-center justify-center gap-2 px-8"
+                >
+                  Book an Operating Spine scoping call
+                  <ArrowRight size={18} />
+                </a>
+                <a
+                  href={MINI_DIAGNOSTIC_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-cta="diagnostic"
+                  className="text-sm font-bold text-accent/60 hover:text-accent underline underline-offset-4 transition-colors"
+                >
+                  Or take the free 5-minute diagnostic
+                </a>
+              </div>
             </div>
 
             {/* Newsletter Section */}

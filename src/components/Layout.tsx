@@ -1,9 +1,8 @@
 // Deployment Sync Test: 2026-02-21
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Linkedin, Globe, BookOpen, ArrowLeft, MessageCircle } from 'lucide-react';
+import { Menu, X, Linkedin, Globe, BookOpen, MessageCircle } from 'lucide-react';
 import { FIT_CALL_URL, LINKEDIN_URL, WHATSAPP_URL, METMOV_URL } from '../constants';
-import WhatsAppButton from './WhatsAppButton';
 
 // Lazy-load ChatAssistant to keep motion, react-markdown, @google/genai out of the main chunk
 const ChatAssistant = lazy(() => import('./ChatAssistant'));
@@ -77,16 +76,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <ChatAssistant />
       </Suspense>
 
-      <WhatsAppButton />
-
-      {/* Back to Top Button */}
-      <button 
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="fixed bottom-8 right-8 p-3 bg-white border border-border rounded-full shadow-lg hover:text-accent transition-all z-40 group"
-        title="Back to Top"
-      >
-        <ArrowLeft className="rotate-90 group-hover:-translate-y-1 transition-transform" size={20} />
-      </button>
+      {/* Charter rank 2 (2026-08-20): one floating control, not three.
+          The WhatsApp bubble (bottom-28) and the Back-to-Top button sat here too,
+          and Back-to-Top shared the exact coordinates of the chat launcher.
+          WhatsApp stays in the footer. The chat launcher is the one that stays,
+          because it is the AI service this site sells, running live. */}
 
       <footer className="bg-muted border-t border-border py-16">
         <div className="container-custom">

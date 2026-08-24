@@ -3,11 +3,18 @@ import { useEffect, lazy, Suspense } from 'react';
 import Layout from './components/Layout';
 import ConsentBanner from './components/ConsentBanner';
 
-// Lazy load pages to reduce initial bundle size
-const Home = lazy(() => import('./pages/Home'));
+// Charter rank 2 (2026-08-20): the blank white first screen.
+// Home and BlogPostDetail were lazy(). On the client, React replaced the
+// prerendered HTML with the Suspense spinner until the chunk downloaded, which
+// on a mid-range Android reads as a blank screen. These two carry the whole
+// charter (the credibility check and every warm reader), so they load eagerly.
+// Everything else stays code-split.
+import Home from './pages/Home';
+import BlogPostDetail from './pages/BlogPostDetail';
+
+// Lazy load the remaining pages to keep the initial bundle small
 const Services = lazy(() => import('./pages/Services'));
 const Blog = lazy(() => import('./pages/Blog'));
-const BlogPostDetail = lazy(() => import('./pages/BlogPostDetail'));
 const BookCall = lazy(() => import('./pages/BookCall'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
@@ -49,6 +56,15 @@ function Analytics() {
       if (href.includes('cal.com/anjanipandey') && typeof window.gtag === 'function') {
         window.gtag('event', 'book_call_click', {
           method: 'cta_outbound',
+          destination: href,
+          page_path: window.location.pathname
+        });
+      }
+      // Charter rank 1 (2026-08-20). Counts readers routed from a post to the
+      // Operating Spine offer. Pairs with the utm tags on OPERATING_SPINE_URL.
+      if (href.includes('metmov.com/operating-spine') && typeof window.gtag === 'function') {
+        window.gtag('event', 'operating_spine_click', {
+          method: 'post_cta',
           destination: href,
           page_path: window.location.pathname
         });
