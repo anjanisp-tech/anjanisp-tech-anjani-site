@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet-async';
 import { blogPosts } from '../data/blogData';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 import SEO from '../components/SEO';
+import { extractAnswerBlock, answerFaqSchema } from '../lib/answerBlock';
 
 interface Comment {
   id: number;
@@ -163,6 +164,10 @@ export default function BlogPostDetail() {
     );
   }
 
+  // THE ANSWER BLOCK (2026-09-18). Built from the visible top of the post and
+  // from nothing else. No question line means no extra markup at all.
+  const answerBlock = extractAnswerBlock(post.content);
+
   return (
     <div className="bg-white min-h-screen">
       <SEO
@@ -190,6 +195,13 @@ export default function BlogPostDetail() {
           "url": `https://www.anjanipandey.com/blog/${post.id}`,
           "mainEntityOfPage": `https://www.anjanipandey.com/blog/${post.id}`
         })}</script>
+        {answerBlock && (
+          <script type="application/ld+json">
+            {JSON.stringify(
+              answerFaqSchema(`https://www.anjanipandey.com/blog/${post.id}`, answerBlock),
+            )}
+          </script>
+        )}
       </Helmet>
       <article className="pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="container-custom">
