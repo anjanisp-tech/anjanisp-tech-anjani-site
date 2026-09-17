@@ -23,7 +23,13 @@ import Resources from './pages/Resources';
 import ResourceGuideDetail from './pages/ResourceGuideDetail';
 import About from './pages/About';
 import SEO from './components/SEO';
+import Markdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 import { blogPosts } from './data/blogData';
+import { extractAnswerBlock, answerFaqSchema } from './lib/answerBlock';
+
+/** JSON-LD safe for inlining: no sequence can close the script tag. */
+const ld = (o: unknown) => JSON.stringify(o).replace(/</g, '\\u003c');
 
 /**
  * SSR-specific BlogPostDetail that reads from blogData synchronously
@@ -37,19 +43,50 @@ function SSRBlogPostDetail() {
     return <div>Post not found</div>;
   }
 
+  const url = `https://www.anjanipandey.com/blog/${post.id}`;
+
+  // The email gate is real. A premium post shows the same 400 character teaser
+  // here that the client shows, and never its full text.
+  const gated = !!post.is_premium;
+  const body = gated ? post.content.substring(0, 400) + '...' : post.content;
+
+  // The answer block is emitted only when the whole answer is actually on the
+  // page, so the markup can never claim more than a reader can see.
+  const block = extractAnswerBlock(post.content);
+  const faq = block && body.includes(block.answer) ? answerFaqSchema(url, block) : null;
+
+  const article = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.excerpt,
+    author: { '@type': 'Person', name: 'Anjani Pandey', url: 'https://www.anjanipandey.com' },
+    publisher: { '@type': 'Person', name: 'Anjani Pandey' },
+    datePublished: post.date,
+    url,
+    mainEntityOfPage: url,
+  };
+
   return (
     <div className="bg-white min-h-screen">
       <SEO
         title={`${post.title} | Anjani Pandey`}
         description={post.excerpt}
-        canonical={`https://www.anjanipandey.com/blog/${post.id}`}
+        canonical={url}
         ogType="article"
       />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld(article) }} />
+      {faq ? (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld(faq) }} />
+      ) : null}
       <article className="pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">{post.title}</h1>
             <p className="text-accent-light mb-8">{post.excerpt}</p>
+            <div className="markdown-body prose prose-lg max-w-none prose-accent mb-16">
+              <Markdown remarkPlugins={[remarkBreaks]}>{body}</Markdown>
+            </div>
           </div>
         </div>
       </article>

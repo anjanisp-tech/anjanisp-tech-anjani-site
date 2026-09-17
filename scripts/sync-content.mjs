@@ -38,6 +38,7 @@ export interface BlogPost {
   excerpt: string;
   content: string;
   img?: string;
+  is_premium?: number;
 }
 
 export const blogPosts: BlogPost[] = `;
@@ -57,7 +58,7 @@ async function main() {
   }
   const sql = neon(url);
   try {
-    const rows = await sql`SELECT id, title, date, category, excerpt, content, img FROM posts ORDER BY created_at DESC`;
+    const rows = await sql`SELECT id, title, date, category, excerpt, content, img, is_premium FROM posts ORDER BY created_at DESC`;
     if (Array.isArray(rows) && rows.length > 0) {
       const mapped = rows.map((r) => ({
         id: r.id,
@@ -67,6 +68,7 @@ async function main() {
         excerpt: r.excerpt ?? '',
         content: r.content ?? '',
         img: r.img ?? '',
+        is_premium: r.is_premium ? 1 : 0,
       }));
       writeFileSync(OUT, HEADER + JSON.stringify(mapped, null, 2) + ';\n', 'utf-8');
       console.log(`[sync-content] blogData.ts regenerated: ${mapped.length} posts.`);
