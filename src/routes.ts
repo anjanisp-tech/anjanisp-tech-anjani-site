@@ -4,6 +4,7 @@
  */
 import { blogPosts } from './data/blogData';
 import { getGuideRoutes } from './data/guidesData';
+import { caseStudies } from './data/caseStudyData';
 
 export interface RouteEntry {
     path: string;
@@ -38,11 +39,17 @@ export function getBlogRoutes(): RouteEntry[] {
     }));
 }
 
+/** Case study routes from the build-time synced case_studies table */
+export function getCaseStudyRoutes(): RouteEntry[] {
+    return caseStudies.map((c) => ({ path: `/case-studies/${c.slug}`, prerender: true }));
+}
+
 /** All routes that should be pre-rendered */
 export function getPrerenderedRoutes(): string[] {
     return [
           ...staticRoutes.filter((r) => r.prerender).map((r) => r.path),
           ...getBlogRoutes().map((r) => r.path),
           ...getGuideRoutes().map((r) => r.path),
+          ...getCaseStudyRoutes().map((r) => r.path),
         ];
 }

@@ -22,6 +22,8 @@ import BottleneckCostCalculator from './pages/BottleneckCostCalculator';
 import Resources from './pages/Resources';
 import ResourceGuideDetail from './pages/ResourceGuideDetail';
 import About from './pages/About';
+import CaseStudies from './pages/CaseStudies';
+import CaseStudyDetail from './pages/CaseStudyDetail';
 import SEO from './components/SEO';
 import Markdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
@@ -112,6 +114,8 @@ function StaticApp() {
         <Route path="/calculator" element={<BottleneckCostCalculator />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/resources/:slug" element={<ResourceGuideDetail />} />
+        <Route path="/case-studies" element={<CaseStudies />} />
+        <Route path="/case-studies/:slug" element={<CaseStudyDetail />} />
       </Routes>
     </Layout>
   );

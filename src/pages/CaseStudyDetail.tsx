@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import SEO from '../components/SEO';
+import { caseStudies } from '../data/caseStudyData';
 
 interface CaseStudy {
   slug: string;
@@ -19,16 +20,21 @@ interface CaseStudy {
 
 export default function CaseStudyDetail() {
   const { slug } = useParams();
-  const [cs, setCs] = useState<CaseStudy | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Seed from build-time data so the pre-rendered HTML carries the whole study
+  // (crawlers and link previews never see a spinner), then refresh from the API.
+  const seed = caseStudies.find((c) => c.slug === slug) ?? null;
+  const [cs, setCs] = useState<CaseStudy | null>(seed);
+  const [loading, setLoading] = useState(!seed);
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
+    const s0 = caseStudies.find((c) => c.slug === slug) ?? null;
+    setCs(s0);
+    setLoading(!s0);
     fetch(`/api/casestudies/${slug}`)
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (active) setCs(d && d.slug ? d : null); })
-      .catch(() => { if (active) setCs(null); })
+      .then(d => { if (active && d && d.slug) setCs(d); else if (active && !s0) setCs(null); })
+      .catch(() => { if (active && !s0) setCs(null); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [slug]);
@@ -49,7 +55,7 @@ export default function CaseStudyDetail() {
   return (
     <div className="bg-white min-h-screen">
       <SEO
-        title={`${cs.title} | Case Study | Anjani Pandey`}
+        title={`${cs.title} | Anjani Pandey`}
         description={cs.excerpt}
         canonical={`https://www.anjanipandey.com/case-studies/${cs.slug}`}
       />

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import SEO from '../components/SEO';
+import { caseStudies } from '../data/caseStudyData';
 
 interface CaseStudy {
   slug: string;
@@ -14,14 +15,14 @@ interface CaseStudy {
 }
 
 export default function CaseStudies() {
-  const [items, setItems] = useState<CaseStudy[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<CaseStudy[]>(caseStudies);
+  const [loading, setLoading] = useState(caseStudies.length === 0);
 
   useEffect(() => {
     fetch('/api/casestudies')
       .then(r => r.ok ? r.json() : [])
-      .then(d => setItems(Array.isArray(d) ? d : []))
-      .catch(() => setItems([]))
+      .then(d => { if (Array.isArray(d) && d.length) setItems(d); })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -29,7 +30,7 @@ export default function CaseStudies() {
     <div className="bg-white min-h-screen">
       <SEO
         title="Case Studies | AI Operations & Systems | Anjani Pandey"
-        description="Real engagements: installing operating systems, AI workflows, and structural fixes inside founder-led companies. By Anjani Pandey."
+        description="Systems Anjani Pandey built and ran: AI workflows, operating structure, and the fixes behind them. What was broken, what was built, what changed."
         canonical="https://www.anjanipandey.com/case-studies"
       />
       <section className="pt-32 pb-6 md:pt-40 md:pb-10">
@@ -37,7 +38,7 @@ export default function CaseStudies() {
           <div className="max-w-3xl">
             <h1 className="mb-6">Case Studies</h1>
             <p className="text-xl md:text-2xl text-accent-light leading-relaxed">
-              Selected engagements — what was broken, what got installed, and what changed.
+              Systems I built and ran. What was broken, what I built, and what changed.
             </p>
           </div>
         </div>
