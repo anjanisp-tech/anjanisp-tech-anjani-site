@@ -2,14 +2,18 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  
-  --color-accent: #0f172a; /* Dark navy for body text & headings */
-  --color-accent-light: #475569; /* Slate-600 for secondary text */
-  --color-primary: #0F766E; /* Teal-700 for CTAs, links, interactive */
-  --color-surface: #ffffff;
-  --color-muted: #f8fafc;
-  --color-border: #e2e8f0;
+  /* The Field Manual (2026-10-01). Register: a working notebook. White paper,
+     one ink, one blue. Grotesque for everything read, mono for labels only. */
+  --font-sans: "Schibsted Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-accent: #14161b;        /* ink: headings and body */
+  --color-accent-light: #4a4d57;  /* secondary text */
+  --color-primary: #1f3bc4;       /* the one blue: labels, links, the door */
+  --color-surface: #fbfbf9;       /* paper */
+  --color-muted: #f3f4f1;         /* shade band */
+  --color-border: #dcdde2;        /* rule */
+  --color-paper-soft: #eef1fd;    /* blue tint for a selected row */
 }
 
 @utility no-scrollbar {
@@ -47,7 +51,8 @@
   }
   
   h1, h2, h3, h4 {
-    @apply tracking-tight font-semibold text-accent;
+    @apply tracking-tight font-bold text-accent;
+    text-wrap: balance;
   }
 
   p {
@@ -65,19 +70,21 @@
 }
 
 .btn-primary {
-  @apply bg-primary text-white px-7 py-3.5 rounded-md font-semibold hover:bg-primary/90 transition-all duration-200 inline-flex items-center justify-center shadow-sm;
+  @apply bg-accent text-surface px-6 py-3.5 rounded-sm font-bold hover:bg-primary transition-colors duration-200 inline-flex items-center justify-center;
 }
 
 .btn-outline {
-  @apply border border-primary text-primary px-7 py-3.5 rounded-md font-semibold hover:bg-primary/5 transition-all duration-200 inline-flex items-center justify-center;
+  @apply border-[1.5px] border-accent text-accent px-6 py-3.5 rounded-sm font-bold hover:border-primary hover:text-primary transition-colors duration-200 inline-flex items-center justify-center;
 }
 
-section {
-  @apply py-16 md:py-24;
+@layer base {
+  section {
+    @apply py-16 md:py-24;
+  }
 }
 
-h1 { @apply text-4xl md:text-6xl font-bold mb-8 leading-tight; }
-h2 { @apply text-3xl md:text-4xl font-bold mb-10 leading-tight; }
+h1 { @apply text-4xl md:text-6xl font-extrabold mb-8 leading-[0.98] tracking-[-0.04em]; }
+h2 { @apply text-3xl md:text-4xl font-bold mb-10 leading-[1.05] tracking-[-0.03em]; }
 h3 { @apply text-xl md:text-2xl font-semibold mb-4 leading-snug; }
 
 /* Markdown Content Styling */
@@ -135,4 +142,20 @@ h3 { @apply text-xl md:text-2xl font-semibold mb-4 leading-snug; }
 
 .markdown-body hr {
   @apply my-12 border-border;
+}
+
+/* Field Manual utilities */
+.label-mono {
+  @apply font-mono text-[0.74rem] text-primary;
+  letter-spacing: 0.01em;
+}
+.label-mono-muted {
+  @apply font-mono text-[0.7rem] text-accent-light;
+}
+.margin-note {
+  @apply border-l-2 border-primary pl-4 text-accent-light text-[0.95rem] grid gap-2;
+}
+.rule-top { @apply border-t-[1.5px] border-accent; }
+.door {
+  @apply border-[1.5px] border-accent p-6 md:p-8 grid gap-3;
 }

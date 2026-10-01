@@ -60,14 +60,14 @@ export default function BookCall() {
                 { icon: Coffee, text: 'No Sales Pressure' },
                 { icon: Zap, text: 'Clear Next Steps' }
               ].map((item, i) => (
-                <div key={i} className="flex items-center justify-center gap-3 py-4 px-6 bg-muted rounded-xl border border-border/50">
+                <div key={i} className="flex items-center justify-center gap-3 py-4 px-6 bg-muted rounded-sm border border-border/50">
                   <item.icon size={20} className="text-accent/40" />
                   <span className="text-sm font-bold uppercase tracking-wider text-accent/70">{item.text}</span>
                 </div>
               ))}
             </div>
 
-            <div className="mb-24 p-8 border border-border rounded-3xl bg-muted/30 text-left">
+            <div className="mb-24 p-8 border border-border rounded-sm bg-muted/30 text-left">
               <h3 className="text-xl font-bold mb-4">Why book this call?</h3>
               <p className="text-accent-light mb-0">
                 You'll be speaking directly with <strong>Anjani Pandey</strong>. 15+ years scaling operations at <strong>Udaan</strong>, <strong>Y-Not</strong>, and <strong>BHEL</strong>. Now running <strong>MetMov</strong> (B2B consulting) and building <strong>Personal OS</strong> installs for operators who want to stop doing their own ops manually. Come with a specific problem; you'll leave with a clear read on whether we're a fit.
@@ -81,7 +81,7 @@ export default function BookCall() {
                   <Calendar className="text-accent" size={24} />
                   <h2 className="text-2xl font-bold mb-0">1. Schedule Your Time</h2>
                 </div>
-                <div className="bg-white rounded-2xl border border-border overflow-hidden shadow-sm">
+                <div className="bg-white rounded-sm border border-border overflow-hidden">
                   <iframe 
                     src={`${FIT_CALL_URL}?hide_landing_page_details=1&hide_gdpr_banner=1`} 
                     width="100%" 
@@ -107,8 +107,8 @@ export default function BookCall() {
                 </div>
                 
                 {submitted ? (
-                  <div className="bg-muted p-12 rounded-2xl border border-border text-center animate-in fade-in zoom-in-95">
-                    <div className="w-16 h-16 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <div className="bg-muted p-12 rounded-sm border border-border text-center animate-in fade-in zoom-in-95">
+                    <div className="w-16 h-16 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-6">
                       <Send size={24} />
                     </div>
                     <h3 className="text-2xl font-bold mb-3">Message Sent</h3>
@@ -125,7 +125,7 @@ export default function BookCall() {
                             type="text" 
                             placeholder="Your Name" 
                             required
-                            className="w-full pl-12 pr-4 py-4 rounded-xl border border-border focus:border-accent bg-muted/30 outline-none transition-all text-base"
+                            className="w-full pl-12 pr-4 py-4 rounded-sm border border-border focus:border-accent bg-muted/30 outline-none transition-all text-base"
                           />
                         </div>
                       </div>
@@ -137,7 +137,7 @@ export default function BookCall() {
                             type="email" 
                             placeholder="Email Address" 
                             required
-                            className="w-full pl-12 pr-4 py-4 rounded-xl border border-border focus:border-accent bg-muted/30 outline-none transition-all text-base"
+                            className="w-full pl-12 pr-4 py-4 rounded-sm border border-border focus:border-accent bg-muted/30 outline-none transition-all text-base"
                           />
                         </div>
                       </div>
@@ -151,7 +151,7 @@ export default function BookCall() {
                           type="text" 
                           placeholder="Company Name" 
                           required
-                          className="w-full pl-12 pr-4 py-4 rounded-xl border border-border focus:border-accent bg-muted/30 outline-none transition-all text-base"
+                          className="w-full pl-12 pr-4 py-4 rounded-sm border border-border focus:border-accent bg-muted/30 outline-none transition-all text-base"
                         />
                       </div>
                     </div>
@@ -164,12 +164,12 @@ export default function BookCall() {
                           placeholder="How can we help you scale?" 
                           rows={5}
                           required
-                          className="w-full pl-12 pr-4 py-4 rounded-xl border border-border focus:border-accent bg-muted/30 outline-none transition-all text-base resize-none"
+                          className="w-full pl-12 pr-4 py-4 rounded-sm border border-border focus:border-accent bg-muted/30 outline-none transition-all text-base resize-none"
                         />
                       </div>
                     </div>
 
-                    <button type="submit" className="btn-primary w-full py-5 text-lg shadow-xl shadow-primary/10">
+                    <button type="submit" className="btn-primary w-full py-5 text-lg shadow-primary/10">
                       Send Inquiry
                     </button>
                   </form>

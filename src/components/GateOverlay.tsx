@@ -63,7 +63,7 @@ export default function GateOverlay({ resourceTitle, onUnlock }: GateOverlayProp
       {/* Gradient fade from content */}
       <div className="h-24 bg-gradient-to-b from-transparent to-white pointer-events-none" />
 
-      <div className="bg-muted border border-border/60 rounded-2xl p-8 md:p-12 shadow-xl max-w-2xl mx-auto text-center">
+      <div className="bg-muted border border-border/60 rounded-sm p-8 md:p-12 max-w-2xl mx-auto text-center">
         <div className="w-14 h-14 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-6">
           <Lock size={22} />
         </div>
@@ -76,7 +76,7 @@ export default function GateOverlay({ resourceTitle, onUnlock }: GateOverlayProp
         {/* Primary CTA: LinkedIn */}
         <button
           onClick={handleLinkedInClick}
-          className="w-full sm:w-auto bg-[#0A66C2] hover:bg-[#004182] text-white px-8 py-4 rounded-xl font-semibold inline-flex items-center justify-center gap-3 transition-all shadow-sm mb-4"
+          className="w-full sm:w-auto bg-[#0A66C2] hover:bg-[#004182] text-white px-8 py-4 rounded-sm font-semibold inline-flex items-center justify-center gap-3 transition-all mb-4"
         >
           <Linkedin size={20} />
           Connect on LinkedIn
@@ -108,12 +108,12 @@ export default function GateOverlay({ resourceTitle, onUnlock }: GateOverlayProp
                 placeholder="you@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 px-4 py-3 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
+                className="flex-1 px-4 py-3 border border-border rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
               />
               <button
                 type="submit"
                 disabled={status === 'loading'}
-                className="btn-primary px-6 py-3 text-sm rounded-xl"
+                className="btn-primary px-6 py-3 text-sm rounded-sm"
               >
                 {status === 'loading' ? 'Sending...' : 'Send'}
               </button>

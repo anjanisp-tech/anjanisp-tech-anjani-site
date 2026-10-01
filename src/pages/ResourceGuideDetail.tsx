@@ -168,7 +168,7 @@ export default function ResourceGuideDetail() {
                     <Link
                       key={g.slug}
                       to={`/resources/${g.slug}`}
-                      className="group p-8 bg-muted/30 rounded-2xl border border-border hover:border-accent/30 hover:shadow-lg transition-all"
+                      className="group p-8 bg-muted/30 rounded-sm border border-border hover:border-accent/30  transition-all"
                     >
                       <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">
                         {g.category}

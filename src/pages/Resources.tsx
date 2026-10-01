@@ -161,7 +161,7 @@ export default function Resources() {
               <Link
                 key={guide.slug}
                 to={`/resources/${guide.slug}`}
-                className="group relative bg-white border border-border rounded-2xl p-8 flex flex-col transition-all hover:border-accent/30 hover:shadow-lg"
+                className="group relative bg-white border border-border rounded-sm p-8 flex flex-col transition-all hover:border-accent/30 "
               >
                 {/* Gated badge */}
                 {guide.gated && (
@@ -219,8 +219,8 @@ export default function Resources() {
             {freeResources.map((resource, i) => (
               <div
                 key={i}
-                className={`relative bg-white border border-border rounded-2xl p-8 flex flex-col transition-all ${
-                  resource.available ? 'hover:border-accent/30 hover:shadow-lg' : 'opacity-70'
+                className={`relative bg-white border border-border rounded-sm p-8 flex flex-col transition-all ${
+                  resource.available ? 'hover:border-accent/30 ' : 'opacity-70'
                 }`}
               >
                 {resource.tag && (
@@ -266,7 +266,7 @@ export default function Resources() {
                     </button>
                   )
                 ) : (
-                  <div className="text-center py-3 text-sm font-medium text-accent/30 border border-border/50 rounded-xl">
+                  <div className="text-center py-3 text-sm font-medium text-accent/30 border border-border/50 rounded-sm">
                     Coming Soon
                   </div>
                 )}
@@ -319,7 +319,7 @@ export default function Resources() {
       {/* ─── Email Gate Modal (for PDF downloads) ─── */}
       {emailModal.open && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-in fade-in zoom-in-95">
+          <div className="bg-white rounded-sm max-w-md w-full p-8 relative animate-in fade-in zoom-in-95">
             <button
               onClick={() => setEmailModal({ open: false, resourceName: '', downloadUrl: '' })}
               className="absolute top-4 right-4 p-2 text-accent/40 hover:text-accent transition-colors"
@@ -340,7 +340,7 @@ export default function Resources() {
                     placeholder="you@company.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
+                    className="w-full px-4 py-3 border border-border rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
                   />
                   <button
                     type="submit"
