@@ -24,6 +24,7 @@ import ResourceGuideDetail from './pages/ResourceGuideDetail';
 import About from './pages/About';
 import CaseStudies from './pages/CaseStudies';
 import CaseStudyDetail from './pages/CaseStudyDetail';
+import Chapter from './pages/Chapter';
 import SEO from './components/SEO';
 import Markdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
@@ -102,6 +103,9 @@ function StaticApp() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
+        {/* 2026-10-01: chapter pages were listed for pre-rendering in routes.ts but had no
+            route here, so they were written out as empty shells with the old default title. */}
+        <Route path="/manual/:slug" element={<Chapter />} />
         <Route path="/services" element={<Services />} />
         <Route path="/writing" element={<Blog />} />
         <Route path="/blog" element={<Navigate to="/writing" replace />} />
