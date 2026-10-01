@@ -95,6 +95,11 @@ export default function About() {
               </div>
             </div>
             <div className="md:col-span-5 space-y-8">
+              {/* Photo from LinkedIn: 800x800 source, cropped 4:5 (640x800 real pixels).
+                  Capped at 320px wide so it never shows above its real size on a 2x screen. */}
+              <figure className="w-full max-w-[320px] md:max-w-[260px] border border-border">
+                <img src="/anjani.jpg" alt="Anjani Pandey" width={640} height={800} className="block w-full aspect-[4/5] object-cover object-center" />
+              </figure>
               <div className="bg-muted p-8 rounded-sm border border-border/50">
                 <h3 className="text-sm font-bold uppercase tracking-widest text-accent/40 mb-6">Quick Facts</h3>
                 <div className="space-y-4">
