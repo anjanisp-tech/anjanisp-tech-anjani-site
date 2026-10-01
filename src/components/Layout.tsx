@@ -1,8 +1,13 @@
 // Deployment Sync Test: 2026-02-21
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Linkedin, Globe, BookOpen, MessageCircle } from 'lucide-react';
+import { Menu, X, Linkedin, Globe, BookOpen, ArrowLeft, MessageCircle } from 'lucide-react';
 import { FIT_CALL_URL, LINKEDIN_URL, WHATSAPP_URL, METMOV_URL } from '../constants';
+import WhatsAppButton from './WhatsAppButton';
+import { caseStudies } from '../data/caseStudyData';
+
+// Case Studies shows in the menus only once 2+ are live (decided at build from synced data).
+const SHOW_CASES = caseStudies.length >= 2;
 
 // Lazy-load ChatAssistant to keep motion, react-markdown, @google/genai out of the main chunk
 const ChatAssistant = lazy(() => import('./ChatAssistant'));
@@ -43,7 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link to="/about" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">About</Link>
             <Link to="/services" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Work With Me</Link>
             <Link to="/writing" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Writing</Link>
-            {/* Case Studies hidden until populated (empty /api/casestudies). Re-enable when >=2 studies are live. Route stays active for direct links. */}
+            {SHOW_CASES && <Link to="/case-studies" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Case Studies</Link>}
             <Link to="/resources" className="text-sm font-semibold text-accent/70 hover:text-accent transition-colors">Resources</Link>
             <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary py-2.5 px-6 text-sm">Book a Call</a>
           </nav>
@@ -61,7 +66,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link to="/about" className="text-lg font-medium py-2">About</Link>
             <Link to="/services" className="text-lg font-medium py-2">Work With Me</Link>
             <Link to="/writing" className="text-lg font-medium py-2">Writing</Link>
-            {/* Case Studies hidden until populated. Re-enable when studies are live. */}
+            {SHOW_CASES && <Link to="/case-studies" className="text-lg font-medium py-2">Case Studies</Link>}
             <Link to="/resources" className="text-lg font-medium py-2">Resources</Link>
             <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary w-full">Book a Call</a>
           </div>
@@ -76,11 +81,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <ChatAssistant />
       </Suspense>
 
-      {/* Charter rank 2 (2026-08-20): one floating control, not three.
-          The WhatsApp bubble (bottom-28) and the Back-to-Top button sat here too,
-          and Back-to-Top shared the exact coordinates of the chat launcher.
-          WhatsApp stays in the footer. The chat launcher is the one that stays,
-          because it is the AI service this site sells, running live. */}
+      <WhatsAppButton />
+
+      {/* Back to Top Button */}
+      <button 
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className="fixed bottom-8 right-8 p-3 bg-white border border-border rounded-full shadow-lg hover:text-accent transition-all z-40 group"
+        title="Back to Top"
+      >
+        <ArrowLeft className="rotate-90 group-hover:-translate-y-1 transition-transform" size={20} />
+      </button>
 
       <footer className="bg-muted border-t border-border py-16">
         <div className="container-custom">
@@ -111,7 +121,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <Link to="/about" className="hover:text-accent transition-colors">About</Link>
                   <Link to="/services" className="hover:text-accent transition-colors">Work With Me</Link>
                   <Link to="/writing" className="hover:text-accent transition-colors">Writing</Link>
-                  {/* Case Studies hidden until populated. Re-enable when studies are live. */}
+                  {SHOW_CASES && <Link to="/case-studies" className="hover:text-accent transition-colors">Case Studies</Link>}
                   <Link to="/resources" className="hover:text-accent transition-colors">Resources</Link>
                   <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Book a Call</a>
                 </nav>

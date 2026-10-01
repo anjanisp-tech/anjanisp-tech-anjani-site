@@ -9,6 +9,7 @@ export interface BlogPost {
   excerpt: string;
   content: string;
   img?: string;
+  is_premium?: number;
 }
 
 export const blogPosts: BlogPost[] = [
