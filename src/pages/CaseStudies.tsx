@@ -55,7 +55,7 @@ export default function CaseStudies() {
           ) : (
             <div className="grid md:grid-cols-2 gap-10">
               {items.map((c) => (
-                <Link key={c.slug} to={`/case-studies/${c.slug}`} className="group block rounded-3xl overflow-hidden border border-border hover:shadow-xl transition-all">
+                <Link key={c.slug} to={`/case-studies/${c.slug}`} className="group block rounded-sm overflow-hidden border border-border  transition-all">
                   {c.img ? (
                     <div className="aspect-[16/9] overflow-hidden">
                       <img src={c.img} alt={c.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />

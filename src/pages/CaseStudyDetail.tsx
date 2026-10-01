@@ -75,13 +75,13 @@ export default function CaseStudyDetail() {
           <p className="text-xl text-accent-light leading-relaxed mb-10">{cs.excerpt}</p>
 
           {cs.img && (
-            <div className="aspect-video rounded-3xl overflow-hidden shadow-xl mb-12">
+            <div className="aspect-video rounded-sm overflow-hidden mb-12">
               <img src={cs.img} alt={cs.title} className="w-full h-full object-cover" />
             </div>
           )}
 
           {cs.results?.length > 0 && (
-            <div className="bg-muted rounded-3xl p-8 mb-12">
+            <div className="bg-muted rounded-sm p-8 mb-12">
               <h3 className="text-sm font-bold uppercase tracking-widest text-accent/60 mb-6">Key Results</h3>
               <ul className="space-y-4">
                 {cs.results.map((r, i) => (
@@ -98,7 +98,7 @@ export default function CaseStudyDetail() {
             <Markdown remarkPlugins={[remarkBreaks]}>{cs.content}</Markdown>
           </div>
 
-          <div className="mt-16 bg-muted p-12 rounded-3xl text-center">
+          <div className="mt-16 bg-muted p-12 rounded-sm text-center">
             <h3 className="text-2xl font-bold mb-4">Want a similar result?</h3>
             <p className="text-accent-light mb-8 max-w-md mx-auto">Let's talk about installing the right operating system for your business.</p>
             <Link to="/book" className="btn-primary inline-flex">Book a Call</Link>

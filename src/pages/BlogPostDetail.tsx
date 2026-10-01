@@ -1,13 +1,14 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Tag, MessageSquare, User, Mail, Globe, Send, Phone, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Tag, MessageSquare, User, Mail, Globe, Send, Phone, ArrowRight } from 'lucide-react';
 import Markdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { blogPosts } from '../data/blogData';
-import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, OPERATING_SPINE_URL } from '../constants';
 import SEO from '../components/SEO';
 import { extractAnswerBlock, answerFaqSchema } from '../lib/answerBlock';
+import PostEnding from '../components/PostEnding';
+import { chapterForPost, postsInChapter } from '../data/chapters';
 
 interface Comment {
   id: number;
@@ -167,6 +168,8 @@ export default function BlogPostDetail() {
   // THE ANSWER BLOCK (2026-09-18). Built from the visible top of the post and
   // from nothing else. No question line means no extra markup at all.
   const answerBlock = extractAnswerBlock(post.content);
+  // The Field Manual (2026-10-01): every essay belongs to a chapter.
+  const chapter = chapterForPost(post);
 
   return (
     <div className="bg-white min-h-screen">
@@ -207,33 +210,26 @@ export default function BlogPostDetail() {
         <div className="container-custom">
           <div className="max-w-3xl mx-auto">
             {/* Back Link */}
-            <Link to="/blog" className="inline-flex items-center gap-2 text-sm font-bold text-accent/40 hover:text-accent transition-colors mb-12">
-              <ArrowLeft size={16} /> Back to Blog
-            </Link>
+            <div className="label-mono-muted mb-10 flex flex-wrap gap-x-2">
+              <Link to="/" className="hover:text-primary">The Manual</Link>
+              <span>→</span>
+              <Link to={`/manual/${chapter.slug}`} className="hover:text-primary">Chapter {chapter.number} · {chapter.title}</Link>
+            </div>
 
             {/* Header */}
             <header className="mb-16">
-              <div className="flex flex-wrap items-center gap-6 mb-8">
-                <div className="flex items-center gap-2 text-sm font-bold text-accent/40">
-                  <Calendar size={16} />
-                  {post.date}
-                </div>
-                <div className="flex items-center gap-2 text-sm font-bold text-accent/40">
-                  <Tag size={16} />
-                  <span className="uppercase tracking-widest">{post.category}</span>
-                </div>
-              </div>
-              <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-8">
+              <div className="label-mono mb-6">{post.date} · {post.category}</div>
+              <h1 className="text-4xl md:text-[3.4rem] mb-8">
                 {post.title}
               </h1>
-              <p className="text-xl md:text-2xl text-accent-light leading-relaxed italic border-l-4 border-accent pl-6">
+              <p className="text-xl md:text-2xl text-accent-light leading-relaxed border-l-2 border-primary pl-5">
                 {post.excerpt}
               </p>
             </header>
 
             {/* Cover Image */}
             {post.img && (
-              <div className="aspect-video rounded-3xl overflow-hidden shadow-xl mb-16">
+              <div className="aspect-video overflow-hidden border border-border mb-16">
                 <img src={post.img} alt={post.title} className="w-full h-full object-cover" />
               </div>
             )}
@@ -250,8 +246,8 @@ export default function BlogPostDetail() {
                   </div>
 
                   {/* Lock Screen */}
-                  <div className="bg-muted p-8 md:p-12 rounded-[2rem] border border-accent/10 shadow-xl text-center relative z-20 -mt-20">
-                    <div className="w-16 h-16 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <div className="bg-muted p-8 md:p-12 rounded-sm border border-accent/10 text-center relative z-20 -mt-20">
+                    <div className="w-16 h-16 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-6">
                       <Tag size={24} />
                     </div>
                     <h2 className="text-3xl font-bold mb-4">This is Premium Content</h2>
@@ -268,12 +264,12 @@ export default function BlogPostDetail() {
                           value={gateEmail}
                           onChange={(e) => setGateEmail(e.target.value)}
                           placeholder="Enter your professional email" 
-                          className="flex-1 px-6 py-4 rounded-xl bg-white border border-border outline-none focus:border-accent transition-all"
+                          className="flex-1 px-6 py-4 rounded-sm bg-white border border-border outline-none focus:border-accent transition-all"
                         />
                         <button 
                           type="submit" 
                           disabled={gateStatus === 'loading'}
-                          className="btn-primary px-8 py-4 rounded-xl font-bold disabled:opacity-50"
+                          className="btn-primary px-8 py-4 rounded-sm font-bold disabled:opacity-50"
                         >
                           {gateStatus === 'loading' ? 'Unlocking...' : 'Unlock Now'}
                         </button>
@@ -301,41 +297,14 @@ export default function BlogPostDetail() {
               )}
             </div>
 
-            {/* Content-to-Funnel Bridge. Charter rank 1 (2026-08-20): the primary
-                route out of a post is the Operating Spine scoping call. The free
-                diagnostic stays, but it is no longer the only door. */}
-            <div className="py-12 border-y border-border/50 mb-24">
-              <h3 className="text-2xl font-bold mb-4">Want this installed in your business?</h3>
-              <p className="text-accent-light mb-8 max-w-2xl">
-                Operating Spine Install puts the cadence, one source of truth for the numbers,
-                and clear decision rights inside your company in 90 days, run by your own team.
-                A short scoping call is where we work out whether it fits.
-              </p>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-                <a
-                  href={OPERATING_SPINE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-cta="operating-spine"
-                  className="btn-primary inline-flex items-center justify-center gap-2 px-8"
-                >
-                  Book an Operating Spine scoping call
-                  <ArrowRight size={18} />
-                </a>
-                <a
-                  href={MINI_DIAGNOSTIC_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-cta="diagnostic"
-                  className="text-sm font-bold text-accent/60 hover:text-accent underline underline-offset-4 transition-colors"
-                >
-                  Or take the free 5-minute diagnostic
-                </a>
-              </div>
+            {/* The ending every essay shares (2026-10-01): the calculator, then the door
+                the chapter chooses. Replaces the 2026-08-20 bridge block. */}
+            <div className="mb-20">
+              <PostEnding chapter={chapter} />
             </div>
 
             {/* Newsletter Section */}
-            <div className="bg-accent text-white p-8 md:p-12 rounded-[2rem] my-24 relative overflow-hidden">
+            <div className="bg-accent text-white p-8 md:p-12 my-20 relative overflow-hidden">
               <div className="relative z-10">
                 <h3 className="text-2xl md:text-3xl font-bold mb-4">Want these insights in your inbox?</h3>
                 <p className="text-white/80 mb-8 max-w-xl">
@@ -348,12 +317,12 @@ export default function BlogPostDetail() {
                     value={newsletterEmail}
                     onChange={(e) => setNewsletterEmail(e.target.value)}
                     placeholder="Enter your email" 
-                    className="flex-1 px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/40 outline-none focus:bg-white/20 transition-all"
+                    className="flex-1 px-6 py-4 rounded-sm bg-white/10 border border-white/20 text-white placeholder:text-white/40 outline-none focus:bg-white/20 transition-all"
                   />
                   <button 
                     type="submit" 
                     disabled={newsletterStatus === 'loading'}
-                    className="bg-white text-accent px-8 py-4 rounded-xl font-bold hover:bg-white/90 transition-all disabled:opacity-50"
+                    className="bg-white text-accent px-8 py-4 rounded-sm font-bold hover:bg-white/90 transition-all disabled:opacity-50"
                   >
                     {newsletterStatus === 'loading' ? 'Joining...' : 'Join Frameworks'}
                   </button>
@@ -381,7 +350,7 @@ export default function BlogPostDetail() {
               </div>
 
               {/* Comment Form */}
-              <div className="bg-muted/30 p-8 rounded-3xl border border-border mb-16">
+              <div className="bg-muted/30 p-8 rounded-sm border border-border mb-16">
                 <h3 className="text-xl font-bold mb-6">Leave a Comment</h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
@@ -396,7 +365,7 @@ export default function BlogPostDetail() {
                           onChange={handleInputChange}
                           placeholder="Your Name" 
                           required
-                          className="w-full pl-12 pr-4 py-3 rounded-xl border border-border focus:border-accent bg-white outline-none transition-all text-sm"
+                          className="w-full pl-12 pr-4 py-3 rounded-sm border border-border focus:border-accent bg-white outline-none transition-all text-sm"
                         />
                       </div>
                     </div>
@@ -411,7 +380,7 @@ export default function BlogPostDetail() {
                           onChange={handleInputChange}
                           placeholder="Email Address" 
                           required
-                          className="w-full pl-12 pr-4 py-3 rounded-xl border border-border focus:border-accent bg-white outline-none transition-all text-sm"
+                          className="w-full pl-12 pr-4 py-3 rounded-sm border border-border focus:border-accent bg-white outline-none transition-all text-sm"
                         />
                       </div>
                     </div>
@@ -428,7 +397,7 @@ export default function BlogPostDetail() {
                           value={formData.website}
                           onChange={handleInputChange}
                           placeholder="https://yourwebsite.com" 
-                          className="w-full pl-12 pr-4 py-3 rounded-xl border border-border focus:border-accent bg-white outline-none transition-all text-sm"
+                          className="w-full pl-12 pr-4 py-3 rounded-sm border border-border focus:border-accent bg-white outline-none transition-all text-sm"
                         />
                       </div>
                     </div>
@@ -442,7 +411,7 @@ export default function BlogPostDetail() {
                           value={formData.phone}
                           onChange={handleInputChange}
                           placeholder="Your Phone Number" 
-                          className="w-full pl-12 pr-4 py-3 rounded-xl border border-border focus:border-accent bg-white outline-none transition-all text-sm"
+                          className="w-full pl-12 pr-4 py-3 rounded-sm border border-border focus:border-accent bg-white outline-none transition-all text-sm"
                         />
                       </div>
                     </div>
@@ -459,7 +428,7 @@ export default function BlogPostDetail() {
                         placeholder="Share your thoughts..." 
                         rows={5}
                         required
-                        className="w-full pl-12 pr-4 py-4 rounded-xl border border-border focus:border-accent bg-white outline-none transition-all text-sm resize-none"
+                        className="w-full pl-12 pr-4 py-4 rounded-sm border border-border focus:border-accent bg-white outline-none transition-all text-sm resize-none"
                       />
                     </div>
                   </div>
@@ -493,7 +462,7 @@ export default function BlogPostDetail() {
                 {comments.length > 0 ? (
                   comments.filter(c => !c.parent_id).map((c) => (
                     <div key={c.id} className="space-y-6">
-                      <div className="bg-white p-8 rounded-2xl border border-border/50 shadow-sm">
+                      <div className="bg-white p-8 rounded-sm border border-border/50">
                         <div className="flex justify-between items-start mb-4">
                           <div>
                             <div className="font-bold text-lg flex items-center gap-3">
@@ -528,7 +497,7 @@ export default function BlogPostDetail() {
 
                       {/* Replies */}
                       {comments.filter(r => r.parent_id === c.id).map(reply => (
-                        <div key={reply.id} className="ml-8 md:ml-16 bg-accent/5 p-6 rounded-2xl border border-accent/10 relative">
+                        <div key={reply.id} className="ml-8 md:ml-16 bg-accent/5 p-6 rounded-sm border border-accent/10 relative">
                           <div className="absolute -left-4 top-8 w-4 h-px bg-accent/20" />
                           <div className="flex items-center gap-2 mb-3">
                             <div className="w-6 h-6 bg-accent text-white text-[10px] flex items-center justify-center rounded-full font-bold">AP</div>
@@ -545,42 +514,38 @@ export default function BlogPostDetail() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-12 border-2 border-dashed border-border rounded-3xl">
+                  <div className="text-center py-12 border-2 border-dashed border-border rounded-sm">
                     <p className="text-accent/40 font-medium">No comments yet. Be the first to join the discussion!</p>
                   </div>
                 )}
               </div>
             </section>
 
-            {/* Related Posts */}
-            <section className="mt-32 pt-16 border-t border-border">
-              <h2 className="text-3xl font-bold mb-12">Related Frameworks</h2>
-              <div className="grid md:grid-cols-2 gap-8">
-                {blogPosts.filter(p => p.id !== id).slice(0, 2).map((p) => (
-                  <Link key={p.id} to={`/blog/${p.id}`} className="group p-8 bg-muted/30 rounded-3xl border border-border hover:border-accent transition-all">
-                    <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">{p.category}</div>
-                    <h3 className="text-xl font-bold mb-4 group-hover:text-accent transition-colors">{p.title}</h3>
-                    <div className="text-sm font-bold text-accent flex items-center gap-2">
-                      Read Framework <ArrowLeft className="rotate-180" size={14} />
-                    </div>
+            {/* More in this chapter (2026-10-01): replaces "Related Frameworks", which
+                picked the two newest posts regardless of subject. */}
+            <section className="mt-24 pt-10 border-t border-border">
+              <span className="label-mono">More in Chapter {chapter.number} · {chapter.title}</span>
+              <div className="rule-top mt-3">
+                {postsInChapter(chapter, blogPosts).filter(p => p.id !== id).slice(0, 4).map((p) => (
+                  <Link key={p.id} to={`/blog/${p.id}`} className="group grid sm:grid-cols-[110px_1fr] gap-1 sm:gap-5 py-4 border-b border-border">
+                    <span className="label-mono-muted pt-1">{p.date}</span>
+                    <span className="text-lg font-bold tracking-[-0.02em] text-accent group-hover:text-primary transition-colors">{p.title}</span>
                   </Link>
                 ))}
               </div>
+              <Link to={`/manual/${chapter.slug}`} className="text-sm font-bold text-primary inline-flex items-center gap-1 mt-4">
+                The whole chapter <ArrowLeft className="rotate-180" size={14} />
+              </Link>
             </section>
 
             {/* Author Footer */}
             <footer className="mt-32 pt-12 border-t border-border">
               <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-accent text-white rounded-full flex items-center justify-center font-bold">AP</div>
-                  <div>
-                    <div className="font-bold text-lg">Anjani Pandey</div>
-                    <div className="text-sm text-accent-light">Founder & CEO, MetMov LLP</div>
-                  </div>
+                <div>
+                  <div className="font-bold text-lg">Anjani Pandey</div>
+                  <div className="text-sm text-accent-light">Founder, MetMov LLP · ISB · Bengaluru. Writes this manual one essay a week.</div>
                 </div>
-                <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary">
-                  Book a Fit Call
-                </a>
+                <Link to="/about" className="btn-outline">About the author</Link>
               </div>
             </footer>
           </div>

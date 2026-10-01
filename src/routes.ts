@@ -4,6 +4,7 @@
  */
 import { blogPosts } from './data/blogData';
 import { getGuideRoutes } from './data/guidesData';
+import { CHAPTERS } from './data/chapters';
 import { caseStudies } from './data/caseStudyData';
 
 export interface RouteEntry {
@@ -44,10 +45,16 @@ export function getCaseStudyRoutes(): RouteEntry[] {
     return caseStudies.map((c) => ({ path: `/case-studies/${c.slug}`, prerender: true }));
 }
 
+/** The Field Manual chapters (2026-10-01) */
+export function getChapterRoutes(): RouteEntry[] {
+  return CHAPTERS.map((c) => ({ path: `/manual/${c.slug}`, prerender: true }));
+}
+
 /** All routes that should be pre-rendered */
 export function getPrerenderedRoutes(): string[] {
     return [
           ...staticRoutes.filter((r) => r.prerender).map((r) => r.path),
+          ...getChapterRoutes().map((r) => r.path),
           ...getBlogRoutes().map((r) => r.path),
           ...getGuideRoutes().map((r) => r.path),
           ...getCaseStudyRoutes().map((r) => r.path),

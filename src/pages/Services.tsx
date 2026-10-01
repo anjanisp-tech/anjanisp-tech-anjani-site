@@ -229,7 +229,7 @@ export default function Services() {
                   <div className="mb-4">
                     <h2 className="text-3xl md:text-4xl mb-0">{service.title}</h2>
                   </div>
-                  <div className="bg-muted p-8 rounded-2xl border border-border/50 mb-8">
+                  <div className="bg-muted p-8 rounded-sm border border-border/50 mb-8">
                     <div className="flex items-start gap-3 text-accent/60 mb-4">
                       <AlertCircle size={20} className="mt-1 flex-shrink-0" />
                       <span className="text-xs font-bold uppercase tracking-widest">The Symptom</span>
@@ -308,7 +308,7 @@ export default function Services() {
                 For Individuals & Professionals
               </div>
               <h2 className="text-3xl md:text-4xl mb-6">AI Setup Sprint</h2>
-              <div className="bg-muted p-8 rounded-2xl border border-border/50 mb-8">
+              <div className="bg-muted p-8 rounded-sm border border-border/50 mb-8">
                 <div className="flex items-start gap-3 text-accent/60 mb-4">
                   <Cpu size={20} className="mt-1 flex-shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-widest">The Situation</span>
@@ -374,7 +374,7 @@ export default function Services() {
               </div>
 
               {/* Pricing & CTA */}
-              <div className="bg-muted/50 rounded-2xl p-8 border border-border/50">
+              <div className="bg-muted/50 rounded-sm p-8 border border-border/50">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                   <div>
                     <div className="text-3xl font-bold text-accent mb-1">&#8377;25,000</div>
@@ -406,7 +406,7 @@ export default function Services() {
                 For Operators & Solopreneurs
               </div>
               <h2 className="text-3xl md:text-4xl mb-6">Personal OS Build Sprint</h2>
-              <div className="bg-muted p-8 rounded-2xl border border-border/50 mb-8">
+              <div className="bg-muted p-8 rounded-sm border border-border/50 mb-8">
                 <div className="flex items-start gap-3 text-accent/60 mb-4">
                   <Cpu size={20} className="mt-1 flex-shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-widest">The Situation</span>
@@ -472,7 +472,7 @@ export default function Services() {
               </div>
 
               {/* Scope & CTA */}
-              <div className="bg-muted/50 rounded-2xl p-8 border border-border/50">
+              <div className="bg-muted/50 rounded-sm p-8 border border-border/50">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                   <div>
                     <div className="text-3xl font-bold text-accent mb-1">From &#8377;1.5L</div>
@@ -489,7 +489,7 @@ export default function Services() {
               </div>
 
               {/* Prerequisites */}
-              <div className="mt-10 bg-white border border-border rounded-2xl p-8">
+              <div className="mt-10 bg-white border border-border rounded-sm p-8">
                 <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent/60 bg-accent/5 border border-accent/15 rounded-full px-3 py-1 mb-4">
                   <CheckCircle2 size={12} />
                   Before We Start Building Together
@@ -574,7 +574,7 @@ export default function Services() {
               </div>
 
               {/* Scope & CTA */}
-              <div className="bg-muted/50 rounded-2xl p-8 border border-border/50">
+              <div className="bg-muted/50 rounded-sm p-8 border border-border/50">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                   <div>
                     <div className="text-3xl font-bold text-accent mb-1">&#8377;25k<span className="text-lg font-semibold">/mo</span></div>
@@ -602,8 +602,8 @@ export default function Services() {
           </div>
           <div className="grid md:grid-cols-3 gap-6 md:gap-4 items-stretch">
             {/* Rung 1 */}
-            <div className="bg-white border border-border rounded-2xl p-8 flex flex-col">
-              <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center text-primary mb-6">
+            <div className="bg-white border border-border rounded-sm p-8 flex flex-col">
+              <div className="w-12 h-12 bg-muted rounded-sm flex items-center justify-center text-primary mb-6">
                 <Sparkles size={22} />
               </div>
               <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-2">For individuals</div>
@@ -612,8 +612,8 @@ export default function Services() {
               <p className="text-sm text-accent-light leading-relaxed flex-grow">A working Claude-based AI system built around how you work. The entry rung.</p>
             </div>
             {/* Rung 2 */}
-            <div className="bg-white border border-accent/30 rounded-2xl p-8 flex flex-col shadow-md">
-              <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center text-primary mb-6">
+            <div className="bg-white border border-accent/30 rounded-sm p-8 flex flex-col">
+              <div className="w-12 h-12 bg-muted rounded-sm flex items-center justify-center text-primary mb-6">
                 <Layers size={22} />
               </div>
               <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-2">For operators</div>
@@ -622,8 +622,8 @@ export default function Services() {
               <p className="text-sm text-accent-light leading-relaxed flex-grow">Install a full Personal OS, then keep it compounding instead of decaying.</p>
             </div>
             {/* Rung 3 — MetMov (the only cross-brand link; firewall held) */}
-            <div className="bg-accent text-white rounded-2xl p-8 flex flex-col">
-              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-white mb-6">
+            <div className="bg-accent text-white rounded-sm p-8 flex flex-col">
+              <div className="w-12 h-12 bg-white/10 rounded-sm flex items-center justify-center text-white mb-6">
                 <Target size={22} />
               </div>
               <div className="text-xs font-bold uppercase tracking-widest text-white/50 mb-2">For the business</div>
@@ -647,7 +647,7 @@ export default function Services() {
           </div>
           <div className="max-w-3xl space-y-4">
             {servicesFaqs.map((f, idx) => (
-              <div key={idx} className="bg-white border border-border rounded-2xl p-8">
+              <div key={idx} className="bg-white border border-border rounded-sm p-8">
                 <h3 className="text-lg font-bold mb-3">{f.q}</h3>
                 <p className="text-accent-light leading-relaxed">{f.a}</p>
               </div>

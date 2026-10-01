@@ -1,668 +1,164 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Search, Layers, Rocket, ChevronLeft, ChevronRight, Quote, Briefcase, Sparkles, Target } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
+import { ArrowRight } from 'lucide-react';
 import SEO from '../components/SEO';
-import { blogPosts as seedPosts } from '../data/blogData';
+import ChapterFigure from '../components/ChapterFigure';
+import { blogPosts as seedPosts, type BlogPost } from '../data/blogData';
+import { CHAPTERS, postsInChapter, parseDate } from '../data/chapters';
+import { FIT_CALL_URL, OPERATING_SPINE_URL } from '../constants';
 
-type FunnelTile = {
-  as_of: string;
-  period: { start: string; end: string; label: string };
-  funnel: { visits: number; signups: number; qualified: number; conversion_pct: number };
-};
-
+/**
+ * The Field Manual (2026-10-01). The home page is a table of contents, not a
+ * feed. Six chapters, each with the one line a founder recognises, the figure
+ * of the mechanism, and the essay count. The essays themselves come from the
+ * same seed + /api/posts refresh the writing page uses, so every Wednesday
+ * post files itself into a chapter without anyone touching this page.
+ */
 export default function Home() {
-  // Seed from static blogData so the prerender (renderToString) captures the
-  // Latest Writing cards instead of "Loading...". /api/posts refreshes below.
-  const [posts, setPosts] = useState<any[]>(seedPosts);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [testimonialIndex, setTestimonialIndex] = useState(0);
-  const [funnel, setFunnel] = useState<FunnelTile | null>(null);
-
-  const testimonials = [
-    {
-      quote: "He thinks in systems. Anjani quickly identifies the real constraints in a situation and focuses effort where it compounds. He brings structure without bureaucracy and momentum without noise.",
-      author: "Harsha Athkuri",
-      role: "Senior Product Manager, Microsoft",
-      initials: "HA"
-    },
-    {
-      quote: "Anjani played a pivotal role in driving large-scale improvement programs and operational rollouts. He brought clarity to complex problems and set up scalable processes.",
-      author: "Mrigank Mishra",
-      role: "JioHotstar (Ex-Udaan)",
-      initials: "MM"
-    },
-    {
-      quote: "Anjani is someone people naturally seek out when decisions are complex and stakes are real. He brings structure to ambiguity, aligns people without friction, and focuses on durable outcomes.",
-      author: "Nandu Somaraj",
-      role: "Sr. Contract Performance Manager, Baker Hughes",
-      initials: "NS"
-    },
-    {
-      quote: "One of the finest management professionals I have worked with. Anjani is a strong taskmaster who works on building processes and capabilities for the good of the organization.",
-      author: "Ayush Agarwal",
-      role: "ONDC (Ex-Airtel, OYO)",
-      initials: "AA"
-    },
-    {
-      quote: "Anjani operates with a level of clarity and judgment that is rare. He has a strong systems mindset and an ability to simplify complex, cross-functional problems.",
-      author: "Rahul Kulshrestha",
-      role: "Indo-Swiss Innovation",
-      initials: "RK"
-    },
-    {
-      quote: "I found him to be a sharp thinker who thought on his feet. He showcased his ability to lead his team by example and keep them motivated at all times.",
-      author: "Harindran W S",
-      role: "FKCCI Secretariat",
-      initials: "HW"
-    }
-  ];
+  const [posts, setPosts] = useState<BlogPost[]>(seedPosts);
 
   useEffect(() => {
-    fetch('/api/posts?limit=10')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setPosts(data);
-        }
+    fetch('/api/posts?limit=200')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const list: BlogPost[] | undefined = Array.isArray(d) ? d : d?.posts;
+        if (list && list.length) setPosts(list);
       })
-      .catch(err => console.error('Error fetching posts:', err));
+      .catch(() => {});
   }, []);
 
-  // Phase F funnel tile. Silent hide on any failure — homepage must never
-  // surface errors. The API route applies allow-list projection server-side.
-  useEffect(() => {
-    const ctrl = new AbortController();
-    fetch('/api/funnel-public', { signal: ctrl.signal })
-      .then(res => {
-        if (!res.ok || res.status === 204) return null;
-        return res.json();
-      })
-      .then((data: FunnelTile | null) => {
-        if (!data || !data.funnel || !data.period) return;
-        // 9-day staleness cutoff (matches Public Command Center tile).
-        const asOf = new Date(data.as_of);
-        const ageDays = (Date.now() - asOf.getTime()) / 86_400_000;
-        if (!Number.isFinite(ageDays) || ageDays > 9) return;
-        if ((data.funnel.visits ?? 0) <= 0) return;
-        setFunnel(data);
-      })
-      .catch(() => { /* silent hide */ });
-    return () => ctrl.abort();
-  }, []);
-
-  const nextSlide = () => {
-    if (posts.length === 0) return;
-    setCurrentIndex((prev) => (prev + 1) % posts.length);
-  };
-
-  const prevSlide = () => {
-    if (posts.length === 0) return;
-    setCurrentIndex((prev) => (prev - 1 + posts.length) % posts.length);
-  };
-
-  const nextTestimonial = () => {
-    setTestimonialIndex((prev) => (prev + 1) % testimonials.length);
-  };
-
-  const prevTestimonial = () => {
-    setTestimonialIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  };
+  const total = posts.length;
+  const latest = [...posts].sort((a, b) => parseDate(b.date) - parseDate(a.date)).slice(0, 3);
 
   return (
     <>
       <SEO
-        title="Anjani Pandey | Operations Leader, Builder, Writer"
-        description="Operations leader. Builder. Writing about systems, scale, and what AI changes about both. Founder, MetMov LLP. Based in Bengaluru."
+        title="Anjani Pandey | A field manual for founder-led businesses"
+        description="Every growing company breaks in one of five ways. A field manual on how founder-led businesses break and what to install instead, written weekly by Anjani Pandey, founder of MetMov LLP."
         canonical="https://www.anjanipandey.com/"
         jsonLd={{
-          // kernel: anjanipandey v1.2 (2026-06-04), section 7 entity seed.
           "@context": "https://schema.org",
           "@type": "Person",
           "@id": "https://www.anjanipandey.com/#person",
           "name": "Anjani Pandey",
           "url": "https://www.anjanipandey.com",
-          // Rich Results warning fix (W3): image on the Person entity.
           "image": "https://www.anjanipandey.com/og-image.png",
           "jobTitle": "Founder & CEO",
-          "description": "The AI-OS operator. Builds operating systems, including his own multi-subsystem Claude-kernel OS, run in public with real metrics. Founder, MetMov LLP.",
-          "worksFor": {
-            "@type": "Organization",
-            "@id": "https://metmov.com/#organization",
-            "name": "MetMov LLP",
-            "url": "https://www.metmov.com"
-          },
-          "alumniOf": {
-            "@type": "EducationalOrganization",
-            "name": "Indian School of Business"
-          },
-          "address": {
-            "@type": "PostalAddress",
-            "addressLocality": "Bengaluru",
-            "addressCountry": "IN"
-          },
-          "sameAs": [
-            "https://www.linkedin.com/in/anjanispandey/",
-            "https://github.com/anjanisp-tech",
-            "https://www.metmov.com"
-          ],
+          "description": "Writes the field manual on how founder-led businesses break. Builds operating systems, including his own multi-subsystem Claude-kernel OS, run in public. Founder, MetMov LLP.",
+          "worksFor": { "@type": "Organization", "@id": "https://metmov.com/#organization", "name": "MetMov LLP", "url": "https://www.metmov.com" },
+          "alumniOf": { "@type": "EducationalOrganization", "name": "Indian School of Business" },
+          "address": { "@type": "PostalAddress", "addressLocality": "Bengaluru", "addressCountry": "IN" },
+          "sameAs": ["https://www.linkedin.com/in/anjanispandey/", "https://github.com/anjanisp-tech", "https://www.metmov.com"],
           "knowsAbout": ["AI operating systems", "Operations", "Business Scaling", "Systems Thinking", "B2B Consulting"]
         }}
       />
 
-      {/* SECTION 1 - Thesis Hero (balanced two-column, /os visual language) */}
-      <section className="bg-white pt-32 pb-16 md:pt-40 md:pb-20">
+      {/* Opening */}
+      <section className="pt-28 md:pt-36 pb-10 md:pb-14">
         <div className="container-custom">
-          <div className="grid lg:grid-cols-5 gap-12 lg:gap-16 items-start">
-            {/* Left: thesis + CTA */}
-            <div className="lg:col-span-3">
-              {/* Charter rank 3 (2026-08-20): the emerald status pill is gone. It was the
-                  one place on this page running a second accent colour, and the pulsing
-                  dot was a template flourish. Same words, quiet line, more room for the
-                  headline. */}
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent/40 mb-8">
-                Operating in public · Level4-OS, 9 live subsystems
+          <div className="grid lg:grid-cols-[1.25fr_1fr] gap-10 lg:gap-16 items-start">
+            <div className="grid gap-6">
+              <span className="label-mono">A field manual for founder-led businesses · {total} essays · one added every week</span>
+              <h1 className="mb-0">Every growing company breaks in one of five ways.</h1>
+              <p className="text-lg md:text-xl text-accent-light max-w-[44ch]">
+                Fifteen years inside operating teams, now written down as a manual. Find the chapter that sounds like your week. Each one ends with what to do about it.
               </p>
-              <h1 className="text-4xl md:text-6xl leading-[1.05] mb-8">
-                A company of one,<br />run like an institution.
-              </h1>
-              <p className="text-xl md:text-2xl text-accent-light mb-6 leading-relaxed max-w-2xl">
-                The operating model is the asset. I design the systems that let founder-led businesses, and my own, scale without the founder as the bottleneck.
-              </p>
-              <p className="text-base text-accent-light/60 leading-relaxed max-w-2xl mb-8">
-                I'm Anjani Pandey. 15+ years building execution systems inside high-growth companies, now installing them for others through <a href="https://metmov.com" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov</a> and running my own AI operating system in public. ISB alumnus. Bengaluru.
-              </p>
-              <div className="flex flex-wrap items-center gap-5">
-                <Link to="/services" className="btn-primary inline-flex items-center gap-2">
-                  See how we'd work together
-                  <ArrowRight size={18} />
+              <div className="margin-note">
+                <span className="label-mono">About the author</span>
+                <span>Anjani Pandey. Founder, MetMov LLP. ISB. Bengaluru. Runs his own firm on nine AI systems, in public.</span>
+              </div>
+            </div>
+
+            <aside className="border border-border bg-white p-6 grid gap-5 self-start">
+              <span className="label-mono">Start here if you are</span>
+              <div className="grid gap-4">
+                <div>
+                  <p className="font-bold text-accent mb-0.5">A founder who is the bottleneck</p>
+                  <p className="text-sm">Chapter 01, then book an Operating Spine scoping call.</p>
+                </div>
+                <div>
+                  <p className="font-bold text-accent mb-0.5">An operator who wants your own system</p>
+                  <p className="text-sm">Chapter 06, then the AI Setup Sprint.</p>
+                </div>
+              </div>
+              <a href={OPERATING_SPINE_URL} target="_blank" rel="noopener noreferrer" data-cta="operating-spine" className="btn-primary justify-self-start gap-2">
+                Book a 30-minute call <ArrowRight size={16} />
+              </a>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      {/* Contents */}
+      <section className="pt-6 pb-16 md:pt-8 md:pb-24">
+        <div className="container-custom grid gap-4">
+          <span className="label-mono">Contents</span>
+          <div className="rule-top grid md:grid-cols-2">
+            {CHAPTERS.map((ch, i) => {
+              const count = postsInChapter(ch, posts).length;
+              const left = i % 2 === 0;
+              return (
+                <Link
+                  key={ch.slug}
+                  to={`/manual/${ch.slug}`}
+                  className={`group grid grid-cols-[auto_1fr] gap-x-5 gap-y-1 py-6 border-b border-border ${left ? 'md:border-r md:pr-6' : 'md:pl-6'} ${ch.slug === 'operating-in-public' ? 'md:col-span-2 md:border-r-0 md:pl-0 bg-muted mt-4 px-5 border border-border' : ''}`}
+                >
+                  <span className="label-mono pt-1.5">{ch.number}</span>
+                  <div className="grid gap-1">
+                    <h3 className="text-xl md:text-2xl mb-0 tracking-[-0.025em] group-hover:text-primary transition-colors">{ch.title}</h3>
+                    <p className="text-accent-light mb-0">{ch.ask}</p>
+                    <span className="label-mono-muted mt-1">{count} {count === 1 ? 'essay' : 'essays'}</span>
+                  </div>
+                  <div className="col-span-2 md:col-start-2 mt-3 text-accent">
+                    <ChapterFigure slug={ch.slug} size="thumb" />
+                  </div>
                 </Link>
-                <a href="/os" className="inline-flex items-center gap-2 text-sm font-bold text-accent hover:gap-3 transition-all">
-                  Open the OS
-                  <ArrowRight size={16} />
-                </a>
-              </div>
-
-              {funnel && (
-                <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border/50 pt-5">
-                  <span className="text-sm text-accent/70"><strong className="text-accent tabular-nums">{funnel.funnel.visits.toLocaleString('en-IN')}</strong> visits</span>
-                  <span className="text-sm text-accent/70"><strong className="text-accent tabular-nums">{funnel.funnel.signups.toLocaleString('en-IN')}</strong> signups</span>
-                  <span className="text-sm text-accent/70"><strong className="text-accent tabular-nums">{funnel.funnel.conversion_pct.toFixed(1)}%</strong> end-to-end</span>
-                  <span className="text-xs text-accent/40">{funnel.period.label} · live from the operator database</span>
-                </div>
-              )}
-            </div>
-
-            {/* Right: what clients hire me for (kills the empty-right layout) */}
-            <div className="lg:col-span-2">
-              <div className="bg-muted border border-border rounded-3xl p-8 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-5">What clients hire me for</p>
-                <ul className="space-y-4">
-                  {[
-                    'Diagnosing the structural diseases that keep founders in the work',
-                    'Installing the operating spine: cadence, accountability, decision rights',
-                    'Designing the memory and capability layer for an AI-run back office',
-                    'Reclaiming 8-15 hrs/week of operating load through standing automations'
-                  ].map((item, i) => (
-                    <li key={i} className="flex gap-3 text-accent-light">
-                      <span className="text-accent/30 font-mono text-sm font-bold pt-0.5">{String(i + 1).padStart(2, '0')}</span>
-                      <span className="leading-relaxed">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="border-t border-border/50 mt-6 pt-5">
-                  <p className="text-xs text-accent/50">Bengaluru · ISB alumnus · Founder, MetMov LLP</p>
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* SECTION 2 - The ladder (offers grid). Mirrors /services canonical ladder; firewall: rungs 1-2 personal, MetMov cross-link only at rung 3. */}
-      <section className="bg-muted border-y border-border/50 py-20">
-        <div className="container-custom">
-          <div className="max-w-3xl mb-12">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent/40 mb-4">How to work with me</p>
-            <h2 className="mb-4">From a first AI system to a firm that runs without you</h2>
-            <p className="text-lg text-accent-light leading-relaxed">
-              Three rungs. Each stands on its own. Together they run from your first AI setup, to a full Personal OS, to the operating backbone of the business itself.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6 md:gap-4 items-stretch">
-            {/* Rung 1 — For individuals */}
-            <Link to="/services" className="bg-white border border-border rounded-2xl p-8 flex flex-col hover:border-accent transition-all group">
-              <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center text-primary mb-6">
-                <Sparkles size={22} />
-              </div>
-              <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-2">For individuals</div>
-              <h3 className="text-xl font-bold mb-2">AI Setup Sprint</h3>
-              <div className="text-sm font-semibold text-accent mb-4">₹25,000</div>
-              <p className="text-sm text-accent-light leading-relaxed flex-grow mb-6">A working Claude-based AI system built around how you work. The entry rung.</p>
-              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">Explore <ArrowRight size={16} /></span>
-            </Link>
-
-            {/* Rung 2 — For operators */}
-            <Link to="/services" className="bg-white border border-accent/30 rounded-2xl p-8 flex flex-col shadow-md hover:border-accent transition-all group">
-              <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center text-primary mb-6">
-                <Layers size={22} />
-              </div>
-              <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-2">For operators</div>
-              <h3 className="text-xl font-bold mb-2">Build Sprint + Care</h3>
-              <div className="text-sm font-semibold text-accent mb-4">from ₹1.5L + ₹25k/mo</div>
-              <p className="text-sm text-accent-light leading-relaxed flex-grow mb-6">Install a full Personal OS, then keep it compounding instead of decaying.</p>
-              <span className="text-sm font-bold flex items-center gap-2 text-accent group-hover:gap-3 transition-all">Explore <ArrowRight size={16} /></span>
-            </Link>
-
-            {/* Rung 3 — MetMov (the only cross-brand link; firewall held) */}
-            <a href="https://metmov.com/operating-spine" target="_blank" rel="noopener noreferrer" className="bg-accent text-white rounded-2xl p-8 flex flex-col group">
-              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-white mb-6">
-                <Target size={22} />
-              </div>
-              <div className="text-xs font-bold uppercase tracking-widest text-white/50 mb-2">For the business</div>
-              <h3 className="text-xl font-bold mb-2">Operating Spine Install</h3>
-              <div className="text-sm font-semibold text-white/70 mb-4">MetMov · senior tier</div>
-              <p className="text-sm text-white/70 leading-relaxed flex-grow mb-6">When the firm, not just the operator, needs the structural backbone to scale without the founder as the system.</p>
-              <span className="text-sm font-bold flex items-center gap-2 text-white group-hover:gap-3 transition-all">See Operating Spine Install <ArrowRight size={16} /></span>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 3 - Problem Recognition (MetMov context) */}
-      <section className="bg-white">
-        <div className="container-custom">
-          <div className="max-w-4xl">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent/40 mb-4">
-              MetMov LLP
-            </p>
-            <h2 className="mb-6">The Problem We Solve</h2>
-            <p className="text-xl text-accent-light mb-16 leading-relaxed max-w-2xl">
-              If you stepped away for 72 hours, what would stall? These are the structural diseases we diagnose and fix.
-            </p>
-            <div className="grid md:grid-cols-1 gap-y-8">
-              {[
-                { symptom: "You are the escalation layer. Every decision routes back to you.", disease: "The Founder Trap" },
-                { symptom: "Roles exist on paper. Accountability doesn't.", disease: "Structure Without Spine" },
-                { symptom: "Targets are set. Rhythms to hit them aren't.", disease: "Execution Breakdown" },
-                { symptom: "Revenue is growing but you can't see where margin is leaking.", disease: "Visibility Collapse" },
-                { symptom: "Each new market or product line adds chaos faster than capacity.", disease: "Growth Induced Fragility" }
-              ].map((point, i) => (
-                <div key={i} className="flex items-start gap-4">
-                  <div className="mt-1.5 text-accent/20">
-                    <CheckCircle2 size={20} />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-lg text-accent-light font-medium">If {point.symptom.toLowerCase().replace(/\.\s+/g, ', ').replace(/\.+$/, '')},</p>
-                    <p className="text-sm font-bold uppercase tracking-widest text-accent">You may be experiencing: {point.disease}</p>
-                  </div>
-                </div>
+      {/* Latest + offers */}
+      <section className="py-16 md:py-20 border-t border-border bg-white">
+        <div className="container-custom grid lg:grid-cols-[1.4fr_1fr] gap-12">
+          <div className="grid gap-3 content-start">
+            <span className="label-mono">Added most recently</span>
+            <div className="rule-top">
+              {latest.map((p) => (
+                <Link key={p.id} to={`/blog/${p.id}`} className="group grid sm:grid-cols-[120px_1fr] gap-1 sm:gap-5 py-4 border-b border-border">
+                  <span className="label-mono-muted pt-1">{p.date}</span>
+                  <span className="text-lg font-bold tracking-[-0.02em] text-accent group-hover:text-primary transition-colors">{p.title}</span>
+                </Link>
               ))}
             </div>
+            <Link to="/writing" className="text-sm font-bold text-primary inline-flex items-center gap-1 mt-2">
+              All {total} essays, by date <ArrowRight size={14} />
+            </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Bottleneck Cost Lead Magnet */}
-      <section className="bg-accent text-white py-24 overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 -skew-x-12 translate-x-1/2" />
-        <div className="container-custom relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <div className="text-xs font-bold uppercase tracking-[0.2em] text-white/50 mb-6">
-                Interactive Tool
-              </div>
-              <h2 className="text-4xl md:text-5xl text-white mb-6 leading-tight">
-                What is your <span className="text-white/60 italic">Bottleneck Cost?</span>
-              </h2>
-              <p className="text-xl text-white/70 mb-8 leading-relaxed">
-                Being the "Hero" of your company isn't just exhausting. It's expensive.
-                Our interactive calculator quantifies the specific financial loss caused by structural gaps.
-              </p>
-              <Link to="/calculator" className="bg-white text-accent hover:bg-muted px-10 py-4 rounded-md font-bold text-lg transition-all inline-flex items-center gap-3 shadow-xl">
-                Calculate Your Cost
-                <ArrowRight size={20} />
-              </Link>
+          <div className="grid gap-3 content-start">
+            <span className="label-mono">Three ways to work with me</span>
+            <div className="rule-top">
+              {[
+                { t: 'AI Setup Sprint', s: 'For individuals. Your first working AI system. ₹25,000, fixed.', href: '/services' },
+                { t: 'Build Sprint + Care', s: 'For operators. A full personal OS, kept compounding. From ₹1.5L + ₹25k a month.', href: '/services' },
+                { t: 'Operating Spine Install', s: 'For the business, through MetMov. The backbone that lets the firm scale without the founder as the system.', href: OPERATING_SPINE_URL },
+              ].map((o) => {
+                const inner = (
+                  <>
+                    <span className="text-lg font-bold tracking-[-0.02em] text-accent group-hover:text-primary transition-colors">{o.t}</span>
+                    <span className="text-sm text-accent-light">{o.s}</span>
+                  </>
+                );
+                const cls = 'group grid gap-1 py-4 border-b border-border';
+                return o.href.startsWith('http')
+                  ? <a key={o.t} href={o.href} target="_blank" rel="noopener noreferrer" data-cta="operating-spine" className={cls}>{inner}</a>
+                  : <Link key={o.t} to={o.href} className={cls}>{inner}</Link>;
+              })}
             </div>
-            <div className="bg-white/10 backdrop-blur-sm border border-white/10 p-8 rounded-3xl">
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Example result</span>
-                <span className="text-[10px] font-medium text-white/40">₹5 Cr revenue · team of 5 · 15 hrs/wk</span>
-              </div>
-              <div className="space-y-6">
-                <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                  <span className="text-sm font-medium text-white/60">Time Drain</span>
-                  <span className="text-xl font-mono font-bold">₹1.6 Cr</span>
-                </div>
-                <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                  <span className="text-sm font-medium text-white/60">Growth Cap</span>
-                  <span className="text-xl font-mono font-bold">₹65 L</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-white/60">Total Bottleneck Cost</span>
-                  <span className="text-3xl font-mono font-bold text-white">₹2.7 Cr</span>
-                </div>
-                <div className="pt-4">
-                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                    <div className="w-2/3 h-full bg-white/40" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Approach */}
-      <section className="bg-white">
-        <div className="container-custom">
-          <h2 className="mb-20">How We Work</h2>
-          <div className="grid md:grid-cols-3 gap-12">
-            {[
-              {
-                title: 'Diagnose',
-                icon: Search,
-                desc: 'We run a structured diagnostic using our 25-disease taxonomy. No assumptions. No copy-paste. We identify exactly which structural diseases are present and how severe they are.'
-              },
-              {
-                title: 'Install',
-                icon: Layers,
-                desc: 'We design and install the Operating Spine: cadence, accountability, decision rights, KPIs, escalation protocols. Not a report. A working system.'
-              },
-              {
-                title: 'Embed',
-                icon: Rocket,
-                desc: 'We stay until the system runs without us. Execution rhythms. Review cadence. Structural habits that compound.'
-              }
-            ].map((pillar, i) => (
-              <div key={i} className="space-y-6">
-                <div className="w-14 h-14 bg-muted rounded-2xl flex items-center justify-center text-accent">
-                  <pillar.icon size={28} />
-                </div>
-                <h3 className="text-2xl font-bold">{pillar.title}</h3>
-                <p className="text-accent-light leading-relaxed">
-                  {pillar.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Proof & Metrics */}
-      <section className="bg-muted border-y border-border/50">
-        <div className="container-custom">
-          <h2 className="mb-8">Practitioner Credibility</h2>
-          <p className="text-xl text-accent-light mb-16 max-w-2xl">
-            Before MetMov, I built these systems inside companies. Here's what that looks like at scale.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-            {[
-              { label: 'Annual Savings Delivered', value: '$15M+' },
-              { label: 'Markets Scaled', value: '28' },
-              { label: 'Loss Reduction', value: '95%' }
-            ].map((stat, i) => (
-              <div key={i} className="bg-white p-10 rounded-2xl border border-border shadow-sm">
-                <div className="text-4xl md:text-5xl font-bold text-accent mb-2">{stat.value}</div>
-                <div className="text-sm font-bold uppercase tracking-widest text-accent/40">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-          <p className="text-center text-lg font-bold text-accent mb-20">Now I install these systems in yours.</p>
-
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            <div className="space-y-6">
-              <h3 className="text-2xl font-bold">Two Partners. 30+ Years of Operating Experience.</h3>
-              <p className="text-lg text-accent-light leading-relaxed">
-                We've scaled logistics networks, built financial control systems, and designed execution architecture inside high-growth companies. We didn't learn this from textbooks. We built it under pressure.
-              </p>
-              <ul className="grid grid-cols-2 gap-4">
-                {[
-                  'Operating Spine Install',
-                  'Diagnostic Sprints',
-                  'Execution Architecture',
-                  'Supply Chain Transformation',
-                  'Governance Frameworks',
-                  'Scale Readiness'
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm font-semibold text-accent/70">
-                    <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="bg-white p-8 rounded-2xl border border-border shadow-sm">
-              <p className="text-lg text-accent-light italic mb-6">
-                "Businesses don't fail from lack of vision. They fail from absence of structural support. Diagnose before prescribing. Install, don't advise."
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-white font-bold">AP</div>
-                <div>
-                  <div className="font-bold">Anjani Pandey</div>
-                  <div className="text-sm text-accent-light">Founder & CEO, MetMov LLP | ISB Alumnus</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="bg-white overflow-hidden">
-        <div className="container-custom">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-            <div className="max-w-2xl">
-              <h2 className="mb-4">Trusted by Leaders</h2>
-              <p className="text-lg text-accent-light">
-                What colleagues and partners say about my approach to systems, strategy, and execution.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={prevTestimonial}
-                className="p-3 rounded-full border border-border bg-white hover:bg-accent hover:text-white transition-all shadow-sm"
-                aria-label="Previous testimonial"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <button
-                onClick={nextTestimonial}
-                className="p-3 rounded-full border border-border bg-white hover:bg-accent hover:text-white transition-all shadow-sm"
-                aria-label="Next testimonial"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          </div>
-
-          <div className="relative min-h-[400px]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={testimonialIndex}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-                className="grid md:grid-cols-2 gap-8"
-              >
-                {/* Current Testimonial */}
-                <div className="bg-muted p-10 rounded-3xl border border-border/50 flex flex-col h-full relative">
-                  <Quote className="absolute top-8 right-8 text-accent/5" size={48} />
-                  <p className="text-xl text-accent-light mb-8 italic leading-relaxed flex-grow relative z-10">
-                    "{testimonials[testimonialIndex].quote}"
-                  </p>
-                  <div className="flex items-center gap-4 pt-6 border-t border-border/50">
-                    <div className="w-12 h-12 bg-accent text-white flex items-center justify-center rounded-full font-bold text-sm">
-                      {testimonials[testimonialIndex].initials}
-                    </div>
-                    <div>
-                      <div className="font-bold text-accent">{testimonials[testimonialIndex].author}</div>
-                      <div className="text-xs font-bold uppercase tracking-widest text-accent/40">{testimonials[testimonialIndex].role}</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Next Testimonial (Preview) */}
-                <div className="bg-muted p-10 rounded-3xl border border-border/50 flex flex-col h-full relative hidden md:flex opacity-70">
-                  <Quote className="absolute top-8 right-8 text-accent/5" size={48} />
-                  <p className="text-xl text-accent-light mb-8 italic leading-relaxed flex-grow relative z-10">
-                    "{testimonials[(testimonialIndex + 1) % testimonials.length].quote}"
-                  </p>
-                  <div className="flex items-center gap-4 pt-6 border-t border-border/50">
-                    <div className="w-12 h-12 bg-accent text-white flex items-center justify-center rounded-full font-bold text-sm">
-                      {testimonials[(testimonialIndex + 1) % testimonials.length].initials}
-                    </div>
-                    <div>
-                      <div className="font-bold text-accent">{testimonials[(testimonialIndex + 1) % testimonials.length].author}</div>
-                      <div className="text-xs font-bold uppercase tracking-widest text-accent/40">{testimonials[(testimonialIndex + 1) % testimonials.length].role}</div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-      </section>
-
-      {/* Latest Writing Section - Carousel */}
-      <section className="bg-muted border-y border-border/50">
-        <div className="container-custom">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-            <div className="max-w-2xl">
-              <h2 className="mb-4">Latest Writing</h2>
-              <p className="text-lg text-accent-light">
-                Frameworks and observations on operations, scaling, and what AI changes about both.
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex gap-2">
-                <button
-                  onClick={prevSlide}
-                  className="p-3 rounded-full border border-border bg-white hover:bg-accent hover:text-white transition-all shadow-sm"
-                  aria-label="Previous post"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <button
-                  onClick={nextSlide}
-                  className="p-3 rounded-full border border-border bg-white hover:bg-accent hover:text-white transition-all shadow-sm"
-                  aria-label="Next post"
-                >
-                  <ChevronRight size={20} />
-                </button>
-              </div>
-              <Link to="/writing" className="btn-outline py-3 px-6 text-sm gap-2">
-                View All
-                <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
-
-          <div className="relative overflow-hidden min-h-[320px]">
-            <AnimatePresence mode="wait">
-              {posts.length > 0 ? (
-                <motion.div
-                  key={currentIndex}
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                  className="grid md:grid-cols-2 gap-8"
-                >
-                  {/* Current Post */}
-                  <Link
-                    to={`/blog/${posts[currentIndex].id}`}
-                    className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm"
-                  >
-                    <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">
-                      {posts[currentIndex].date} {posts[currentIndex].category && `\u2022 ${posts[currentIndex].category}`}
-                    </div>
-                    <h3 className="text-2xl font-bold mb-6 group-hover:text-accent-light transition-colors line-clamp-2">
-                      {posts[currentIndex].title}
-                    </h3>
-                    <p className="text-accent-light line-clamp-3 mb-8 text-sm leading-relaxed">
-                      {posts[currentIndex].excerpt}
-                    </p>
-                    <span className="text-sm font-bold flex items-center gap-2 text-accent">
-                      Read more <ArrowRight size={16} />
-                    </span>
-                  </Link>
-
-                  {/* Next Post (Preview) */}
-                  <Link
-                    to={`/blog/${posts[(currentIndex + 1) % posts.length].id}`}
-                    className="bg-white p-10 rounded-3xl border border-border hover:border-accent transition-all group shadow-sm hidden md:block opacity-60 hover:opacity-100"
-                  >
-                    <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-4">
-                      {posts[(currentIndex + 1) % posts.length].date} {posts[(currentIndex + 1) % posts.length].category && `\u2022 ${posts[(currentIndex + 1) % posts.length].category}`}
-                    </div>
-                    <h3 className="text-2xl font-bold mb-6 group-hover:text-accent-light transition-colors line-clamp-2">
-                      {posts[(currentIndex + 1) % posts.length].title}
-                    </h3>
-                    <p className="text-accent-light line-clamp-3 mb-8 text-sm leading-relaxed">
-                      {posts[(currentIndex + 1) % posts.length].excerpt}
-                    </p>
-                    <span className="text-sm font-bold flex items-center gap-2 text-accent">
-                      Read more <ArrowRight size={16} />
-                    </span>
-                  </Link>
-                </motion.div>
-              ) : (
-                <div className="text-center py-20 text-accent-light/50 font-medium">
-                  Loading latest writing...
-                </div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      </section>
-
-      {/* Work with me — firewall-safe bridge to the MetMov offer */}
-      <section className="bg-white">
-        <div className="container-custom">
-          <div className="max-w-4xl mx-auto bg-muted border border-border rounded-3xl p-10 md:p-14">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-accent border border-border">
-                <Briefcase size={20} />
-              </div>
-              <span className="text-xs font-bold uppercase tracking-widest text-accent/40">Work with me</span>
-            </div>
-            <p className="text-xl md:text-2xl text-accent-light leading-relaxed mb-8 max-w-2xl">
-              Beyond writing and building in public, I run MetMov, where we install the operating spine in founder-led firms so they can scale without the founder as the bottleneck. If your business has hit that ceiling, that is the work.
-            </p>
-            <a
-              href="https://metmov.com/operating-spine"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary inline-flex items-center gap-3"
-            >
-              See Operating Spine Install
-              <ArrowRight size={18} />
+            <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-primary inline-flex items-center gap-1 mt-2">
+              Not sure which? Book a 30-minute call <ArrowRight size={14} />
             </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="bg-accent text-white py-24">
-        <div className="container-custom text-center">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-4xl md:text-6xl mb-10 text-white">
-              Want to Work Together?
-            </h2>
-            <p className="text-xl text-white/70 mb-12">
-              If your business has outgrown its structure, we should talk.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href={MINI_DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer" className="bg-white text-accent hover:bg-muted px-14 py-5 rounded-md font-bold text-lg transition-all inline-block shadow-2xl shadow-black/20">
-                Take the Free Diagnostic
-              </a>
-              <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="bg-transparent border border-white/30 text-white hover:bg-white/10 px-14 py-5 rounded-md font-bold text-lg transition-all inline-block">
-                Book a Call
-              </a>
-            </div>
           </div>
         </div>
       </section>

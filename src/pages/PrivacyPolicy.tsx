@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
               <p className="font-bold">Effective Date: 21 February 2026</p>
               <p>Website: <a href="https://www.anjanipandey.com/" className="text-accent hover:underline">https://www.anjanipandey.com/</a></p>
               
-              <div className="bg-muted/30 p-6 rounded-2xl border border-border mb-12">
+              <div className="bg-muted/30 p-6 rounded-sm border border-border mb-12">
                 <p className="m-0"><strong>Owner:</strong> Anjani Sharan Pandey</p>
                 <p className="m-0"><strong>Contact Email:</strong> <a href="mailto:contact@anjanipandey.com" className="text-accent hover:underline">contact@anjanipandey.com</a></p>
               </div>

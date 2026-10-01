@@ -153,7 +153,7 @@ export default function BottleneckCostCalculator() {
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-border"
+            className="bg-white p-8 md:p-12 rounded-sm border border-border"
           >
             <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
               <Info className="text-accent/40" size={24} />
@@ -167,16 +167,16 @@ export default function BottleneckCostCalculator() {
                   <Globe size={14} />
                   Select Currency
                 </label>
-                <div className="flex p-1 bg-muted rounded-xl w-fit">
+                <div className="flex p-1 bg-muted rounded-sm w-fit">
                   <button
                     onClick={() => setCurrency('USD')}
-                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${currency === 'USD' ? 'bg-white text-accent shadow-sm' : 'text-accent/40 hover:text-accent'}`}
+                    className={`px-6 py-2 rounded-sm text-sm font-bold transition-all ${currency === 'USD' ? 'bg-white text-accent' : 'text-accent/40 hover:text-accent'}`}
                   >
                     USD ($)
                   </button>
                   <button
                     onClick={() => setCurrency('INR')}
-                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${currency === 'INR' ? 'bg-white text-accent shadow-sm' : 'text-accent/40 hover:text-accent'}`}
+                    className={`px-6 py-2 rounded-sm text-sm font-bold transition-all ${currency === 'INR' ? 'bg-white text-accent' : 'text-accent/40 hover:text-accent'}`}
                   >
                     INR (₹)
                   </button>
@@ -199,7 +199,7 @@ export default function BottleneckCostCalculator() {
                   step={currency === 'USD' ? 50000 : 10000000}
                   value={revenue}
                   onChange={(e) => setRevenue(parseInt(e.target.value))}
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-accent"
+                  className="w-full h-2 bg-muted rounded-sm appearance-none cursor-pointer accent-accent"
                 />
                 <div className="flex justify-between text-[10px] font-mono text-accent/30">
                   <span>{currency === 'USD' ? '$100K' : '₹1 Cr'}</span>
@@ -223,7 +223,7 @@ export default function BottleneckCostCalculator() {
                   step="1"
                   value={teamSize}
                   onChange={(e) => setTeamSize(parseInt(e.target.value))}
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-accent"
+                  className="w-full h-2 bg-muted rounded-sm appearance-none cursor-pointer accent-accent"
                 />
                 <div className="flex justify-between text-[10px] font-mono text-accent/30">
                   <span>1 Person</span>
@@ -250,7 +250,7 @@ export default function BottleneckCostCalculator() {
                   step="1"
                   value={heroicHours}
                   onChange={(e) => setHeroicHours(parseInt(e.target.value))}
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-accent"
+                  className="w-full h-2 bg-muted rounded-sm appearance-none cursor-pointer accent-accent"
                 />
                 <div className="flex justify-between text-[10px] font-mono text-accent/30">
                   <span>0 Hours</span>
@@ -277,7 +277,7 @@ export default function BottleneckCostCalculator() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="h-full flex flex-col items-center justify-center text-center p-12 border-2 border-dashed border-border rounded-3xl"
+                  className="h-full flex flex-col items-center justify-center text-center p-12 border-2 border-dashed border-border rounded-sm"
                 >
                   <Calculator size={48} className="text-accent/10 mb-6" />
                   <h3 className="text-xl font-bold text-accent/30">Enter your vitals to see the cost of the bottleneck.</h3>
@@ -290,7 +290,7 @@ export default function BottleneckCostCalculator() {
                   className="space-y-6"
                 >
                   {/* Total Tax Card */}
-                  <div className="bg-accent text-white p-10 rounded-3xl shadow-xl relative overflow-hidden border border-white/10">
+                  <div className="bg-accent text-white p-10 rounded-sm relative overflow-hidden border border-white/10">
                     <div className="absolute top-0 right-0 p-8 opacity-5">
                       <AlertTriangle size={120} />
                     </div>
@@ -323,17 +323,17 @@ export default function BottleneckCostCalculator() {
 
                   {/* Breakdown Grid */}
                   <div className="grid sm:grid-cols-3 gap-4">
-                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm group hover:border-accent transition-colors">
+                    <div className="bg-white p-6 rounded-sm border border-border group hover:border-accent transition-colors">
                       <div className="text-accent/20 mb-3 group-hover:text-accent transition-colors"><Clock size={18} /></div>
                       <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-accent/40 mb-1">Time Drain</div>
                       <div className="text-xl font-mono font-bold text-accent">{formatCurrency(results.timeLoss)}</div>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm group hover:border-accent transition-colors">
+                    <div className="bg-white p-6 rounded-sm border border-border group hover:border-accent transition-colors">
                       <div className="text-accent/20 mb-3 group-hover:text-accent transition-colors"><TrendingDown size={18} /></div>
                       <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-accent/40 mb-1">Growth Cap</div>
                       <div className="text-xl font-mono font-bold text-accent">{formatCurrency(results.growthLoss)}</div>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm group hover:border-accent transition-colors">
+                    <div className="bg-white p-6 rounded-sm border border-border group hover:border-accent transition-colors">
                       <div className="text-accent/20 mb-3 group-hover:text-accent transition-colors"><Users size={18} /></div>
                       <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-accent/40 mb-1">Team Friction</div>
                       <div className="text-xl font-mono font-bold text-accent">{formatCurrency(results.frictionCost)}</div>
@@ -341,7 +341,7 @@ export default function BottleneckCostCalculator() {
                   </div>
 
                   {/* Lead Capture Section */}
-                  <div className="bg-accent/5 p-8 md:p-10 rounded-3xl border border-accent/10 relative overflow-hidden">
+                  <div className="bg-accent/5 p-8 md:p-10 rounded-sm border border-accent/10 relative overflow-hidden">
                     <div className="relative z-10">
                       {!hasSubmittedLead ? (
                         <>
@@ -356,12 +356,12 @@ export default function BottleneckCostCalculator() {
                               value={email}
                               onChange={(e) => setEmail(e.target.value)}
                               placeholder="Enter your professional email"
-                              className="flex-1 px-6 py-4 rounded-xl bg-white border border-border outline-none focus:border-accent transition-all text-sm"
+                              className="flex-1 px-6 py-4 rounded-sm bg-white border border-border outline-none focus:border-accent transition-all text-sm"
                             />
                             <button
                               type="submit"
                               disabled={isSubmitting}
-                              className="bg-primary text-white px-8 py-4 rounded-xl font-bold hover:bg-primary/90 transition-all disabled:opacity-50 whitespace-nowrap"
+                              className="bg-primary text-white px-8 py-4 rounded-sm font-bold hover:bg-primary/90 transition-all disabled:opacity-50 whitespace-nowrap"
                             >
                               {isSubmitting ? 'Saving...' : 'Get My Diagnosis'}
                             </button>
@@ -401,7 +401,7 @@ export default function BottleneckCostCalculator() {
                   </div>
 
                   {/* Call to Action */}
-                  <div className="bg-white p-8 rounded-3xl border border-border shadow-sm">
+                  <div className="bg-white p-8 rounded-sm border border-border">
                     <h3 className="text-xl font-bold mb-4">Stop Paying the Tax.</h3>
                     <p className="text-sm text-accent-light/70 mb-6">
                       This isn't a cost of doing business. It's a structural disease with a known cure: the Operating Spine. Take the next step.
@@ -446,25 +446,25 @@ export default function BottleneckCostCalculator() {
       {/* Methodology Section */}
       <section className="mt-24">
         <div className="container-custom">
-          <div className="max-w-3xl mx-auto bg-white/50 p-12 rounded-3xl border border-border/50">
+          <div className="max-w-3xl mx-auto bg-white/50 p-12 rounded-sm border border-border/50">
             <h3 className="text-sm font-bold uppercase tracking-widest text-accent/40 mb-8 text-center">The Methodology</h3>
             <div className="space-y-8 text-sm text-accent-light/70">
               <div className="flex gap-6">
-                <div className="w-12 h-12 bg-white rounded-xl border border-border flex items-center justify-center shrink-0 font-bold text-accent">01</div>
+                <div className="w-12 h-12 bg-white rounded-sm border border-border flex items-center justify-center shrink-0 font-bold text-accent">01</div>
                 <div>
                   <h4 className="font-bold text-accent mb-2">The Opportunity Cost of Time</h4>
                   <p>We calculate your effective hourly rate based on revenue. Every hour you spend on "heroics" (tasks that could be delegated) is an hour you aren't spending on growth. We subtract a standard replacement cost to find your net loss.</p>
                 </div>
               </div>
               <div className="flex gap-6">
-                <div className="w-12 h-12 bg-white rounded-xl border border-border flex items-center justify-center shrink-0 font-bold text-accent">02</div>
+                <div className="w-12 h-12 bg-white rounded-sm border border-border flex items-center justify-center shrink-0 font-bold text-accent">02</div>
                 <div>
                   <h4 className="font-bold text-accent mb-2">The Growth Cap (Bottleneck Tax)</h4>
                   <p>Founder-led businesses without systems leave 8-25% of potential revenue on the table through missed opportunities and scaling friction. The rate scales with your bottleneck intensity: more heroic hours and a larger team waiting on you means a higher cap.</p>
                 </div>
               </div>
               <div className="flex gap-6">
-                <div className="w-12 h-12 bg-white rounded-xl border border-border flex items-center justify-center shrink-0 font-bold text-accent">03</div>
+                <div className="w-12 h-12 bg-white rounded-sm border border-border flex items-center justify-center shrink-0 font-bold text-accent">03</div>
                 <div>
                   <h4 className="font-bold text-accent mb-2">Systemic Inefficiency</h4>
                   <p>Without an Operating Spine, team members spend 5-15% of their productive value on friction: clarifying tasks, waiting for approvals, searching for information, or re-doing work. The rate increases with founder bottleneck severity.</p>

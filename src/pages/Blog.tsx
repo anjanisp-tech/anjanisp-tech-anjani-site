@@ -161,7 +161,7 @@ export default function Blog() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="bg-red-50 text-red-700 p-8 rounded-3xl border border-red-100 max-w-2xl w-full text-center">
+        <div className="bg-red-50 text-red-700 p-8 rounded-sm border border-red-100 max-w-2xl w-full text-center">
           <AlertCircle className="mx-auto mb-4" size={48} />
           <h2 className="text-2xl font-bold mb-2">Oops! Something went wrong</h2>
           <p className="mb-6">{error}</p>
@@ -184,9 +184,10 @@ export default function Blog() {
       <div className="pt-32 pb-4 md:pt-40 md:pb-6">
         <div className="container-custom">
           <div className="max-w-3xl">
+            <span className="label-mono block mb-5">Every essay, by date</span>
             <h1 className="mb-6">Writing</h1>
             <p className="text-xl md:text-2xl text-accent-light leading-relaxed">
-              My learnings, observations, and frameworks on operations, scaling, and leadership.
+              The whole manual in the order it was written. If you would rather start from your problem, <Link to="/" className="text-accent font-semibold hover:text-primary underline underline-offset-4">use the chapters</Link>.
             </p>
           </div>
         </div>
@@ -203,7 +204,7 @@ export default function Blog() {
                 placeholder="Search articles..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-muted border border-border/50 rounded-2xl outline-none focus:border-accent transition-all text-sm font-medium"
+                className="w-full pl-12 pr-4 py-4 bg-muted border border-border/50 rounded-sm outline-none focus:border-accent transition-all text-sm font-medium"
               />
             </div>
 
@@ -270,7 +271,7 @@ export default function Blog() {
                         (object-left keeps the wordmark + title start visible). */}
                     <Link
                       to={`/blog/${post.id}`}
-                      className="block w-full sm:w-48 md:w-60 shrink-0 rounded-xl overflow-hidden border border-border/60 bg-muted aspect-[1200/630] sm:aspect-auto"
+                      className="block w-full sm:w-48 md:w-60 shrink-0 rounded-sm overflow-hidden border border-border/60 bg-muted aspect-[1200/630] sm:aspect-auto"
                     >
                       {post.img && (
                         <img
@@ -334,7 +335,7 @@ export default function Blog() {
             </div>
           )}
 
-          <div className="mt-32 bg-muted p-12 rounded-3xl text-center">
+          <div className="mt-32 bg-muted p-12 rounded-sm text-center">
             <h3 className="text-2xl font-bold mb-4">Want these insights in your inbox?</h3>
             <p className="text-accent-light mb-8 max-w-md mx-auto">
               I share weekly frameworks on operations and scaling for founder-led businesses.
@@ -346,7 +347,7 @@ export default function Blog() {
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 placeholder="Email Address" 
-                className="flex-grow px-6 py-3 rounded-md border border-border focus:border-accent outline-none"
+                className="flex-grow px-6 py-3 rounded-sm border border-border focus:border-accent outline-none"
               />
               <button 
                 type="submit" 

@@ -24,6 +24,7 @@ const BottleneckCostCalculator = lazy(() => import('./pages/BottleneckCostCalcul
 const Resources = lazy(() => import('./pages/Resources'));
 const ResourceGuideDetail = lazy(() => import('./pages/ResourceGuideDetail'));
 const About = lazy(() => import('./pages/About'));
+const Chapter = lazy(() => import('./pages/Chapter'));
 const CaseStudies = lazy(() => import('./pages/CaseStudies'));
 const CaseStudyDetail = lazy(() => import('./pages/CaseStudyDetail'));
 
@@ -94,6 +95,8 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
+            <Route path="/manual" element={<Navigate to="/" replace />} />
+            <Route path="/manual/:slug" element={<Chapter />} />
             <Route path="/services" element={<Services />} />
             <Route path="/writing" element={<Blog />} />
             <Route path="/blog" element={<Navigate to="/writing" replace />} />

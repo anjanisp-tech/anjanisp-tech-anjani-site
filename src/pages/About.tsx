@@ -1,6 +1,6 @@
 import { ArrowRight, Linkedin, Mail, Download, Briefcase } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { FIT_CALL_URL, LINKEDIN_URL } from '../constants';
+import { FIT_CALL_URL, LINKEDIN_URL, OPERATING_SPINE_URL, WHATSAPP_URL } from '../constants';
 import SEO from '../components/SEO';
 
 const careerTimeline = [
@@ -73,24 +73,29 @@ export default function About() {
         <div className="container-custom">
           <div className="grid md:grid-cols-12 gap-16 items-start">
             <div className="md:col-span-7">
-              <h1 className="text-4xl md:text-6xl mb-8">About</h1>
+              {/* The letter (2026-10-01). A referred founder wants to know who this is
+                  before they call. A note in the first person does that better than a bio. */}
+              <span className="label-mono block mb-6">A note from Anjani</span>
+              <h1 className="text-4xl md:text-5xl mb-8">If someone sent you here, you are probably the busiest person in your company.</h1>
               <div className="space-y-6 text-lg text-accent-light leading-relaxed">
                 <p>
-                  I'm an operations and transformation leader with 15+ years of experience designing execution systems for global supply chains, manufacturing companies, and high-growth platforms.
+                  I have spent fifteen years inside growing companies, at BHEL, Udaan and Y-NOT among others, building the systems that let them move without waiting on one person. Most founders I meet are not short of ideas or people. They are short of structure, so everything routes back to them.
                 </p>
                 <p>
-                  I've spent most of my career inside companies -- at BHEL, Udaan, Y-NOT -- building the structural backbone that lets organizations scale without breaking. The pattern I kept seeing: businesses don't fail from lack of vision. They fail from absence of internal structural support.
+                  That is what I fix. Through <a href="https://metmov.com" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:text-primary underline underline-offset-4">MetMov LLP</a>, which I run with my partner Chaitanya Eswarapragada, we diagnose the structural disease and install the operating spine that lets a business run without the founder being the system.
                 </p>
                 <p>
-                  That conviction is why I founded <a href="https://metmov.com" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">MetMov LLP</a>, which I run with my partner Chaitanya Eswarapragada. We help founder-led businesses diagnose structural diseases and install the operating spine that lets them run without the founder being the system.
+                  I also run my own firm that way. My <a href="/os" className="text-accent font-semibold hover:text-primary underline underline-offset-4">Personal OS</a> is nine AI subsystems doing the back office every day, in public. Everything I learn doing it goes into <Link to="/" className="text-accent font-semibold hover:text-primary underline underline-offset-4">the manual</Link>, one essay a week, and I install a version of it for operators who want the same.
                 </p>
-                <p>
-                  More recently, I've been building at the intersection of AI and operations -- not AI as a tool bolted on, but AI that changes how businesses need to be structured, made legible, and run. My <a href="/os" className="text-accent font-semibold hover:underline">Personal OS</a> is the working proof: nine subsystems, Claude as the kernel, public metrics. I run three entities on it, and I install a version of it for operators who want the same.
-                </p>
+                <p className="font-serif italic text-2xl text-accent pt-2">Anjani</p>
+              </div>
+              <div className="flex flex-wrap gap-3 mt-8">
+                <a href={OPERATING_SPINE_URL} target="_blank" rel="noopener noreferrer" data-cta="operating-spine" className="btn-primary">Book a 30-minute call</a>
+                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn-outline">Message on WhatsApp</a>
               </div>
             </div>
             <div className="md:col-span-5 space-y-8">
-              <div className="bg-muted p-8 rounded-3xl border border-border/50">
+              <div className="bg-muted p-8 rounded-sm border border-border/50">
                 <h3 className="text-sm font-bold uppercase tracking-widest text-accent/40 mb-6">Quick Facts</h3>
                 <div className="space-y-4">
                   {[
@@ -116,17 +121,17 @@ export default function About() {
                   ))}
                 </div>
               </div>
-              <div className="bg-muted p-8 rounded-3xl border border-border/50">
+              <div className="bg-muted p-8 rounded-sm border border-border/50">
                 <h3 className="text-sm font-bold uppercase tracking-widest text-accent/40 mb-6">Previously At</h3>
                 <div className="flex flex-wrap gap-3">
                   {['Udaan', 'OYO', 'Y-NOT', 'Shopup', 'BHEL', 'Vedanta'].map((company, i) => (
-                    <div key={i} className="px-4 py-2 bg-white rounded-lg text-sm font-bold text-accent/60 border border-border/50">
+                    <div key={i} className="px-4 py-2 bg-white rounded-sm text-sm font-bold text-accent/60 border border-border/50">
                       {company}
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="bg-muted p-8 rounded-3xl border border-border/50">
+              <div className="bg-muted p-8 rounded-sm border border-border/50">
                 <h3 className="text-sm font-bold uppercase tracking-widest text-accent/40 mb-4">Also Operating</h3>
                 <p className="text-sm font-bold text-accent mb-2">Personal OS</p>
                 <p className="text-sm text-accent-light leading-relaxed mb-4">
@@ -153,7 +158,7 @@ export default function About() {
                   </a>
                 </div>
               </div>
-              <div className="bg-accent/5 p-6 rounded-3xl border border-accent/10">
+              <div className="bg-accent/5 p-6 rounded-sm border border-accent/10">
                 <div className="flex items-center gap-3 mb-3">
                   <Briefcase size={18} className="text-accent/60" />
                   <h3 className="text-sm font-bold uppercase tracking-widest text-accent/40">Open To</h3>
@@ -222,7 +227,7 @@ export default function About() {
                 desc: 'The gap between strategy and execution. Cadence design, accountability architecture, decision rights, and why most org charts are fiction.'
               }
             ].map((topic, i) => (
-              <div key={i} className="bg-white p-8 rounded-2xl border border-border shadow-sm">
+              <div key={i} className="bg-white p-8 rounded-sm border border-border">
                 <h3 className="text-xl font-bold mb-4">{topic.title}</h3>
                 <p className="text-accent-light leading-relaxed">{topic.desc}</p>
               </div>
@@ -249,7 +254,7 @@ export default function About() {
                 "AI won't replace operators. But it will make the gap between structured and unstructured businesses much wider, much faster."
               ].map((belief, i) => (
                 <div key={i} className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center text-accent font-bold text-sm flex-shrink-0 mt-0.5">
+                  <div className="w-8 h-8 bg-muted rounded-sm flex items-center justify-center text-accent font-bold text-sm flex-shrink-0 mt-0.5">
                     {i + 1}
                   </div>
                   <p className="text-lg text-accent-light leading-relaxed">{belief}</p>

@@ -62,7 +62,7 @@ export default function Sitemap() {
             </section>
           </div>
 
-          <div className="mt-20 p-8 bg-muted rounded-2xl border border-border">
+          <div className="mt-20 p-8 bg-muted rounded-sm border border-border">
             <h3 className="text-lg font-bold mb-2">Technical Sitemap</h3>
             <p className="text-accent-light mb-4">
               Search engines can access the XML version of this sitemap here:
