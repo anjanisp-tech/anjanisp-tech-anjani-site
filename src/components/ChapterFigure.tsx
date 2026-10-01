@@ -28,7 +28,7 @@ export default function ChapterFigure({
     strokeLinejoin: 'round' as const,
   };
   // Mono labels are unreadable at thumbnail size, so they only render at full size.
-  const T = ({ children, ...a }: React.SVGProps<SVGTextElement>) => (size === 'thumb' ? null : <T {...a}>{children}</T>);
+  const T = ({ children, ...a }: React.SVGProps<SVGTextElement>) => (size === 'thumb' ? null : <text {...a}>{children}</text>);
   const box = (x: number, y: number, w = 36, h = 20) => (
     <rect x={x} y={y} width={w} height={h} rx="2" fill="#fbfbf9" />
   );
