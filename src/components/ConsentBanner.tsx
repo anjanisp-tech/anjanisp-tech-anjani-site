@@ -35,7 +35,9 @@ export default function ConsentBanner() {
   return (
     <div className="fixed bottom-0 inset-x-0 z-[60] p-4 sm:p-5">
       <div className="max-w-3xl mx-auto rounded-sm bg-accent text-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
-        <p className="text-sm leading-relaxed flex-1">
+        {/* text-white set on the <p> itself: the base-layer p colour (grey ink) was winning
+            over the parent's text-white, leaving grey on near-black (about 2:1). 2026-10-01 */}
+        <p className="text-sm leading-relaxed flex-1 text-white">
           I use cookies for analytics to understand how the site is used. Accept to allow analytics, or decline to keep it off. See the{' '}
           <a href="/privacy" className="underline decoration-white/40 hover:decoration-white underline-offset-4">Privacy Policy</a>.
         </p>
