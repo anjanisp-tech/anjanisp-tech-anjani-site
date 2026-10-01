@@ -77,8 +77,10 @@
   @apply border-[1.5px] border-accent text-accent px-6 py-3.5 rounded-sm font-bold hover:border-primary hover:text-primary transition-colors duration-200 inline-flex items-center justify-center;
 }
 
-section {
-  @apply py-16 md:py-24;
+@layer base {
+  section {
+    @apply py-16 md:py-24;
+  }
 }
 
 h1 { @apply text-4xl md:text-6xl font-extrabold mb-8 leading-[0.98] tracking-[-0.04em]; }

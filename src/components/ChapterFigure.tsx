@@ -27,6 +27,8 @@ export default function ChapterFigure({
     strokeLinecap: 'round' as const,
     strokeLinejoin: 'round' as const,
   };
+  // Mono labels are unreadable at thumbnail size, so they only render at full size.
+  const T = ({ children, ...a }: React.SVGProps<SVGTextElement>) => (size === 'thumb' ? null : <T {...a}>{children}</T>);
   const box = (x: number, y: number, w = 36, h = 20) => (
     <rect x={x} y={y} width={w} height={h} rx="2" fill="#fbfbf9" />
   );
@@ -40,7 +42,7 @@ export default function ChapterFigure({
           {teams.map(([x, y], i) => <line key={i} x1="120" y1="72" x2={x} y2={y} />)}
           {teams.map(([x, y], i) => <g key={'b' + i}>{box(x - 18, y - 10)}</g>)}
           <circle cx="120" cy="72" r="20" fill={blue} stroke={blue} />
-          <text x="120" y="76" textAnchor="middle" fontSize="9" fontWeight="700" fill="#fbfbf9" stroke="none" fontFamily="JetBrains Mono, monospace">YOU</text>
+          <T x="120" y="76" textAnchor="middle" fontSize="9" fontWeight="700" fill="#fbfbf9" stroke="none" fontFamily="JetBrains Mono, monospace">YOU</T>
         </svg>
       );
     }
@@ -60,7 +62,7 @@ export default function ChapterFigure({
           </g>
           {/* the missing spine */}
           <line x1="120" y1="8" x2="120" y2="142" stroke={blue} strokeWidth="6" strokeDasharray="0 14" opacity="0.9" />
-          <text x="130" y="140" fontSize="8" fill={blue} stroke="none" fontFamily="JetBrains Mono, monospace">spine: missing</text>
+          <T x="130" y="140" fontSize="8" fill={blue} stroke="none" fontFamily="JetBrains Mono, monospace">spine: missing</T>
         </svg>
       );
     }
@@ -83,8 +85,8 @@ export default function ChapterFigure({
               </g>
             );
           })}
-          <text x="16" y="30" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">agreed in the meeting</text>
-          <text x="16" y="128" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">actually shipped</text>
+          <T x="16" y="30" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">agreed in the meeting</T>
+          <T x="16" y="128" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">actually shipped</T>
         </svg>
       );
     }
@@ -94,9 +96,9 @@ export default function ChapterFigure({
         <svg {...common} aria-label="The dashboard says fine while the real line has already turned">
           <rect x="16" y="20" width="208" height="100" rx="2" />
           <polyline points="28,60 70,58 112,61 154,57 196,60 212,58" stroke={ink} strokeWidth="2" />
-          <text x="28" y="50" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">what the dashboard shows</text>
+          <T x="28" y="50" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">what the dashboard shows</T>
           <polyline points="28,70 70,72 112,80 154,96 196,112 212,116" stroke={blue} strokeWidth="2" strokeDasharray="4 3" />
-          <text x="120" y="134" fontSize="8" fill={blue} stroke="none" fontFamily="JetBrains Mono, monospace">what the customer already knows</text>
+          <T x="120" y="134" fontSize="8" fill={blue} stroke="none" fontFamily="JetBrains Mono, monospace">what the customer already knows</T>
         </svg>
       );
     }
@@ -110,8 +112,8 @@ export default function ChapterFigure({
             return <rect key={i} x={120 - w / 2} y={y} width={w} height="14" rx="1" fill="#fbfbf9" />;
           })}
           <rect x="112" y="122" width="16" height="18" fill={blue} stroke={blue} />
-          <text x="150" y="134" fontSize="8" fill={blue} stroke="none" fontFamily="JetBrains Mono, monospace">the same few people</text>
-          <text x="30" y="30" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">orders, hires, products</text>
+          <T x="150" y="134" fontSize="8" fill={blue} stroke="none" fontFamily="JetBrains Mono, monospace">the same few people</T>
+          <T x="30" y="30" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">orders, hires, products</T>
         </svg>
       );
     }
@@ -134,8 +136,8 @@ export default function ChapterFigure({
           )}
           <line x1="20" y1="136" x2="220" y2="136" />
           {[20, 70, 120, 170, 220].map((x) => <line key={x} x1={x} y1="132" x2={x} y2="140" />)}
-          <text x="20" y="128" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">08:00</text>
-          <text x="206" y="128" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">21:30</text>
+          <T x="20" y="128" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">08:00</T>
+          <T x="206" y="128" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">21:30</T>
         </svg>
       );
     }

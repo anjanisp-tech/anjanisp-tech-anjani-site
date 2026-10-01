@@ -230,7 +230,7 @@ export default function BlogPostDetail() {
             {/* Cover Image */}
             {post.img && (
               <div className="aspect-video overflow-hidden border border-border mb-16">
-                <img src={post.img} alt={post.title} className="w-full h-full object-cover" />
+                <img src={post.img} alt={post.title} className="w-full h-full object-cover" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
               </div>
             )}
 
