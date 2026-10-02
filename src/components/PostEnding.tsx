@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { OPERATING_SPINE_URL, FIT_CALL_URL } from '../constants';
 import type { Chapter } from '../data/chapters';
+import { track } from '../lib/track';
 
 /**
  * The ending every essay and chapter shares (2026-10-01). Two parts:
@@ -19,6 +20,15 @@ export default function PostEnding({ chapter, compact = false }: { chapter: Chap
   const yearly = hours * rate * 52;
   const yearlyLabel = yearly >= 1e7 ? `₹${(yearly / 1e7).toFixed(1)} Cr` : `₹${Math.round(yearly / 1e5)} L`;
   const spine = chapter.door === 'spine';
+  // 2026-10-02 measurement: one calculator_used per page view, on the first move.
+  const usedRef = useRef(false);
+  const markUsed = () => {
+    if (usedRef.current) return;
+    usedRef.current = true;
+    track('calculator_used', { where: 'post_ending', chapter: chapter.slug });
+  };
+  const door = (button: string) => () =>
+    track('door_click', { chapter: chapter.slug, door: chapter.door, button });
 
   return (
     <div className="grid gap-10">
@@ -34,12 +44,12 @@ export default function PostEnding({ chapter, compact = false }: { chapter: Chap
                 Hours a week on approvals and firefighting
                 <output className="font-bold text-accent tabular-nums">{hours}</output>
               </label>
-              <input id="pe-hours" type="range" min={2} max={40} value={hours} onChange={(e) => setHours(+e.target.value)} className="w-full accent-primary" />
+              <input id="pe-hours" type="range" min={2} max={40} value={hours} onChange={(e) => { setHours(+e.target.value); markUsed(); }} className="w-full accent-primary" />
               <label htmlFor="pe-rate" className="flex justify-between gap-4 text-sm text-accent-light">
                 Value of one hour of your time (₹)
                 <output className="font-bold text-accent tabular-nums">{rate.toLocaleString('en-IN')}</output>
               </label>
-              <input id="pe-rate" type="range" min={1000} max={20000} step={500} value={rate} onChange={(e) => setRate(+e.target.value)} className="w-full accent-primary" />
+              <input id="pe-rate" type="range" min={1000} max={20000} step={500} value={rate} onChange={(e) => { setRate(+e.target.value); markUsed(); }} className="w-full accent-primary" />
             </div>
             <div className="p-6 md:p-7 bg-muted grid gap-2 content-center">
               <span className="text-xs text-accent-light">Your yearly cost of being the bottleneck</span>
@@ -66,17 +76,17 @@ export default function PostEnding({ chapter, compact = false }: { chapter: Chap
         <div className="flex flex-wrap gap-3 pt-1">
           {spine ? (
             <>
-              <a href={OPERATING_SPINE_URL} target="_blank" rel="noopener noreferrer" data-cta="operating-spine" className="btn-primary gap-2">
+              <a href={OPERATING_SPINE_URL} target="_blank" rel="noopener noreferrer" data-cta="operating-spine" onClick={door('primary')} className="btn-primary gap-2">
                 Book an Operating Spine scoping call <ArrowRight size={16} />
               </a>
-              <Link to="/services" className="btn-outline">See the three ways to work with me</Link>
+              <Link to="/services" onClick={door('services')} className="btn-outline">See the three ways to work with me</Link>
             </>
           ) : (
             <>
-              <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" data-cta="ai-sprint" className="btn-primary gap-2">
+              <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" data-cta="ai-sprint" onClick={door('primary')} className="btn-primary gap-2">
                 Book the AI Setup Sprint call <ArrowRight size={16} />
               </a>
-              <Link to="/services" className="btn-outline">Compare all three offers</Link>
+              <Link to="/services" onClick={door('services')} className="btn-outline">Compare all three offers</Link>
             </>
           )}
         </div>

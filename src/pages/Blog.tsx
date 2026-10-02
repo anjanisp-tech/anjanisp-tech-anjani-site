@@ -3,6 +3,7 @@ import { ArrowRight, Filter, X, Loader2, AlertCircle, Search, ArrowDownWideNarro
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import SEO from '../components/SEO';
 import { blogPosts as seedPosts } from '../data/blogData';
+import { track } from '../lib/track';
 
 interface BlogPost {
   id: string;
@@ -143,6 +144,7 @@ export default function Blog() {
         body: JSON.stringify({ email: newsletterEmail })
       });
       if (res.ok) {
+        track('newsletter_signup', { where: 'writing' });
         setNewsletterStatus('success');
         setNewsletterEmail('');
       } else {

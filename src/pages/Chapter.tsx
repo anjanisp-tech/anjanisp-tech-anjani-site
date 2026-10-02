@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, Navigate } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import SEO from '../components/SEO';
 import ChapterFigure from '../components/ChapterFigure';
 import PostEnding from '../components/PostEnding';
 import { blogPosts as seedPosts, type BlogPost } from '../data/blogData';
 import { CHAPTERS, chapterBySlug, postsInChapter } from '../data/chapters';
+import NotFound from './NotFound';
 
 /** One chapter of the Field Manual: the mechanism, the essays in reading order, the door. */
 export default function Chapter() {
@@ -23,7 +24,7 @@ export default function Chapter() {
       .catch(() => {});
   }, []);
 
-  if (!chapter) return <Navigate to="/" replace />;
+  if (!chapter) return <NotFound what="chapter" />;
 
   const essays = postsInChapter(chapter, posts);
   const idx = CHAPTERS.findIndex((c) => c.slug === chapter.slug);

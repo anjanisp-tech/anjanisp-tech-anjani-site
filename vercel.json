@@ -45,7 +45,79 @@
       "destination": "/os/index.html"
     },
     {
-      "source": "/((?!api/|os/|os$).*)",
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/services",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/writing",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/book",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/book-call",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sitemap",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/calculator",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/resources",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/case-studies",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/manual",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/case-studies/:slug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/manual/:slug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/resources/:slug",
       "destination": "/index.html"
     }
   ]

@@ -7,6 +7,7 @@ import SEO from '../components/SEO';
 import GateOverlay from '../components/GateOverlay';
 import { getGuideBySlug, getPublishedGuides } from '../data/guidesData';
 import { FIT_CALL_URL, LINKEDIN_URL } from '../constants';
+import NotFound from './NotFound';
 
 export default function ResourceGuideDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -23,15 +24,7 @@ export default function ResourceGuideDetail() {
   }, []);
 
   if (!guide) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <h1 className="text-4xl font-bold mb-4">Guide Not Found</h1>
-        <p className="text-accent-light mb-8">The guide you're looking for doesn't exist or has been moved.</p>
-        <Link to="/resources" className="btn-primary flex items-center gap-2">
-          <ArrowLeft size={18} /> Back to Resources
-        </Link>
-      </div>
-    );
+    return <NotFound what="guide" />;
   }
 
   const showGate = guide.gated && !isUnlocked;

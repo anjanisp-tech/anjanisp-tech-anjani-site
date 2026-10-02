@@ -5,6 +5,7 @@ import Markdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import SEO from '../components/SEO';
 import { caseStudies } from '../data/caseStudyData';
+import NotFound from './NotFound';
 
 interface CaseStudy {
   slug: string;
@@ -44,12 +45,7 @@ export default function CaseStudyDetail() {
   }
 
   if (!cs) {
-    return (
-      <div className="pt-40 pb-24 text-center container-custom">
-        <h1 className="text-2xl font-bold mb-4">Case study not found</h1>
-        <Link to="/case-studies" className="text-primary font-bold hover:underline">Back to all case studies</Link>
-      </div>
-    );
+    return <NotFound what="case study" />;
   }
 
   return (

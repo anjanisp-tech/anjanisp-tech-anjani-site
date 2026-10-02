@@ -210,6 +210,45 @@
   /* Room at the end of the page so the single chat button never sits on text. */
   main { padding-bottom: 1rem; }
 </style>
+<!-- 2026-10-02: /os sits outside the React app, so it never loaded the Google tag and its
+     visits and Starter Kit sign-ups were invisible. Same tag and consent rules as index.html. -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WDLCDDDDC"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){window.dataLayer.push(arguments);}
+      window.gtag = gtag;
+      // Consent Mode v2, region-scoped (2026-07-13): analytics granted by default outside
+      // EEA/UK/CH (most traffic is India; blanket-deny meant GA4 key events never recorded),
+      // denied by default where consent law requires it. Ad signals stay denied everywhere.
+      // The banner remains the opt-out: a stored 'denied' choice is re-applied below.
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'granted',
+        wait_for_update: 500
+      });
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        wait_for_update: 500,
+        region: ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+      });
+      try {
+        var apConsent = localStorage.getItem('ap-cookie-consent');
+        if (apConsent === 'granted') { gtag('consent', 'update', { analytics_storage: 'granted', ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted' }); }
+        if (apConsent === 'denied') { gtag('consent', 'update', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' }); }
+      } catch (e) {}
+      gtag('js', new Date());
+      // Initial config call
+      gtag('config', 'G-2WDLCDDDDC', {
+        send_page_view: true,
+        debug_mode: false
+      });
+    </script>
 </head>
 <body>
 
@@ -774,6 +813,7 @@
           if (downloadEmitted) return;
           downloadEmitted = true;
           try { FUNNEL.emit('downloaded', { trigger: 'auto_iframe', via: status }); } catch (_) {}
+          try { window.gtag && window.gtag('event', 'starter_kit_download', { page_path: '/os', via: status }); } catch (_) {}
         };
         try {
           if (frame) {
@@ -926,6 +966,7 @@
 
         if (res.ok) {
           showMsg('Check your inbox. I just sent a confirmation link; click it to unlock the Starter Kit.', 'ok');
+          try { window.gtag && window.gtag('event', 'starter_kit_signup', { page_path: '/os' }); } catch (_) {}
           form.reset();
           resetTurnstile();
         } else if (res.status === 409) {
