@@ -54,6 +54,7 @@ export default function Chapter() {
           <div className="grid gap-5 max-w-[46rem]">
             <span className="label-mono-muted"><Link to="/" className="hover:text-primary">The Manual</Link> → Chapter {chapter.number}</span>
             <h1 className="mb-0">{chapter.title}</h1>
+            {chapter.method && <span className="label-mono -mt-2">MetMov method · {chapter.method}</span>}
             <p className="text-lg md:text-xl text-accent-light">{chapter.intro}</p>
             {chapter.readFirst.length > 0 && (
               <div className="margin-note">

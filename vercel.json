@@ -21,6 +21,31 @@
       "source": "/blog/a-redirect-can-work-perfectly-and-still-be-wrong-the-difference-is-one-digit",
       "destination": "/blog/a-redirect-can-work-perfectly-and-still-be-wrong-the-whole-difference-is-one-digit",
       "permanent": true
+    },
+    {
+      "source": "/manual/founder-trap",
+      "destination": "/manual/who-decides",
+      "permanent": true
+    },
+    {
+      "source": "/manual/structure-without-spine",
+      "destination": "/manual/who-decides",
+      "permanent": true
+    },
+    {
+      "source": "/manual/execution-breakdown",
+      "destination": "/manual/chaos-not-cadence",
+      "permanent": true
+    },
+    {
+      "source": "/manual/visibility-collapse",
+      "destination": "/manual/seen-not-acted-on",
+      "permanent": true
+    },
+    {
+      "source": "/manual/growth-induced-fragility",
+      "destination": "/manual/growth-that-breaks",
+      "permanent": true
     }
   ],
   "rewrites": [

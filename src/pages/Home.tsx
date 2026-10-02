@@ -9,7 +9,7 @@ import { FIT_CALL_URL, OPERATING_SPINE_URL } from '../constants';
 
 /**
  * The Field Manual (2026-10-01). The home page is a table of contents, not a
- * feed. Six chapters, each with the one line a founder recognises, the figure
+ * feed. Seven chapters (six method classes + operating in public), each with the one line a founder recognises, the figure
  * of the mechanism, and the essay count. The essays themselves come from the
  * same seed + /api/posts refresh the writing page uses, so every Wednesday
  * post files itself into a chapter without anyone touching this page.
@@ -34,7 +34,7 @@ export default function Home() {
     <>
       <SEO
         title="Anjani Pandey | A field manual for founder-led businesses"
-        description="Every growing company breaks in one of five ways. A field manual on how founder-led businesses break and what to install instead, written weekly by Anjani Pandey, founder of MetMov LLP."
+        description="Every growing company breaks in one of six ways. A field manual on how founder-led businesses break and what to install instead, written weekly by Anjani Pandey, founder of MetMov LLP."
         canonical="https://www.anjanipandey.com/"
         jsonLd={{
           "@context": "https://schema.org",
@@ -59,7 +59,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-[1.25fr_1fr] gap-10 lg:gap-16 items-start">
             <div className="grid gap-6">
               <span className="label-mono">A field manual for founder-led businesses · {total} essays · one added every week</span>
-              <h1 className="mb-0">Every growing company breaks in one of five ways.</h1>
+              <h1 className="mb-0">Every growing company breaks in one of six ways.</h1>
               <p className="text-lg md:text-xl text-accent-light max-w-[44ch]">
                 Fifteen years inside operating teams, now written down as a manual. Find the chapter that sounds like your week. Each one ends with what to do about it.
               </p>
@@ -78,7 +78,7 @@ export default function Home() {
                 </div>
                 <div>
                   <p className="font-bold text-accent mb-0.5">An operator who wants your own system</p>
-                  <p className="text-sm">Chapter 06, then the AI Setup Sprint.</p>
+                  <p className="text-sm">Chapter 07, then the AI Setup Sprint.</p>
                 </div>
               </div>
               <a href={OPERATING_SPINE_URL} target="_blank" rel="noopener noreferrer" data-cta="operating-spine" className="btn-primary justify-self-start gap-2">
@@ -106,6 +106,7 @@ export default function Home() {
                   <span className="label-mono pt-1.5">{ch.number}</span>
                   <div className="grid gap-1">
                     <h3 className="text-xl md:text-2xl mb-0 tracking-[-0.025em] group-hover:text-primary transition-colors">{ch.title}</h3>
+                    {ch.method && <span className="label-mono-muted">{ch.method}</span>}
                     <p className="text-accent-light mb-0">{ch.ask}</p>
                     <span className="label-mono-muted mt-1">{count} {count === 1 ? 'essay' : 'essays'}</span>
                   </div>
