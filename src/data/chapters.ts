@@ -1,22 +1,32 @@
-// The Field Manual (2026-10-01). anjanipandey.com stopped being a feed and
-// became a handbook: every essay is filed into one of six chapters. Five are
-// the structural diseases of founder-led businesses (from the content charter);
-// the sixth is the operating-in-public track about building the author's own
-// system. New essays file themselves by `category` when they are not listed
-// here (see chapterForPost); move a slug into FILING to override.
+// The Field Manual. anjanipandey.com is a handbook: every essay is filed into one
+// of seven chapters.
+//
+// 2026-10-02 (Anjani's correction): chapters 01 to 06 are the six failure classes of the
+// MetMov method (the "Macro Classification" in the MetMov IP), not the five sales hooks
+// the first build used. Each chapter shows a plain founder-facing title, with the
+// method's own name for the class in small type underneath. Chapter 07 is the
+// operating-in-public track about building the author's own system (the engine's
+// "personal brand" territory: AI leverage, operator to builder, specific knowledge).
+//
+// New essays file themselves by `category` when they are not listed in FILING (see
+// chapterForPost); move a slug into FILING to override.
 
 export type ChapterSlug =
-  | 'founder-trap'
-  | 'structure-without-spine'
-  | 'execution-breakdown'
-  | 'visibility-collapse'
-  | 'growth-induced-fragility'
+  | 'who-decides'
+  | 'chaos-not-cadence'
+  | 'growth-that-breaks'
+  | 'letting-go'
+  | 'seen-not-acted-on'
+  | 'pointed-the-same-way'
   | 'operating-in-public';
 
 export interface Chapter {
   slug: ChapterSlug;
   number: string;
+  /** Plain, founder-facing title. */
   title: string;
+  /** The MetMov method's name for this failure class, shown small under the title. */
+  method: string | null;
   /** The one line a founder recognises themselves in. */
   ask: string;
   /** Two or three sentences at the top of the chapter page. */
@@ -29,78 +39,97 @@ export interface Chapter {
 
 export const CHAPTERS: Chapter[] = [
   {
-    slug: 'founder-trap',
+    slug: 'who-decides',
     number: '01',
-    title: 'Founder Trap',
+    title: 'Who Decides',
+    method: 'Decision Architecture Failure',
     ask: 'Nothing big moves until you say yes.',
     intro:
-      'The company has grown. The decisions have not left your desk. Every approval, every exception, every disagreement between two managers still routes through you. It feels like control. It is the ceiling.',
+      'The company has grown. The decisions have not left your desk. Nobody below you can say who approves what, up to what limit, by when. So every approval, every exception and every disagreement between two managers still routes through you. It feels like control. It is the ceiling.',
     door: 'spine',
     readFirst: [
-      'founder-overload-map',
       'the-founder-approval-trap-why-your-business-cannot-scale-without-you',
       'founder-bottleneck-how-a-real-founder-delegation-framework-cut-approvals-by-73-in-11-weeks',
+      'the-escalation-layer-why-every-decision-lands-on-the-founder',
     ],
   },
   {
-    slug: 'structure-without-spine',
+    slug: 'chaos-not-cadence',
     number: '02',
-    title: 'Structure Without Spine',
-    ask: 'There is an org chart, but nobody owns the outcome.',
-    intro:
-      'You have titles, teams and a reporting line. What you do not have is a spine: who decides what, on what rhythm, against which number. So the structure looks complete and the work still falls between people.',
-    door: 'spine',
-    readFirst: [
-      'every-business-is-the-same-seven-boxes',
-      'why-companies-break-at-rs50-cr-the-middle-layer-problem-in-scaling-operations-for-founder-led-businesses',
-      'decision-fragmentation-the-ownership-void-that-slows-every-scaling-business',
-    ],
-  },
-  {
-    slug: 'execution-breakdown',
-    number: '03',
-    title: 'Execution Breakdown',
+    title: 'Chaos, Not Cadence',
+    method: 'Execution Rhythm Failure',
     ask: 'Plans are agreed in meetings and quietly die.',
     intro:
-      'Everyone is busy. Output is high. And yet the things that were decided do not happen, or happen late, or happen differently. Execution is not an effort problem. It is a process-depth problem.',
+      'Everyone is busy. The calendar is full of reviews. And yet the things that were decided do not happen, or happen late, or happen differently. A business runs on a rhythm or it runs on whoever is loudest this week. This chapter is about building the rhythm.',
     door: 'spine',
     readFirst: [
-      'the-execution-illusion-why-your-dashboards-are-lying-and-what-to-do-about-it',
-      'the-output-illusion',
-      'companies-with-shallow-processes-cannot-sustain-deep-growth',
-    ],
-  },
-  {
-    slug: 'visibility-collapse',
-    number: '04',
-    title: 'Visibility Collapse',
-    ask: 'You hear about problems from customers, not your team.',
-    intro:
-      'The dashboard is green and the business is not. Governance has become a verbal yes in a meeting. The early signals are there, in attendance, in delays, in what people stop reporting, and nobody is reading them.',
-    door: 'spine',
-    readFirst: [
-      'your-dashboard-is-lying-to-you-why-business-dashboard-vs-real-governance-is-the-question-most-founders-get-wrong',
       'early-warning-the-meeting-attendance-signal-founders-miss',
+      'companies-with-shallow-processes-cannot-sustain-deep-growth',
+      'the-hidden-constraint-problem',
     ],
   },
   {
-    slug: 'growth-induced-fragility',
-    number: '05',
-    title: 'Growth-Induced Fragility',
+    slug: 'growth-that-breaks',
+    number: '03',
+    title: 'Growth That Breaks Things',
+    method: 'Growth Structure Failure',
     ask: 'Every new order makes the company more fragile, not stronger.',
     intro:
       'Growth is supposed to compound. In a business without systems it does the opposite: each new customer, hire and product adds load to the same few people and the same thin processes, until speed itself becomes the risk.',
     door: 'spine',
     readFirst: [
+      'why-companies-break-at-rs50-cr-the-middle-layer-problem-in-scaling-operations-for-founder-led-businesses',
       'scaling-reality-why-most-founderled-businesses-outgrow-themselves',
-      'systems-outlast-heroics',
+      'when-the-hiring-plan-is-the-actual-problem',
+    ],
+  },
+  {
+    slug: 'letting-go',
+    number: '04',
+    title: 'Letting Go',
+    method: 'Leadership Maturity Failure',
+    ask: 'You say you want to delegate. The work keeps coming back to you.',
+    intro:
+      'Founders are usually told their problem is delegation skill. More often it is readiness, theirs and the team\'s. Fatigue, avoidance and the quiet need to be the one who decides all pull the work back upward. This chapter names those pulls without treating them as flaws of character.',
+    door: 'spine',
+    readFirst: [
+      'founder-overload-map',
+      'the-org-reorg-trap-why-restructuring-never-fixes-the-real-problem',
+    ],
+  },
+  {
+    slug: 'seen-not-acted-on',
+    number: '05',
+    title: 'Seen, Not Acted On',
+    method: 'Governance Failure',
+    ask: 'The dashboard is green. The business is not.',
+    intro:
+      'You have the numbers. Live, colour-coded, easy to drill into. What is missing is the step where a number forces a decision. Governance has turned into reporting, and a verbal yes in a meeting stands in for a commitment. This chapter is about turning what you can see into what you do.',
+    door: 'spine',
+    readFirst: [
+      'your-dashboard-is-lying-to-you-why-business-dashboard-vs-real-governance-is-the-question-most-founders-get-wrong',
+      'the-execution-illusion-why-your-dashboards-are-lying-and-what-to-do-about-it',
       'cash-flow-volatility-in-smes-is-a-system-problem-not-a-finance-problem',
     ],
   },
   {
-    slug: 'operating-in-public',
+    slug: 'pointed-the-same-way',
     number: '06',
+    title: 'Pointed the Same Way',
+    method: 'Strategic Alignment Failure',
+    ask: 'Everyone is working hard. Not everyone is building the same company.',
+    intro:
+      'Strategy drifts quietly. One big client starts setting the agenda, a second business takes the founder\'s best hours, and the plan on the wall stops matching the work on the floor. This chapter is about keeping the whole company pointed at one thing.',
+    door: 'spine',
+    readFirst: [
+      'scope-tradedown-vs-discount-the-pricing-move-that-protects-your-positioning',
+    ],
+  },
+  {
+    slug: 'operating-in-public',
+    number: '07',
     title: 'Operating in Public',
+    method: null,
     ask: 'What I learn running a company of one on AI agents, written as it happens.',
     intro:
       'I run my own firm as an operating system: nine AI subsystems doing the back office every day. This chapter is the working log of building it. The mistakes are left in, because that is where the lessons are.',
@@ -113,42 +142,53 @@ export const CHAPTERS: Chapter[] = [
   },
 ];
 
-/** Explicit filing of every essay live on 2026-10-01. */
+/** Old chapter addresses from the first build (2026-10-01), for redirects. */
+export const OLD_CHAPTER_SLUGS: Record<string, ChapterSlug> = {
+  'founder-trap': 'who-decides',
+  'structure-without-spine': 'who-decides',
+  'execution-breakdown': 'chaos-not-cadence',
+  'visibility-collapse': 'seen-not-acted-on',
+  'growth-induced-fragility': 'growth-that-breaks',
+};
+
+/** Explicit filing, re-done 2026-10-02 against the six method classes. */
 export const FILING: Record<string, ChapterSlug> = {
-  // 01 Founder Trap
-  'founder-overload-map': 'founder-trap',
-  'the-founder-approval-trap-why-your-business-cannot-scale-without-you': 'founder-trap',
-  'founder-bottleneck-how-a-real-founder-delegation-framework-cut-approvals-by-73-in-11-weeks': 'founder-trap',
-  'why-founder-control-vs-growth-is-the-real-ceiling-on-your-business': 'founder-trap',
-  'the-escalation-layer-why-every-decision-lands-on-the-founder': 'founder-trap',
-  'delayed-decisions-accumulate-hidden-interest-eventually-the-cost-exceeds-the-risk-of-choosing': 'founder-trap',
-  // 02 Structure Without Spine
-  'every-business-is-the-same-seven-boxes': 'structure-without-spine',
-  'why-companies-break-at-rs50-cr-the-middle-layer-problem-in-scaling-operations-for-founder-led-businesses': 'structure-without-spine',
-  'the-org-reorg-trap-why-restructuring-never-fixes-the-real-problem': 'structure-without-spine',
-  'when-the-hiring-plan-is-the-actual-problem': 'structure-without-spine',
-  'hiring-trap-growing-companies': 'structure-without-spine',
-  'decision-fragmentation-the-ownership-void-that-slows-every-scaling-business': 'structure-without-spine',
-  // 03 Execution Breakdown
-  'the-execution-illusion-why-your-dashboards-are-lying-and-what-to-do-about-it': 'execution-breakdown',
-  'the-output-illusion': 'execution-breakdown',
-  'stop-counting-deliverables-count-the-hours-you-got-back': 'execution-breakdown',
-  'companies-with-shallow-processes-cannot-sustain-deep-growth': 'execution-breakdown',
-  'sustainable-companies-run-on-systems-fragile-ones-run-on-heroics': 'execution-breakdown',
-  'the-hidden-constraint-problem': 'execution-breakdown',
-  // 04 Visibility Collapse
-  'your-dashboard-is-lying-to-you-why-business-dashboard-vs-real-governance-is-the-question-most-founders-get-wrong': 'visibility-collapse',
-  '-a-verbal-yes-is-not-a-term-business-dashboard-vs-real-governance-in-a-founderled-business': 'visibility-collapse',
-  'early-warning-the-meeting-attendance-signal-founders-miss': 'visibility-collapse',
-  'the-auditable-org-the-question-nobody-asks-their-ai-agents': 'visibility-collapse',
-  'backup-protects-your-files-continuity-protects-your-operation': 'visibility-collapse',
-  // 05 Growth-Induced Fragility
-  'scaling-reality-why-most-founderled-businesses-outgrow-themselves': 'growth-induced-fragility',
-  'scale-sustainability-rule-sustainable-growth-is-always-system-dependent': 'growth-induced-fragility',
-  'systems-outlast-heroics': 'growth-induced-fragility',
-  'cash-flow-volatility-in-smes-is-a-system-problem-not-a-finance-problem': 'growth-induced-fragility',
-  'scope-tradedown-vs-discount-the-pricing-move-that-protects-your-positioning': 'growth-induced-fragility',
-  // 06 Operating in Public
+  // 01 Who Decides (Decision Architecture: founder over-dependency, role ambiguity, escalation layer void)
+  'the-founder-approval-trap-why-your-business-cannot-scale-without-you': 'who-decides',
+  'founder-bottleneck-how-a-real-founder-delegation-framework-cut-approvals-by-73-in-11-weeks': 'who-decides',
+  'the-escalation-layer-why-every-decision-lands-on-the-founder': 'who-decides',
+  'decision-fragmentation-the-ownership-void-that-slows-every-scaling-business': 'who-decides',
+  'delayed-decisions-accumulate-hidden-interest-eventually-the-cost-exceeds-the-risk-of-choosing': 'who-decides',
+  'why-founder-control-vs-growth-is-the-real-ceiling-on-your-business': 'who-decides',
+  // 02 Chaos, Not Cadence (Execution Rhythm: meetings, execution lag, KPI fragmentation)
+  'early-warning-the-meeting-attendance-signal-founders-miss': 'chaos-not-cadence',
+  'companies-with-shallow-processes-cannot-sustain-deep-growth': 'chaos-not-cadence',
+  'the-hidden-constraint-problem': 'chaos-not-cadence',
+  'the-output-illusion': 'chaos-not-cadence',
+  'stop-counting-deliverables-count-the-hours-you-got-back': 'chaos-not-cadence',
+  // 03 Growth That Breaks Things (Growth Structure: hiring as medicine, fragility, no middle layer, capacity)
+  'why-companies-break-at-rs50-cr-the-middle-layer-problem-in-scaling-operations-for-founder-led-businesses': 'growth-that-breaks',
+  'scaling-reality-why-most-founderled-businesses-outgrow-themselves': 'growth-that-breaks',
+  'when-the-hiring-plan-is-the-actual-problem': 'growth-that-breaks',
+  'hiring-trap-growing-companies': 'growth-that-breaks',
+  'scale-sustainability-rule-sustainable-growth-is-always-system-dependent': 'growth-that-breaks',
+  'systems-outlast-heroics': 'growth-that-breaks',
+  'sustainable-companies-run-on-systems-fragile-ones-run-on-heroics': 'growth-that-breaks',
+  // 04 Letting Go (Leadership Maturity: founder fatigue, avoidance, ego lock)
+  'founder-overload-map': 'letting-go',
+  'the-org-reorg-trap-why-restructuring-never-fixes-the-real-problem': 'letting-go',
+  // 05 Seen, Not Acted On (Governance: dashboard illusion, cash volatility, compliance neglect)
+  'your-dashboard-is-lying-to-you-why-business-dashboard-vs-real-governance-is-the-question-most-founders-get-wrong': 'seen-not-acted-on',
+  'the-execution-illusion-why-your-dashboards-are-lying-and-what-to-do-about-it': 'seen-not-acted-on',
+  'cash-flow-volatility-in-smes-is-a-system-problem-not-a-finance-problem': 'seen-not-acted-on',
+  '-a-verbal-yes-is-not-a-term-business-dashboard-vs-real-governance-in-a-founderled-business': 'seen-not-acted-on',
+  // 06 Pointed the Same Way (Strategic Alignment: drift, dilution, client dependency, vision-execution gap)
+  'scope-tradedown-vs-discount-the-pricing-move-that-protects-your-positioning': 'pointed-the-same-way',
+  // 07 Operating in Public (the author's own system; AI leverage, operator to builder, specific knowledge)
+  'every-business-is-the-same-seven-boxes': 'operating-in-public',
+  'the-auditable-org-the-question-nobody-asks-their-ai-agents': 'operating-in-public',
+  'backup-protects-your-files-continuity-protects-your-operation': 'operating-in-public',
+  'operator-to-builder-my-own-report-lied': 'operating-in-public',
   'every-agent-i-build-now-ships-with-a-list-of-what-it-must-not-do': 'operating-in-public',
   'what-founders-ask-before-they-trust-an-ai-operating-system-for-a-business': 'operating-in-public',
   'the-friction-log-is-the-most-valuable-file-in-my-system': 'operating-in-public',
@@ -169,13 +209,13 @@ export const FILING: Record<string, ChapterSlug> = {
 };
 
 /** Fallback for essays published after the filing above. The CMS category is
- *  a weak signal, so this errs toward the chapter the engine writes most. */
+ *  a weak signal; FILING is the real answer. */
 const CATEGORY_FALLBACK: Record<string, ChapterSlug> = {
   AI: 'operating-in-public',
   Operations: 'operating-in-public',
-  Leadership: 'founder-trap',
-  Scaling: 'growth-induced-fragility',
-  Strategy: 'structure-without-spine',
+  Leadership: 'who-decides',
+  Scaling: 'growth-that-breaks',
+  Strategy: 'pointed-the-same-way',
 };
 
 export function chapterForPost(post: { id: string; category?: string }): Chapter {

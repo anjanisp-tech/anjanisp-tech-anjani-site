@@ -51,14 +51,15 @@ router.get("/sitemap.xml", async (req, res) => {
       { path: "/services",                      changefreq: "monthly", priority: "0.8" },
       { path: "/os",                            changefreq: "monthly", priority: "0.8" },
       { path: "/writing",                       changefreq: "weekly",  priority: "0.8" },
-      // The Field Manual chapters (2026-10-01, Anjani's call). Plain list on purpose:
+      // The Field Manual chapters (2026-10-01; six method classes + operating in public from 2026-10-02). Plain list on purpose:
       // mirrors CHAPTERS in src/data/chapters.ts without importing front-end code here.
-      { path: "/manual/founder-trap",             changefreq: "weekly", priority: "0.9" },
-      { path: "/manual/structure-without-spine",  changefreq: "weekly", priority: "0.9" },
-      { path: "/manual/execution-breakdown",      changefreq: "weekly", priority: "0.9" },
-      { path: "/manual/visibility-collapse",      changefreq: "weekly", priority: "0.9" },
-      { path: "/manual/growth-induced-fragility", changefreq: "weekly", priority: "0.9" },
-      { path: "/manual/operating-in-public",      changefreq: "weekly", priority: "0.9" },
+      { path: "/manual/who-decides",             changefreq: "weekly", priority: "0.9" },
+      { path: "/manual/chaos-not-cadence",       changefreq: "weekly", priority: "0.9" },
+      { path: "/manual/growth-that-breaks",      changefreq: "weekly", priority: "0.9" },
+      { path: "/manual/letting-go",              changefreq: "weekly", priority: "0.9" },
+      { path: "/manual/seen-not-acted-on",       changefreq: "weekly", priority: "0.9" },
+      { path: "/manual/pointed-the-same-way",    changefreq: "weekly", priority: "0.9" },
+      { path: "/manual/operating-in-public",     changefreq: "weekly", priority: "0.9" },
       { path: "/case-studies",                  changefreq: "weekly",  priority: "0.8" },
       { path: "/calculator",                    changefreq: "monthly", priority: "0.7" },
       { path: "/resources",                     changefreq: "weekly",  priority: "0.8" },

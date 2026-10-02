@@ -34,7 +34,7 @@ export default function ChapterFigure({
   );
 
   switch (slug) {
-    case 'founder-trap': {
+    case 'who-decides': {
       // Every team line runs through the founder.
       const teams: [number, number][] = [[28, 120], [80, 134], [160, 134], [212, 120], [22, 40], [218, 40]];
       return (
@@ -46,27 +46,48 @@ export default function ChapterFigure({
         </svg>
       );
     }
-    case 'structure-without-spine': {
-      // A complete org chart with the spine drawn as a gap.
+    case 'letting-go': {
+      // Work is handed down to the team, and a dashed line carries it back up to you.
       return (
-        <svg {...common} aria-label="An org chart with nothing holding it together">
-          {box(102, 14)}
-          {[36, 102, 168].map((x) => <g key={x}>{box(x, 64)}</g>)}
-          {[18, 54, 102, 138, 168, 204].map((x) => <g key={x}>{box(x, 114, 30, 18)}</g>)}
-          {/* connectors are dashed: structure exists, ownership does not */}
-          <g strokeDasharray="3 4" stroke={ink}>
-            <line x1="120" y1="34" x2="120" y2="64" />
-            <line x1="54" y1="48" x2="186" y2="48" />
-            <line x1="54" y1="48" x2="54" y2="64" /><line x1="186" y1="48" x2="186" y2="64" />
-            <line x1="54" y1="84" x2="54" y2="114" /><line x1="120" y1="84" x2="120" y2="114" /><line x1="186" y1="84" x2="186" y2="114" />
-          </g>
-          {/* the missing spine */}
-          <line x1="120" y1="8" x2="120" y2="142" stroke={blue} strokeWidth="6" strokeDasharray="0 14" opacity="0.9" />
-          <T x="130" y="140" fontSize="8" fill={blue} stroke="none" fontFamily="JetBrains Mono, monospace">spine: missing</T>
+        <svg {...common} aria-label="Work handed to the team keeps coming back to you">
+          <circle cx="60" cy="44" r="20" fill={blue} stroke={blue} />
+          <T x="60" y="48" textAnchor="middle" fontSize="9" fontWeight="700" fill="#fbfbf9" stroke="none" fontFamily="JetBrains Mono, monospace">YOU</T>
+          {box(150, 96, 60, 26)}
+          <T x="180" y="113" textAnchor="middle" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">team</T>
+          {/* handed over: solid, downward */}
+          <path d="M80 50 C 120 56, 140 74, 154 94" />
+          <path d="M146 90 L154 94 L152 85" />
+          <T x="58" y="104" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">handed over</T>
+          {/* came back: dashed, blue, upward */}
+          <path d="M196 94 C 200 40, 130 16, 82 34" stroke={blue} strokeDasharray="4 4" />
+          <path d="M90 28 L82 34 L91 38" stroke={blue} />
+          <T x="150" y="26" fontSize="8" fill={blue} stroke="none" fontFamily="JetBrains Mono, monospace">came back</T>
         </svg>
       );
     }
-    case 'execution-breakdown': {
+    case 'pointed-the-same-way': {
+      // One plan at the top; the teams below each point somewhere else.
+      const teams: [number, number][] = [[30, -40], [76, 20], [122, -8], [168, 35], [214, -25]];
+      return (
+        <svg {...common} aria-label="One plan, and teams pointing in different directions">
+          <rect x="88" y="10" width="64" height="20" rx="2" fill={blue} stroke={blue} />
+          <T x="120" y="24" textAnchor="middle" fontSize="8" fontWeight="700" fill="#fbfbf9" stroke="none" fontFamily="JetBrains Mono, monospace">THE PLAN</T>
+          {teams.map(([x, deg], i) => {
+            const r = (deg * Math.PI) / 180;
+            const x2 = x + Math.sin(r) * 34, y2 = 112 - Math.cos(r) * 34;
+            return (
+              <g key={i}>
+                {box(x - 16, 116, 32, 18)}
+                <line x1={x} y1="112" x2={x2} y2={y2} />
+                <circle cx={x2} cy={y2} r="2.5" fill={ink} />
+              </g>
+            );
+          })}
+          <line x1="120" y1="30" x2="120" y2="70" stroke={blue} strokeDasharray="2 4" />
+        </svg>
+      );
+    }
+    case 'chaos-not-cadence': {
       // Decisions enter on the left, output leaves on the right, most fall through the floor.
       return (
         <svg {...common} aria-label="Decisions go in, few come out the other side">
@@ -90,7 +111,7 @@ export default function ChapterFigure({
         </svg>
       );
     }
-    case 'visibility-collapse': {
+    case 'seen-not-acted-on': {
       // The dashboard line is flat and green; the real line underneath has already turned.
       return (
         <svg {...common} aria-label="The dashboard says fine while the real line has already turned">
@@ -102,7 +123,7 @@ export default function ChapterFigure({
         </svg>
       );
     }
-    case 'growth-induced-fragility': {
+    case 'growth-that-breaks': {
       // Load grows as a staircase; the support under it stays one thin column.
       return (
         <svg {...common} aria-label="Growing load on the same thin support">
