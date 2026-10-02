@@ -59,7 +59,7 @@ export default function Chapter() {
             {chapter.readFirst.length > 0 && (
               <div className="margin-note">
                 <span className="label-mono">Read in this order</span>
-                <span>Start with the first {Math.min(chapter.readFirst.length, 3)} below. They set up the rest.</span>
+                <span>{chapter.readFirst.length === 1 ? 'Start with the essay at the top. More are on the way.' : `Start with the first ${Math.min(chapter.readFirst.length, 3)} below. They set up the rest.`}</span>
               </div>
             )}
           </div>
