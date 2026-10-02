@@ -100,10 +100,13 @@ export default function BlogPostDetail() {
     if (id) {
       setIsLoading(true);
       // Fetch Post
+      // 2026-10-02: only accept a real post. A missing post used to come back as an
+      // error object, which rendered as a broken page titled "undefined".
       fetch(`/api/posts/${id}`)
-        .then(res => res.json())
+        .then(res => (res.ok ? res.json() : null))
         .then(data => {
-          setPost(data);
+          if (data && data.id && data.title) setPost(data);
+          else setPost((prev) => (prev && prev.id === id ? prev : null));
           setIsLoading(false);
         })
         .catch(err => {
