@@ -57,7 +57,7 @@ export default function ChapterFigure({
           {/* handed over: solid, downward */}
           <path d="M80 50 C 120 56, 140 74, 154 94" />
           <path d="M146 90 L154 94 L152 85" />
-          <T x="104" y="88" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">handed over</T>
+          <T x="58" y="104" fontSize="8" fill={ink} stroke="none" fontFamily="JetBrains Mono, monospace">handed over</T>
           {/* came back: dashed, blue, upward */}
           <path d="M196 94 C 200 40, 130 16, 82 34" stroke={blue} strokeDasharray="4 4" />
           <path d="M90 28 L82 34 L91 38" stroke={blue} />
