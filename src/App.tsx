@@ -27,6 +27,7 @@ const About = lazy(() => import('./pages/About'));
 const Chapter = lazy(() => import('./pages/Chapter'));
 const CaseStudies = lazy(() => import('./pages/CaseStudies'));
 const CaseStudyDetail = lazy(() => import('./pages/CaseStudyDetail'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 function Analytics() {
   const location = useLocation();
@@ -112,6 +113,8 @@ export default function App() {
             <Route path="/calculator" element={<BottleneckCostCalculator />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/resources/:slug" element={<ResourceGuideDetail />} />
+        {/* 2026-10-02: any other address gets a real not-found page. */}
+        <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </Layout>

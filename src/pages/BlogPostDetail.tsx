@@ -9,6 +9,8 @@ import SEO from '../components/SEO';
 import { extractAnswerBlock, answerFaqSchema } from '../lib/answerBlock';
 import PostEnding from '../components/PostEnding';
 import { chapterForPost, postsInChapter } from '../data/chapters';
+import { track } from '../lib/track';
+import NotFound from './NotFound';
 
 interface Comment {
   id: number;
@@ -71,6 +73,7 @@ export default function BlogPostDetail() {
         body: JSON.stringify({ email: emailToUse })
       });
       if (res.ok) {
+        track('newsletter_signup', { where: isGate ? 'essay_gate' : 'essay' });
         if (isGate) {
           setGateStatus('success');
           localStorage.setItem('metmov_subscriber', 'true');
@@ -154,15 +157,8 @@ export default function BlogPostDetail() {
   };
 
   if (!post) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <h1 className="text-4xl font-bold mb-4">Article Not Found</h1>
-        <p className="text-accent-light mb-8">The article you are looking for does not exist or has been moved.</p>
-        <Link to="/blog" className="btn-primary flex items-center gap-2">
-          <ArrowLeft size={18} /> Back to Blog
-        </Link>
-      </div>
-    );
+    // 2026-10-02: a real not-found page that tells search engines not to index it.
+    return <NotFound what="essay" />;
   }
 
   // THE ANSWER BLOCK (2026-09-18). Built from the visible top of the post and

@@ -25,6 +25,7 @@ import About from './pages/About';
 import CaseStudies from './pages/CaseStudies';
 import CaseStudyDetail from './pages/CaseStudyDetail';
 import Chapter from './pages/Chapter';
+import NotFound from './pages/NotFound';
 import SEO from './components/SEO';
 import Markdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
@@ -120,6 +121,8 @@ function StaticApp() {
         <Route path="/resources/:slug" element={<ResourceGuideDetail />} />
         <Route path="/case-studies" element={<CaseStudies />} />
         <Route path="/case-studies/:slug" element={<CaseStudyDetail />} />
+        {/* 2026-10-02: any other address gets a real not-found page. */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>
   );

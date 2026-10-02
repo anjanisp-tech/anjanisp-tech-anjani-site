@@ -128,6 +128,28 @@ async function prerender() {
     console.log(`â ï¸  ${failCount} routes failed (will fall back to client-side rendering)`);
   }
 
+  // 2026-10-02: the not-found page. Vercel serves dist/404.html with a real 404 status
+  // for any address that matches no file and no rewrite (see vercel.json).
+  try {
+    const { html: nfRaw } = render('/__this-address-does-not-exist__');
+    const nfTags: string[] = [];
+    const rx = /<(title|meta|link)[^>]*data-rh="true"[^>]*(?:\/\s*>|>[^<]*<\/\1>)/g;
+    let nm: RegExpExecArray | null;
+    while ((nm = rx.exec(nfRaw)) !== null) nfTags.push(nm[0]);
+    let nfBody = nfRaw.replace(rx, '');
+    const nfTitle = nfBody.match(/<title>([^<]*)<\/title>/);
+    if (nfTitle) { nfTags.push(nfTitle[0]); nfBody = nfBody.replace(/<title>[^<]*<\/title>/, ''); }
+    let nfOut = template.replace('<div id="root"></div>', `<div id="root">${nfBody}</div>`);
+    nfOut = nfOut.replace(/<title[^>]*>.*?<\/title>/, '');
+    // A not-found page must not claim to be the home page.
+    nfOut = nfOut.replace(/<link rel="canonical"[^>]*>/g, '');
+    nfOut = nfOut.replace('</head>', `    ${nfTags.join('\n    ')}\n  </head>`);
+    fs.writeFileSync(path.join(DIST_DIR, '404.html'), nfOut, 'utf-8');
+    console.log(`\n  404.html written (${nfBody.length} chars, noindex ${nfOut.includes('noindex') ? 'yes' : 'NO'})`);
+  } catch (err: any) {
+    console.error(`  404.html FAILED: ${err.message}`);
+  }
+
   // Verify key pages
   for (const check of ['/about', '/']) {
     const checkPath = check === '/' 

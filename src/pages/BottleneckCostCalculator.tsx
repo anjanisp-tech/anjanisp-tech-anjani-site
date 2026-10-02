@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Calculator, ArrowRight, Info, AlertTriangle, TrendingDown, Clock, Users, DollarSign, Globe } from 'lucide-react';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL } from '../constants';
 import SEO from '../components/SEO';
+import { track } from '../lib/track';
 
 type Currency = 'USD' | 'INR';
 
@@ -89,6 +90,7 @@ export default function BottleneckCostCalculator() {
 
     setResults(newResults);
     setShowResult(true);
+    track('calculator_result', { where: 'calculator_page', currency });
 
     // Log calculation (anonymous)
     logResults();
