@@ -8,8 +8,8 @@
 // operating-in-public track about building the author's own system (the engine's
 // "personal brand" territory: AI leverage, operator to builder, specific knowledge).
 //
-// New essays file themselves by `category` when they are not listed in FILING (see
-// chapterForPost); move a slug into FILING to override.
+// New essays not listed in FILING go to chapter 07 (see chapterForPost). To put an
+// essay in chapters 01 to 06, list its slug in FILING.
 
 export type ChapterSlug =
   | 'who-decides'
@@ -64,8 +64,8 @@ export const CHAPTERS: Chapter[] = [
     door: 'spine',
     readFirst: [
       'early-warning-the-meeting-attendance-signal-founders-miss',
-      'companies-with-shallow-processes-cannot-sustain-deep-growth',
       'the-hidden-constraint-problem',
+      'the-output-illusion',
     ],
   },
   {
@@ -94,6 +94,7 @@ export const CHAPTERS: Chapter[] = [
     door: 'spine',
     readFirst: [
       'founder-overload-map',
+      'delayed-decisions-accumulate-hidden-interest-eventually-the-cost-exceeds-the-risk-of-choosing',
       'the-org-reorg-trap-why-restructuring-never-fixes-the-real-problem',
     ],
   },
@@ -151,21 +152,19 @@ export const OLD_CHAPTER_SLUGS: Record<string, ChapterSlug> = {
   'growth-induced-fragility': 'growth-that-breaks',
 };
 
-/** Explicit filing, re-done 2026-10-02 against the six method classes. */
+/** Explicit filing, re-done 2026-10-02 against the six method classes and checked
+ *  2026-10-05 against the 25-problem list (three essays moved). */
 export const FILING: Record<string, ChapterSlug> = {
   // 01 Who Decides (Decision Architecture: founder over-dependency, role ambiguity, escalation layer void)
   'the-founder-approval-trap-why-your-business-cannot-scale-without-you': 'who-decides',
   'founder-bottleneck-how-a-real-founder-delegation-framework-cut-approvals-by-73-in-11-weeks': 'who-decides',
   'the-escalation-layer-why-every-decision-lands-on-the-founder': 'who-decides',
   'decision-fragmentation-the-ownership-void-that-slows-every-scaling-business': 'who-decides',
-  'delayed-decisions-accumulate-hidden-interest-eventually-the-cost-exceeds-the-risk-of-choosing': 'who-decides',
   'why-founder-control-vs-growth-is-the-real-ceiling-on-your-business': 'who-decides',
   // 02 Chaos, Not Cadence (Execution Rhythm: meetings, execution lag, KPI fragmentation)
   'early-warning-the-meeting-attendance-signal-founders-miss': 'chaos-not-cadence',
-  'companies-with-shallow-processes-cannot-sustain-deep-growth': 'chaos-not-cadence',
   'the-hidden-constraint-problem': 'chaos-not-cadence',
   'the-output-illusion': 'chaos-not-cadence',
-  'stop-counting-deliverables-count-the-hours-you-got-back': 'chaos-not-cadence',
   // 03 Growth That Breaks Things (Growth Structure: hiring as medicine, fragility, no middle layer, capacity)
   'why-companies-break-at-rs50-cr-the-middle-layer-problem-in-scaling-operations-for-founder-led-businesses': 'growth-that-breaks',
   'scaling-reality-why-most-founderled-businesses-outgrow-themselves': 'growth-that-breaks',
@@ -174,9 +173,11 @@ export const FILING: Record<string, ChapterSlug> = {
   'scale-sustainability-rule-sustainable-growth-is-always-system-dependent': 'growth-that-breaks',
   'systems-outlast-heroics': 'growth-that-breaks',
   'sustainable-companies-run-on-systems-fragile-ones-run-on-heroics': 'growth-that-breaks',
+  'companies-with-shallow-processes-cannot-sustain-deep-growth': 'growth-that-breaks',
   // 04 Letting Go (Leadership Maturity: founder fatigue, avoidance, ego lock)
   'founder-overload-map': 'letting-go',
   'the-org-reorg-trap-why-restructuring-never-fixes-the-real-problem': 'letting-go',
+  'delayed-decisions-accumulate-hidden-interest-eventually-the-cost-exceeds-the-risk-of-choosing': 'letting-go',
   // 05 Seen, Not Acted On (Governance: dashboard illusion, cash volatility, compliance neglect)
   'your-dashboard-is-lying-to-you-why-business-dashboard-vs-real-governance-is-the-question-most-founders-get-wrong': 'seen-not-acted-on',
   'the-execution-illusion-why-your-dashboards-are-lying-and-what-to-do-about-it': 'seen-not-acted-on',
@@ -206,17 +207,16 @@ export const FILING: Record<string, ChapterSlug> = {
   'a-redirect-can-work-perfectly-and-still-be-wrong-the-whole-difference-is-one-digit': 'operating-in-public',
   'a-redirect-can-work-perfectly-and-still-be-wrong-the-difference-is-one-digit': 'operating-in-public',
   'what-my-mba-missed-about-the-operator-to-builder-transition': 'operating-in-public',
+  'stop-counting-deliverables-count-the-hours-you-got-back': 'operating-in-public',
 };
 
-/** Fallback for essays published after the filing above. The CMS category is
- *  a weak signal; FILING is the real answer. */
-const CATEGORY_FALLBACK: Record<string, ChapterSlug> = {
-  AI: 'operating-in-public',
-  Operations: 'operating-in-public',
-  Leadership: 'who-decides',
-  Scaling: 'growth-that-breaks',
-  Strategy: 'pointed-the-same-way',
-};
+/** Fallback for essays published after the filing above.
+ *  2026-10-05 (Anjani's ruling): an essay not listed in FILING goes to chapter 07.
+ *  The CMS category is not a reliable signal: most new essays are personal-brand
+ *  pieces tagged "Strategy" or "Leadership", which used to drop them into chapters
+ *  01 and 06 by mistake. A method essay joins chapters 01 to 06 only by being
+ *  listed in FILING. */
+const CATEGORY_FALLBACK: Record<string, ChapterSlug> = {};
 
 export function chapterForPost(post: { id: string; category?: string }): Chapter {
   const slug = FILING[post.id] ?? CATEGORY_FALLBACK[post.category ?? ''] ?? 'operating-in-public';
