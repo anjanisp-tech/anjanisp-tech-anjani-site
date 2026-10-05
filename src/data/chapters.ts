@@ -178,6 +178,11 @@ export const FILING: Record<string, ChapterSlug> = {
   'founder-overload-map': 'letting-go',
   'the-org-reorg-trap-why-restructuring-never-fixes-the-real-problem': 'letting-go',
   'delayed-decisions-accumulate-hidden-interest-eventually-the-cost-exceeds-the-risk-of-choosing': 'letting-go',
+  // queued 2026-10-05 in the Field Manual reuse lane (one a week; filed ahead so each lands here)
+  'the-loyalty-tax-on-a-growing-company': 'letting-go',
+  'delegation-dies-at-the-first-mistake': 'letting-go',
+  'three-launches-in-one-week-is-a-warning': 'letting-go',
+  'why-team-conflicts-land-on-the-founder': 'letting-go',
   // 05 Seen, Not Acted On (Governance: dashboard illusion, cash volatility, compliance neglect)
   'your-dashboard-is-lying-to-you-why-business-dashboard-vs-real-governance-is-the-question-most-founders-get-wrong': 'seen-not-acted-on',
   'the-execution-illusion-why-your-dashboards-are-lying-and-what-to-do-about-it': 'seen-not-acted-on',
@@ -185,6 +190,12 @@ export const FILING: Record<string, ChapterSlug> = {
   '-a-verbal-yes-is-not-a-term-business-dashboard-vs-real-governance-in-a-founderled-business': 'seen-not-acted-on',
   // 06 Pointed the Same Way (Strategic Alignment: drift, dilution, client dependency, vision-execution gap)
   'scope-tradedown-vs-discount-the-pricing-move-that-protects-your-positioning': 'pointed-the-same-way',
+  // queued 2026-10-05 in the Field Manual reuse lane
+  'your-second-business-gets-your-leftovers': 'pointed-the-same-way',
+  'two-leaders-one-goal-two-definitions': 'pointed-the-same-way',
+  'your-calendar-is-your-real-strategy': 'pointed-the-same-way',
+  'culture-will-not-beat-structure': 'pointed-the-same-way',
+  'one-big-client-is-setting-your-strategy': 'pointed-the-same-way',
   // 07 Operating in Public (the author's own system; AI leverage, operator to builder, specific knowledge)
   'every-business-is-the-same-seven-boxes': 'operating-in-public',
   'the-auditable-org-the-question-nobody-asks-their-ai-agents': 'operating-in-public',
