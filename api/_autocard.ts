@@ -43,7 +43,7 @@ async function buildConcept(ai: GoogleGenAI, title: string, summary: string): Pr
         `Article title: "${title}". Summary: "${summary}".\n` +
         `In ONE vivid sentence, describe a PURELY ABSTRACT visual metaphor for cover art using only sculptural shapes, lines, light and motion. ` +
         `Absolutely no words, letters, numbers or text in the image; no brand names; no people or faces; no devices, laptops, phones; no buildings; no charts or graphs; no business jargon. Just abstract form and metaphor.`,
-      config: { temperature: 0.7 },
+      config: {},
     });
     return (r.text || '').trim().replace(/\s+/g, ' ').slice(0, 400) ||
       'Smooth abstract sculptural forms and flowing lines in balanced tension.';

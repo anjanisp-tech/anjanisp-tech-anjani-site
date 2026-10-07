@@ -327,7 +327,7 @@ router.post("/ai-debug", async (req, res, next) => {
     const result = await ai.models.generateContent({
       model: "gemini-3.1-flash-lite",
       contents: message,
-      config: { systemInstruction, temperature: 0.1 }
+      config: { systemInstruction }
     });
 
     const responseText = result.text || "";

@@ -123,7 +123,6 @@ ${knowledge ? `\n\nContext from Anjani's methodology and writing: ${knowledge.su
           contents: chatHistory.concat([{ role: "user", parts: [{ text: message }] }]),
           config: {
             systemInstruction,
-            temperature: 0.5,
             maxOutputTokens: 256
           }
         });
