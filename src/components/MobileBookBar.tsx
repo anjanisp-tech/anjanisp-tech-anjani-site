@@ -15,23 +15,21 @@ export default function MobileBookBar() {
   const [footerVisible, setFooterVisible] = useState(false);
 
   useEffect(() => {
-    // Re-query the footer on every check: the layout footer node can be
-    // replaced after pre-rendered HTML is taken over by React, which left an
-    // IntersectionObserver watching a detached node (seen on the preview).
-    let raf = 0;
+    // Plain scroll check, re-querying the footer each time. One
+    // getBoundingClientRect per scroll event is cheap, and it stays correct
+    // even if the footer node is replaced after the pre-rendered page loads.
     const check = () => {
-      raf = 0;
       const el = document.querySelector('footer');
       setFooterVisible(!!el && el.getBoundingClientRect().top < window.innerHeight);
     };
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(check); };
     check();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    window.addEventListener('scroll', check, { passive: true });
+    window.addEventListener('resize', check);
+    window.addEventListener('load', check);
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', check);
+      window.removeEventListener('resize', check);
+      window.removeEventListener('load', check);
     };
   }, []);
 
