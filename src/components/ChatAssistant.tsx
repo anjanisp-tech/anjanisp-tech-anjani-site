@@ -223,7 +223,7 @@ export default function ChatAssistant() {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-8 right-8 w-14 h-14 bg-accent text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all z-50"
+        className="fixed bottom-24 md:bottom-8 right-8 w-14 h-14 bg-accent text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all z-50"
         title="Chat with Anjani's AI Assistant"
       >
         {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
@@ -236,7 +236,7 @@ export default function ChatAssistant() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-24 right-4 w-[92vw] md:w-[480px] h-[600px] bg-white rounded-3xl shadow-2xl border border-border flex flex-col z-50 overflow-hidden"
+            className="fixed bottom-40 md:bottom-24 right-4 w-[92vw] md:w-[480px] h-[600px] max-h-[calc(100dvh-12rem)] md:max-h-none bg-white rounded-3xl shadow-2xl border border-border flex flex-col z-50 overflow-hidden"
           >
             {/* Header */}
             <div className="bg-accent px-5 py-4 text-white">
