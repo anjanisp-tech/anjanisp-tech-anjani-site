@@ -26,7 +26,13 @@ export default function MobileBookBar() {
     window.addEventListener('scroll', check, { passive: true });
     window.addEventListener('resize', check);
     window.addEventListener('load', check);
+    // Pages that fetch their content after mount start short, with the footer
+    // on screen. Re-check whenever the page grows so the bar appears without
+    // waiting for the first scroll.
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(check) : null;
+    ro?.observe(document.body);
     return () => {
+      ro?.disconnect();
       window.removeEventListener('scroll', check);
       window.removeEventListener('resize', check);
       window.removeEventListener('load', check);
