@@ -15,11 +15,24 @@ export default function MobileBookBar() {
   const [footerVisible, setFooterVisible] = useState(false);
 
   useEffect(() => {
-    const el = document.querySelector('footer');
-    if (!el || typeof IntersectionObserver === 'undefined') return;
-    const io = new IntersectionObserver(([e]) => setFooterVisible(e.isIntersecting), { threshold: 0 });
-    io.observe(el);
-    return () => io.disconnect();
+    // Re-query the footer on every check: the layout footer node can be
+    // replaced after pre-rendered HTML is taken over by React, which left an
+    // IntersectionObserver watching a detached node (seen on the preview).
+    let raf = 0;
+    const check = () => {
+      raf = 0;
+      const el = document.querySelector('footer');
+      setFooterVisible(!!el && el.getBoundingClientRect().top < window.innerHeight);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(check); };
+    check();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
   return (
