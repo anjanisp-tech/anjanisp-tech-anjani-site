@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { OPERATING_SPINE_URL, LINKEDIN_URL, WHATSAPP_URL, METMOV_URL } from '../constants';
 import { caseStudies } from '../data/caseStudyData';
+import MobileBookBar from './MobileBookBar';
 import { CHAPTERS } from '../data/chapters';
 
 // Lazy-load ChatAssistant to keep motion, react-markdown, @google/genai out of the main chunk
@@ -81,6 +82,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Suspense fallback={null}>
         <ChatAssistant />
       </Suspense>
+
+      <MobileBookBar />
 
       <footer className="bg-accent text-surface py-14 md:py-16 mt-auto">
         <div className="container-custom grid md:grid-cols-[1.3fr_1fr_1fr] gap-10">
