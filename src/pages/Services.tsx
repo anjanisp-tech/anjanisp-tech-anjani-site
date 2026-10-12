@@ -4,6 +4,7 @@ import { ArrowRight, Target, CheckCircle2, AlertCircle, Sparkles, Cpu, Layers, W
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, BUILD_SPRINT_URL, CARE_URL, LINKEDIN_URL } from '../constants';
 import SEO from '../components/SEO';
 import { funnel } from '../lib/funnel';
+import { workshops, formatWorkshopDate } from '../data/workshops';
 
 // W3 AEO pass. Single source of truth for the /services FAQ: drives both the
 // visible section and the FAQPage JSON-LD node in the @graph below.
@@ -624,9 +625,19 @@ export default function Services() {
                   "We gave everyone an AI login. A few people use it well. Most opened it once. Nobody knows what is safe to trust."
                 </p>
               </div>
-              <div className="flex items-center gap-3 text-sm font-bold text-accent/40">
-                <div className="w-8 h-px bg-accent/20" />
-                Recent: fireside chat and hands-on build at GO DESi, Bengaluru, 9 October 2026. About 30 people, in the room and on Teams.
+              <div id="workshops-so-far">
+                <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-accent/40 mb-4">
+                  Workshops so far
+                </h3>
+                <ol className="border-t border-border">
+                  {workshops.map((w) => (
+                    <li key={w.date + w.host} className="py-4 border-b border-border grid gap-1">
+                      <span className="text-xs font-mono text-accent/50">{formatWorkshopDate(w.date)} &middot; {w.city}</span>
+                      <span className="text-base font-bold text-accent">{w.host}: {w.title}</span>
+                      <span className="text-sm text-accent-light">{w.format}. {w.audience}.</span>
+                    </li>
+                  ))}
+                </ol>
               </div>
             </div>
             <div className="lg:col-span-7 space-y-12">

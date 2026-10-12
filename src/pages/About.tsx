@@ -2,6 +2,7 @@ import { ArrowRight, Linkedin, Mail, Download, Briefcase } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FIT_CALL_URL, LINKEDIN_URL, OPERATING_SPINE_URL, WHATSAPP_URL } from '../constants';
 import SEO from '../components/SEO';
+import { workshops, formatWorkshopDate } from '../data/workshops';
 
 const careerTimeline = [
   {
@@ -172,7 +173,7 @@ export default function About() {
                   Select leadership and advisory conversations -- particularly at the intersection of operations, AI, and scale. If you're building something interesting, <a href="mailto:contact@anjanipandey.com" className="text-accent font-semibold hover:underline">let's talk</a>.
                 </p>
                 <p className="text-sm text-accent-light leading-relaxed mt-3">
-                  Paid AI talks and hands-on <a href="/services#ai-workshops" className="text-accent font-semibold hover:underline">workshops for teams</a>. Most recent: a fireside chat and live build at GO DESi, Bengaluru, 9 October 2026.
+                  Paid AI talks and hands-on <a href="/services#ai-workshops" className="text-accent font-semibold hover:underline">workshops for teams</a>. Most recent: {workshops[0].host}, {workshops[0].city}, {formatWorkshopDate(workshops[0].date)}.
                 </p>
               </div>
             </div>
