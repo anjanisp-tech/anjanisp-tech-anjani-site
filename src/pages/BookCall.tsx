@@ -5,6 +5,12 @@ import SEO from '../components/SEO';
 
 export default function BookCall() {
   const [submitted, setSubmitted] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [company, setCompany] = useState('');
+  const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     // GA4 key event: best-effort capture of a confirmed Cal.com booking made in the embedded scheduler.
@@ -25,11 +31,26 @@ export default function BookCall() {
     return () => window.removeEventListener('message', onMessage);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    // GA4 key event: scoping-call inquiry submitted (the convert action available in our own code).
-    (window as any).gtag?.('event', 'close_convert_lead', { method: 'inquiry_form' });
+    if (isSubmitting) return;
+    setError('');
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, company, message }),
+      });
+      if (!res.ok) throw new Error('send_failed');
+      setSubmitted(true);
+      // GA4 key event: scoping-call inquiry submitted. Fired ONLY after the inquiry actually reached us.
+      (window as any).gtag?.('event', 'close_convert_lead', { method: 'inquiry_form' });
+    } catch (err) {
+      setError('Something went wrong sending your inquiry. Please email contact@anjanipandey.com or use the calendar above.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -123,7 +144,7 @@ export default function BookCall() {
                           <User className="absolute left-4 top-1/2 -translate-y-1/2 text-accent/20" size={18} />
                           <input 
                             type="text" 
-                            placeholder="Your Name" 
+                            placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} 
                             required
                             className="w-full pl-12 pr-4 py-4 rounded-sm border border-border focus:border-accent bg-muted/30 outline-none transition-all text-base"
                           />
@@ -135,7 +156,7 @@ export default function BookCall() {
                           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-accent/20" size={18} />
                           <input 
                             type="email" 
-                            placeholder="Email Address" 
+                            placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} 
                             required
                             className="w-full pl-12 pr-4 py-4 rounded-sm border border-border focus:border-accent bg-muted/30 outline-none transition-all text-base"
                           />
@@ -149,7 +170,7 @@ export default function BookCall() {
                         <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-accent/20" size={18} />
                         <input 
                           type="text" 
-                          placeholder="Company Name" 
+                          placeholder="Company Name" value={company} onChange={(e) => setCompany(e.target.value)} 
                           required
                           className="w-full pl-12 pr-4 py-4 rounded-sm border border-border focus:border-accent bg-muted/30 outline-none transition-all text-base"
                         />
@@ -161,7 +182,7 @@ export default function BookCall() {
                       <div className="relative">
                         <MessageSquare className="absolute left-4 top-4 text-accent/20" size={18} />
                         <textarea 
-                          placeholder="How can we help you scale?" 
+                          placeholder="How can we help you scale?" value={message} onChange={(e) => setMessage(e.target.value)} 
                           rows={5}
                           required
                           className="w-full pl-12 pr-4 py-4 rounded-sm border border-border focus:border-accent bg-muted/30 outline-none transition-all text-base resize-none"
@@ -169,9 +190,12 @@ export default function BookCall() {
                       </div>
                     </div>
 
-                    <button type="submit" className="btn-primary w-full py-5 text-lg shadow-primary/10">
-                      Send Inquiry
+                    <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-5 text-lg shadow-primary/10 disabled:opacity-60 disabled:cursor-not-allowed">
+                      {isSubmitting ? 'Sending…' : 'Send Inquiry'}
                     </button>
+                    {error && (
+                      <p className="text-sm text-red-600 text-center mt-2">{error}</p>
+                    )}
                   </form>
                 )}
               </div>

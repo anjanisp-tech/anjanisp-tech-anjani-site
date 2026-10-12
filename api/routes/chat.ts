@@ -209,4 +209,41 @@ router.post("/resource-lead", async (req, res) => {
   }
 });
 
+// Scoping-call inquiry (the /book inquiry form). Emails Anjani via Resend and
+// returns 200 ONLY when the email was accepted, so the client fires close_convert_lead
+// only on a real, delivered inquiry (never on a silent failure).
+router.post("/inquiry", async (req, res) => {
+  try {
+    const { name, email, company, message } = req.body || {};
+    if (!email || !isValidEmail(email)) return res.status(400).json({ error: "Valid email is required" });
+    if (!message || !String(message).trim()) return res.status(400).json({ error: "Message is required" });
+
+    const { getResendKey } = await getUtils();
+    const apiKey = getResendKey();
+    if (!apiKey) { console.error("[INQUIRY] RESEND key missing"); return res.status(500).json({ error: "Email not configured" }); }
+
+    const recipient = process.env.RESEND_TO_EMAIL || process.env.VITE_RESEND_TO_EMAIL || "anjanisp@gmail.com";
+    const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.VITE_RESEND_FROM_EMAIL || "onboarding@resend.dev";
+    const text = `Name: ${name || "(none)"}\nEmail: ${email}\nCompany: ${company || "(none)"}\n\nMessage:\n${message}\n\nSource: anjanipandey.com /book inquiry form`;
+
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        from: `Anjani Pandey Site <${fromEmail}>`,
+        to: [recipient],
+        reply_to: email,
+        subject: "New Scoping-Call Inquiry (/book)",
+        text,
+      }),
+    });
+    if (!r.ok) { const t = await r.text().catch(() => ""); console.error("[INQUIRY] Resend failed", r.status, t); return res.status(502).json({ error: "Failed to send inquiry" }); }
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[INQUIRY ERROR]", err);
+    res.status(500).json({ error: "Failed to send inquiry" });
+  }
+});
+
 export default router;
