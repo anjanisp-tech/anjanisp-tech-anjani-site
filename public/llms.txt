@@ -12,11 +12,15 @@ GitHub: https://github.com/anjanisp-tech
 ## Offers (https://www.anjanipandey.com/services)
 
 - AI Setup Sprint: 2-3 focused 1:1 sessions to set up a Claude-based AI
-  system for an individual's work. INR 25k.
+  system for an individual's work. Fixed price, shared on a call.
 - Personal OS Build Sprint: done-with-you installation of a Personal OS.
-  From INR 1.5L.
+  4-6 weeks. Price agreed on a scoping call.
 - Personal OS Care: ongoing maintenance with periodic subsystem upgrades.
-  INR 25k/mo.
+  Monthly retainer. Price agreed on a fit call.
+- AI workshops for teams: a hands-on session for a company team.
+  People leave with a working AI helper built on their own laptop.
+  Recent: fireside chat and hands-on build at GO DESi, Bengaluru,
+  2026-10-09. Price shared on a call.
 - For founder-led firms at scale: MetMov Operating Spine Install
   (https://metmov.com/operating-spine).
 

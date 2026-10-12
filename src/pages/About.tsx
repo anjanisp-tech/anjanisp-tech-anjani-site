@@ -171,6 +171,9 @@ export default function About() {
                 <p className="text-sm text-accent-light leading-relaxed">
                   Select leadership and advisory conversations -- particularly at the intersection of operations, AI, and scale. If you're building something interesting, <a href="mailto:contact@anjanipandey.com" className="text-accent font-semibold hover:underline">let's talk</a>.
                 </p>
+                <p className="text-sm text-accent-light leading-relaxed mt-3">
+                  Paid AI talks and hands-on <a href="/services#ai-workshops" className="text-accent font-semibold hover:underline">workshops for teams</a>. Most recent: a fireside chat and live build at GO DESi, Bengaluru, 9 October 2026.
+                </p>
               </div>
             </div>
           </div>

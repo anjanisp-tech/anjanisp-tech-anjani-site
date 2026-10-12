@@ -138,11 +138,12 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid gap-3 content-start">
-            <span className="label-mono">Three ways to work with me</span>
+            <span className="label-mono">Four ways to work with me</span>
             <div className="rule-top">
               {[
-                { t: 'AI Setup Sprint', s: 'For individuals. Your first working AI system. ₹25,000, fixed.', href: '/services' },
-                { t: 'Build Sprint + Care', s: 'For operators. A full personal OS, kept compounding. From ₹1.5L + ₹25k a month.', href: '/services' },
+                { t: 'AI Setup Sprint', s: 'For individuals. Your first working AI system, in 2 to 3 sessions.', href: '/services' },
+                { t: 'Build Sprint + Care', s: 'For operators. A full personal OS, built in 4 to 6 weeks, then kept compounding.', href: '/services' },
+                { t: 'AI workshops for teams', s: 'For companies. A hands-on session where your people build their first AI helper.', href: '/services#ai-workshops' },
                 { t: 'Operating Spine Install', s: 'For the business, through MetMov. The backbone that lets the firm scale without the founder as the system.', href: OPERATING_SPINE_URL },
               ].map((o) => {
                 const inner = (

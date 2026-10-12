@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Target, CheckCircle2, AlertCircle, Sparkles, Cpu, Layers, Wrench } from 'lucide-react';
+import { ArrowRight, Target, CheckCircle2, AlertCircle, Sparkles, Cpu, Layers, Wrench, Users } from 'lucide-react';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, BUILD_SPRINT_URL, CARE_URL, LINKEDIN_URL } from '../constants';
 import SEO from '../components/SEO';
 import { funnel } from '../lib/funnel';
@@ -17,7 +17,7 @@ const servicesFaqs: { q: string; a: string }[] = [
   },
   {
     q: 'What does the AI Setup Sprint include?',
-    a: 'Two to three focused one-on-one sessions that end with a working Claude-based system shaped to your actual work: projects, prompts, and the first automations. It is the entry rung of the ladder; current pricing is on this page.',
+    a: 'Two to three focused one-on-one sessions that end with a working Claude-based system shaped to your actual work: projects, prompts, and the first automations. It is the entry rung of the ladder. Price is shared on a short call.',
   },
   {
     q: 'How is a Personal OS different from using ChatGPT or Claude directly?',
@@ -126,7 +126,7 @@ export default function Services() {
     <div className="bg-white min-h-screen">
       <SEO
         title="Services | Operating Spine & Personal OS | Anjani Pandey"
-        description="Two tracks. For businesses: MetMov's Operating Spine methodology. For operators: Personal OS Build Sprint and Care. AI setup sprints for individuals."
+        description="Two tracks. For businesses: MetMov's Operating Spine methodology. For operators: Personal OS Build Sprint and Care. AI setup sprints for individuals and hands-on AI workshops for teams."
         canonical="https://www.anjanipandey.com/services"
         jsonLd={{
           // kernel: anjanipandey v1.2 (2026-06-04). All offers price-free in schema
@@ -151,7 +151,7 @@ export default function Services() {
               "@id": "https://www.anjanipandey.com/services#ai-setup-sprint",
               "image": "https://www.anjanipandey.com/og-image.png",
               "name": "AI Setup Sprint",
-              "description": "2-3 focused 1:1 sessions to set up a Claude-based AI system tailored to the individual's work. Fixed-price entry engagement; current price on this page.",
+              "description": "2-3 focused 1:1 sessions to set up a Claude-based AI system tailored to the individual's work. Fixed-price entry engagement; price shared on a short call.",
               "provider": {
                 "@type": "Person",
                 "@id": "https://www.anjanipandey.com/#person",
@@ -166,7 +166,7 @@ export default function Services() {
               "@id": "https://www.anjanipandey.com/services#personal-os-build-sprint",
               "image": "https://www.anjanipandey.com/og-image.png",
               "name": "Personal OS Build Sprint",
-              "description": "Done-with-you installation of a Personal OS. Kickoff, weekly pairing, async support, 30-day post-launch warranty. Pricing from-anchored; scope agreed on a fit call.",
+              "description": "Done-with-you installation of a Personal OS. Kickoff, weekly pairing, async support, 30-day post-launch warranty. Scope and price agreed on a fit call.",
               "provider": {
                 "@type": "Person",
                 "@id": "https://www.anjanipandey.com/#person",
@@ -190,6 +190,21 @@ export default function Services() {
               },
               "areaServed": "Worldwide",
               "serviceType": "AI Consulting"
+            },
+            {
+              "@type": ["Service", "ProfessionalService"],
+              "@id": "https://www.anjanipandey.com/services#ai-workshops",
+              "image": "https://www.anjanipandey.com/og-image.png",
+              "name": "AI Workshops for Teams",
+              "description": "A hands-on AI session for a company team: a conversation on what really happens when AI agents join the team, then a guided build where each person makes a working AI helper on their own laptop. Scope and price agreed on a call.",
+              "provider": {
+                "@type": "Person",
+                "@id": "https://www.anjanipandey.com/#person",
+                "name": "Anjani Pandey",
+                "url": "https://www.anjanipandey.com"
+              },
+              "areaServed": "Worldwide",
+              "serviceType": "AI Training"
             },
             {
               "@type": "FAQPage",
@@ -377,8 +392,8 @@ export default function Services() {
               <div className="bg-muted/50 rounded-sm p-8 border border-border/50">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                   <div>
-                    <div className="text-3xl font-bold text-accent mb-1">&#8377;25,000</div>
-                    <p className="text-sm text-accent-light">Fixed price. 2-3 sessions. No ongoing commitment.</p>
+                    <div className="text-2xl font-bold text-accent mb-1">2-3 sessions. Fixed price.</div>
+                    <p className="text-sm text-accent-light">No ongoing commitment. Price shared on a short call.</p>
                   </div>
                   <a href="mailto:contact@anjanipandey.com?subject=AI%20Setup%20Sprint" data-cta-surface="ai_setup_sprint" className="btn-primary gap-3 px-10">
                     Start by Email
@@ -475,8 +490,8 @@ export default function Services() {
               <div className="bg-muted/50 rounded-sm p-8 border border-border/50">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                   <div>
-                    <div className="text-3xl font-bold text-accent mb-1">From &#8377;1.5L</div>
-                    <p className="text-sm text-accent-light">One-time, done-with-you. Final scope and price agreed on a scoping call.</p>
+                    <div className="text-2xl font-bold text-accent mb-1">4-6 weeks. One-time.</div>
+                    <p className="text-sm text-accent-light">Done-with-you. Scope and price agreed on a scoping call.</p>
                   </div>
                   <a href={BUILD_SPRINT_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="build_sprint" className="btn-primary gap-3 px-10">
                     Book a Scoping Call
@@ -577,14 +592,99 @@ export default function Services() {
               <div className="bg-muted/50 rounded-sm p-8 border border-border/50">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                   <div>
-                    <div className="text-3xl font-bold text-accent mb-1">&#8377;25k<span className="text-lg font-semibold">/mo</span></div>
-                    <p className="text-sm text-accent-light">Monthly retainer. Final scope agreed on a fit call.</p>
+                    <div className="text-2xl font-bold text-accent mb-1">Monthly retainer.</div>
+                    <p className="text-sm text-accent-light">Scope and price agreed on a fit call.</p>
                   </div>
                   <a href={CARE_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="os_care" className="btn-primary gap-3 px-10">
                     Talk About Care
                     <ArrowRight size={20} />
                   </a>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      {/* AI Workshops for Teams (added 2026-10-12, after the GO DESi talk). Personal-brand offer; no MetMov link. */}
+      <section id="ai-workshops" className="border-t border-border/50 py-20 md:py-32">
+        <div className="container-custom">
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-24">
+            <div className="lg:col-span-5">
+              <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/60 bg-primary/5 border border-primary/15 rounded-full px-4 py-2 mb-6">
+                <Users size={14} />
+                For Companies & Teams
+              </div>
+              <h2 className="text-3xl md:text-4xl mb-6">AI Workshops for Teams</h2>
+              <div className="bg-muted p-8 rounded-sm border border-border/50 mb-8">
+                <div className="flex items-start gap-3 text-accent/60 mb-4">
+                  <Cpu size={20} className="mt-1 flex-shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-widest">The Situation</span>
+                </div>
+                <p className="text-lg text-accent-light leading-relaxed italic">
+                  "We gave everyone an AI login. A few people use it well. Most opened it once. Nobody knows what is safe to trust."
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-sm font-bold text-accent/40">
+                <div className="w-8 h-px bg-accent/20" />
+                Recent: fireside chat and hands-on build at GO DESi, Bengaluru, 9 October 2026. About 30 people, in the room and on Teams.
+              </div>
+            </div>
+            <div className="lg:col-span-7 space-y-12">
+              <div className="grid md:grid-cols-2 gap-12">
+                <div>
+                  <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-accent/40 mb-6">
+                    <Target size={16} />
+                    What Happens in the Room
+                  </h3>
+                  <ul className="space-y-4">
+                    {[
+                      'A conversation, not a lecture: real stories from the AI system I run every day',
+                      'Where AI gets it wrong, and the simple checks that catch it',
+                      'A guided build: each person makes a working AI helper on their own laptop',
+                      'Practice data made for the session, so no company data leaves the room',
+                      'Shaped to your team, your tools and your language (English or Hindi-English)',
+                    ].map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-accent-light">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-accent/40 mb-6">
+                    <CheckCircle2 size={16} />
+                    Your Team Walks Away With
+                  </h3>
+                  <ul className="space-y-4">
+                    {[
+                      'One AI helper each person built and saw working',
+                      'A one-page step guide to repeat it on their own work',
+                      'A plain rule for when to trust an AI answer and when to check it',
+                      'A short list of the first jobs worth handing to AI in your company',
+                    ].map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-accent-light font-medium">
+                        <CheckCircle2 size={18} className="text-primary mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <div className="bg-muted/50 rounded-sm p-8 border border-border/50">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                  <div>
+                    <div className="text-2xl font-bold text-accent mb-1">In person or online.</div>
+                    <p className="text-sm text-accent-light">Paid engagement. Scope and price agreed on a short call.</p>
+                  </div>
+                  <a href="mailto:contact@anjanipandey.com?subject=AI%20Workshop%20for%20our%20team" data-cta-surface="ai_workshops" className="btn-primary gap-3 px-10">
+                    Ask About a Workshop
+                    <ArrowRight size={20} />
+                  </a>
+                </div>
+                <p className="text-xs text-accent-light/50 mt-4 font-medium">
+                  Send two lines: your company, team size, and what you want people to leave with. I reply within 24 hours.
+                </p>
               </div>
             </div>
           </div>
@@ -608,7 +708,7 @@ export default function Services() {
               </div>
               <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-2">For individuals</div>
               <h3 className="text-xl font-bold mb-2">AI Setup Sprint</h3>
-              <div className="text-sm font-semibold text-accent mb-4">&#8377;25,000</div>
+              <div className="text-sm font-semibold text-accent mb-4">2-3 sessions</div>
               <p className="text-sm text-accent-light leading-relaxed flex-grow">A working Claude-based AI system built around how you work. The entry rung.</p>
             </div>
             {/* Rung 2 */}
@@ -618,7 +718,7 @@ export default function Services() {
               </div>
               <div className="text-xs font-bold uppercase tracking-widest text-accent/40 mb-2">For operators</div>
               <h3 className="text-xl font-bold mb-2">Build Sprint + Care</h3>
-              <div className="text-sm font-semibold text-accent mb-4">from &#8377;1.5L + &#8377;25k/mo</div>
+              <div className="text-sm font-semibold text-accent mb-4">4-6 week build, then monthly care</div>
               <p className="text-sm text-accent-light leading-relaxed flex-grow">Install a full Personal OS, then keep it compounding instead of decaying.</p>
             </div>
             {/* Rung 3 — MetMov (the only cross-brand link; firewall held) */}
