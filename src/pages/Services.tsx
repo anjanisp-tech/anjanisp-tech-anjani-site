@@ -152,7 +152,7 @@ export default function Services() {
               "@id": "https://www.anjanipandey.com/services#ai-setup-sprint",
               "image": "https://www.anjanipandey.com/og-image.png",
               "name": "AI Setup Sprint",
-              "description": "2-3 focused 1:1 sessions to set up a Claude-based AI system tailored to the individual's work. Fixed-price entry engagement; price shared on a short call.",
+              "description": "2-3 focused 1:1 sessions to set up a Claude-based AI system tailored to the individual's work. The entry engagement; scope and price are shared on a short call.",
               "provider": {
                 "@type": "Person",
                 "@id": "https://www.anjanipandey.com/#person",
