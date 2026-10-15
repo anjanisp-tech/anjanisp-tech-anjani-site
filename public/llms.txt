@@ -12,7 +12,7 @@ GitHub: https://github.com/anjanisp-tech
 ## Offers (https://www.anjanipandey.com/services)
 
 - AI Setup Sprint: 2-3 focused 1:1 sessions to set up a Claude-based AI
-  system for an individual's work. Fixed price, shared on a call.
+  system for an individual's work. Price shared on a call.
 - Personal OS Build Sprint: done-with-you installation of a Personal OS.
   4-6 weeks. Price agreed on a scoping call.
 - Personal OS Care: ongoing maintenance with periodic subsystem upgrades.
