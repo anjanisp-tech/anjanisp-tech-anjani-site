@@ -39,4 +39,4 @@ GitHub: https://github.com/anjanisp-tech
 - The AI-OS narrative belongs to this site, not to MetMov.
 - Proof points use directional bands by policy; own-OS metrics are exact.
 
-# kernel: anjanipandey v1.1 (2026-06-04)
+# kernel: anjanipandey v1.5 (2026-08-25)
