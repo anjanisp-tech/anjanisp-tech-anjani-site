@@ -43,7 +43,7 @@ export default function Home() {
           "name": "Anjani Pandey",
           "url": "https://www.anjanipandey.com",
           "image": "https://www.anjanipandey.com/og-image.png",
-          "jobTitle": "Founder & CEO",
+          "jobTitle": "Founder & Managing Partner",
           "description": "Writes the field manual on how founder-led businesses break. Builds operating systems, including his own multi-subsystem Claude-kernel OS, run in public. Founder, MetMov LLP.",
           "worksFor": { "@type": "Organization", "@id": "https://metmov.com/#organization", "name": "MetMov LLP", "url": "https://www.metmov.com" },
           "alumniOf": { "@type": "EducationalOrganization", "name": "Indian School of Business" },

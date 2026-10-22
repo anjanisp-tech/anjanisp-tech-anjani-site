@@ -7,7 +7,7 @@ import { workshops, formatWorkshopDate } from '../data/workshops';
 const careerTimeline = [
   {
     period: '2025 – Present',
-    role: 'Founder & CEO',
+    role: 'Founder & Managing Partner',
     company: 'MetMov LLP',
     type: 'Consulting',
     highlights: [
@@ -108,7 +108,7 @@ export default function About() {
                     { label: 'Based in', value: 'Bengaluru, India' },
                     { label: 'Education', value: 'MBA, Indian School of Business (ISB)' },
                     { label: 'Background', value: 'Manufacturing Engineering' },
-                    { label: 'Current', value: 'Founder & CEO, MetMov LLP', href: 'https://metmov.com' },
+                    { label: 'Current', value: 'Founder & Managing Partner, MetMov LLP', href: 'https://metmov.com' },
                     { label: 'Experience', value: '15+ years in operations & transformation' },
                     { label: 'Certifications', value: 'PMP, Six Sigma Black Belt' },
                   ].map((item, i) => (
