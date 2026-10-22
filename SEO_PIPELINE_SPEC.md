@@ -42,7 +42,7 @@ Updates Open Graph and Twitter card metadata.
   "target": "src/pages/Home.tsx",
   "payload": {
     "og:title": "Scaling Architect | Anjani Pandey",
-    "og:description": "The Operating Spine for $1M-$10M ARR businesses.",
+    "og:description": "The Operating Spine for founder-led businesses of ₹10–350 Cr annual revenue.",
     "og:image": "https://anjanipandey.com/og-image.jpg",
     "og:url": "https://anjanipandey.com",
     "twitter:card": "summary_large_image"

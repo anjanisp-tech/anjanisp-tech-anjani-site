@@ -25,7 +25,7 @@ export default function SEO({
 }: SEOProps) {
   const siteTitle = "Anjani Pandey | Operating Spine & Scaling Specialist";
   const fullTitle = title ? `${title}` : siteTitle;
-  const siteDescription = "I help $1M-$10M ARR businesses diagnose structural bottlenecks and build operating spines that scale. Founder, MetMov LLP. Based in Bengaluru.";
+  const siteDescription = "I help founder-led businesses of ₹10–350 Cr annual revenue diagnose structural bottlenecks and build operating spines that scale. Founder, MetMov LLP. Based in Bengaluru.";
   const fullDescription = description || siteDescription;
   const fullCanonical = canonical || "https://www.anjanipandey.com/";
 

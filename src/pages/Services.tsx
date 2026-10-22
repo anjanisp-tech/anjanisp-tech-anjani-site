@@ -138,7 +138,7 @@ export default function Services() {
               "@type": "Service",
               "@id": "https://www.anjanipandey.com/services#operating-spine",
               "name": "Operating Spine Consulting",
-              "description": "Diagnose structural bottlenecks and install scalable operating systems for $1M-$10M ARR businesses. Includes Diagnostic Sprint, Operating Spine Install, and Fractional COO engagements.",
+              "description": "Diagnose structural bottlenecks and install scalable operating systems for founder-led businesses of INR 10–350 crore annual revenue. Includes Diagnostic Sprint, Operating Spine Install, and Fractional COO engagements.",
               "provider": {
                 "@type": "Organization",
                 "name": "MetMov LLP",

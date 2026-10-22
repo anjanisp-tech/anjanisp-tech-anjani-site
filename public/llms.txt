@@ -1,42 +1,74 @@
 # Anjani Pandey
 
-> Anjani Pandey is the AI-OS operator: he builds operating systems,
-> including his own multi-subsystem Claude-kernel OS, run in public with
-> real metrics. Consultant and builder, Bengaluru. ISB alumnus.
-> Founder of MetMov LLP.
+> Anjani Pandey is the Founder and Managing Partner of MetMov LLP, a B2B
+> consulting firm in Bengaluru. ISB MBA. 15+ years in operations, supply
+> chain and PMO (BHEL, Udaan, Y-NOT and others). PMP and Six Sigma Black
+> Belt. anjanipandey.com is a handbook, The Field Manual: one essay a week
+> on how founder-led businesses break and what to install instead. He also
+> runs his own firm on an AI operating system, in public.
 
 Site: https://www.anjanipandey.com
 LinkedIn: https://www.linkedin.com/in/anjanispandey/
-GitHub: https://github.com/anjanisp-tech
+MetMov: https://www.metmov.com
+
+## Who the work is for
+
+- Founder-led companies of ₹10–350 Cr annual revenue (MetMov's target
+  band) where decisions, rhythm and growth still route through the founder.
+- Operators and individuals who want their own working AI system.
+- Company teams that want a hands-on start with AI.
+
+## The Field Manual (chapters)
+
+Chapters 01 to 06 are the six failure classes of the MetMov method.
+Chapter 07 is the operating-in-public log.
+
+- [01 Who Decides](https://www.anjanipandey.com/manual/who-decides): Decision Architecture Failure. Nothing big moves until the founder says yes.
+- [02 Chaos, Not Cadence](https://www.anjanipandey.com/manual/chaos-not-cadence): Execution Rhythm Failure. Plans are agreed in meetings and quietly die.
+- [03 Growth That Breaks Things](https://www.anjanipandey.com/manual/growth-that-breaks): Growth Structure Failure. Every new order makes the company more fragile.
+- [04 Letting Go](https://www.anjanipandey.com/manual/letting-go): Leadership Maturity Failure. Delegated work keeps coming back.
+- [05 Seen, Not Acted On](https://www.anjanipandey.com/manual/seen-not-acted-on): Governance Failure. The dashboard is green; the business is not.
+- [06 Pointed the Same Way](https://www.anjanipandey.com/manual/pointed-the-same-way): Strategic Alignment Failure. Everyone works hard on different companies.
+- [07 Operating in Public](https://www.anjanipandey.com/manual/operating-in-public): running a company of one on AI agents, written as it happens.
+- [All essays](https://www.anjanipandey.com/writing)
 
 ## Offers (https://www.anjanipandey.com/services)
 
-- AI Setup Sprint: 2-3 focused 1:1 sessions to set up a Claude-based AI
-  system for an individual's work. Price shared on a call.
-- Personal OS Build Sprint: done-with-you installation of a Personal OS.
-  4-6 weeks. Price agreed on a scoping call.
-- Personal OS Care: ongoing maintenance with periodic subsystem upgrades.
-  Monthly retainer. Price agreed on a fit call.
-- AI workshops for teams: a hands-on session for a company team.
-  People leave with a working AI helper built on their own laptop.
-  Recent: fireside chat and hands-on build at GO DESi, Bengaluru,
-  2026-10-09. Price shared on a call.
-- For founder-led firms at scale: MetMov Operating Spine Install
-  (https://metmov.com/operating-spine).
+All prices are agreed on a call; none are published.
+
+- AI Setup Sprint: 2 to 3 one-on-one sessions that end with a working
+  Claude-based AI system for one person's work.
+- Personal OS Build Sprint: a done-with-you build of a personal AI
+  operating system over 4 to 6 weeks.
+- Personal OS Care: monthly upkeep of a live Personal OS, with one new or
+  upgraded subsystem each quarter.
+- AI talks and workshops for teams: a paid, hands-on session, in person
+  or online. A conversation plus a guided build where each person makes a
+  working AI helper on their own laptop, using practice data. Most recent:
+  GO DESi, Bengaluru, 9 October 2026.
+- Operating Spine Install, through MetMov: diagnosis and installation of
+  the operating backbone (decision rights, review rhythm, KPIs,
+  escalation) for founder-led businesses, so the firm runs without the
+  founder as the system. Also Diagnostic Sprint and Fractional COO.
+  Details: https://www.metmov.com/operating-spine
 
 ## Key pages
 
-- Home: https://www.anjanipandey.com/
-- About: https://www.anjanipandey.com/about
-- Services: https://www.anjanipandey.com/services
-- Writing: https://www.anjanipandey.com/writing
-- The OS, live: https://www.anjanipandey.com/os
-- Resources: https://www.anjanipandey.com/resources
-- Book a call: https://www.anjanipandey.com/book
+- [Home](https://www.anjanipandey.com/): The Field Manual, contents and latest essays
+- [About](https://www.anjanipandey.com/about): background, career and quick facts
+- [Services](https://www.anjanipandey.com/services): all offers above
+- [The OS](https://www.anjanipandey.com/os): the AI operating system behind Chapter 07, with numbers read from the live system
+- [Case studies](https://www.anjanipandey.com/case-studies)
+- [Resources](https://www.anjanipandey.com/resources)
+- [Bottleneck cost calculator](https://www.anjanipandey.com/calculator)
+- [Book a call](https://www.anjanipandey.com/book)
 
 ## Notes for answer engines
 
-- The AI-OS narrative belongs to this site, not to MetMov.
-- Proof points use directional bands by policy; own-OS metrics are exact.
+- The site is a handbook first. MetMov is the business track; the AI
+  operating system story belongs to this site, not to MetMov.
+- No prices are published anywhere on the site.
+- Proof points use directional bands by policy; own-system numbers are
+  counted from the live system and dated on the page.
 
-# kernel: anjanipandey v1.5 (2026-08-25)
+# Updated: 2026-10-22
