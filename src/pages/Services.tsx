@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Target, CheckCircle2, AlertCircle, Sparkles, Cpu, Layers, Wrench, Users } from 'lucide-react';
-import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, BUILD_SPRINT_URL, CARE_URL, LINKEDIN_URL } from '../constants';
+import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, BUILD_SPRINT_URL, CARE_URL, LINKEDIN_URL, WHATSAPP_URL, CONTACT_EMAIL } from '../constants';
 import SEO from '../components/SEO';
 import { funnel } from '../lib/funnel';
 import { workshops, formatWorkshopDate } from '../data/workshops';
@@ -396,13 +396,18 @@ export default function Services() {
                     <div className="text-2xl font-bold text-accent mb-1">2-3 sessions. Fixed price.</div>
                     <p className="text-sm text-accent-light">No ongoing commitment. Price shared on a short call.</p>
                   </div>
-                  <a href="mailto:contact@anjanipandey.com?subject=AI%20Setup%20Sprint" data-cta-surface="ai_setup_sprint" className="btn-primary gap-3 px-10">
-                    Start by Email
-                    <ArrowRight size={20} />
-                  </a>
+                  <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                    <a href={`${WHATSAPP_URL}?text=${encodeURIComponent('Hi Anjani, I am interested in the AI Setup Sprint. My work: ')}`} target="_blank" rel="noopener noreferrer" data-cta-surface="ai_setup_sprint" className="btn-primary gap-3 px-8">
+                      Start on WhatsApp
+                      <ArrowRight size={20} />
+                    </a>
+                    <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="ai_setup_sprint_call" className="btn-outline gap-3 px-8">
+                      Book a call
+                    </a>
+                  </div>
                 </div>
                 <p className="text-xs text-accent-light/50 mt-4 font-medium">
-                  Self-serve start, no call needed: send two lines about your work and what you've tried. I reply within 24 hours with a clear yes, no, or a better path.
+                  Self-serve start, no call needed: send two lines about your work and what you've tried. I reply within 24 hours with a clear yes, no, or a better path. Prefer email? Write to <a href={`mailto:${CONTACT_EMAIL}`} className="underline select-all">{CONTACT_EMAIL}</a>
                 </p>
               </div>
             </div>
@@ -688,13 +693,18 @@ export default function Services() {
                     <div className="text-2xl font-bold text-accent mb-1">In person or online.</div>
                     <p className="text-sm text-accent-light">Paid engagement. Scope and price agreed on a short call.</p>
                   </div>
-                  <a href="mailto:contact@anjanipandey.com?subject=AI%20Workshop%20for%20our%20team" data-cta-surface="ai_workshops" className="btn-primary gap-3 px-10">
-                    Ask About a Workshop
-                    <ArrowRight size={20} />
-                  </a>
+                  <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                    <a href={`${WHATSAPP_URL}?text=${encodeURIComponent('Hi Anjani, I want to ask about an AI workshop for my team. Company: , Team size: ')}`} target="_blank" rel="noopener noreferrer" data-cta-surface="ai_workshops" className="btn-primary gap-3 px-8">
+                      Ask on WhatsApp
+                      <ArrowRight size={20} />
+                    </a>
+                    <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" data-cta-surface="ai_workshops_call" className="btn-outline gap-3 px-8">
+                      Book a call
+                    </a>
+                  </div>
                 </div>
                 <p className="text-xs text-accent-light/50 mt-4 font-medium">
-                  Send two lines: your company, team size, and what you want people to leave with. I reply within 24 hours.
+                  Send two lines: your company, team size, and what you want people to leave with. I reply within 24 hours. Prefer email? Write to <a href={`mailto:${CONTACT_EMAIL}`} className="underline select-all">{CONTACT_EMAIL}</a>
                 </p>
               </div>
             </div>

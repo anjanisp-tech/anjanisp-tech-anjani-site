@@ -170,7 +170,7 @@ export default function About() {
                   <h3 className="text-sm font-bold uppercase tracking-widest text-accent/40">Open To</h3>
                 </div>
                 <p className="text-sm text-accent-light leading-relaxed">
-                  Select leadership and advisory conversations -- particularly at the intersection of operations, AI, and scale. If you're building something interesting, <a href="mailto:contact@anjanipandey.com" className="text-accent font-semibold hover:underline">let's talk</a>.
+                  Select leadership and advisory conversations -- particularly at the intersection of operations, AI, and scale. If you're building something interesting, <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">let's talk</a>.
                 </p>
                 <p className="text-sm text-accent-light leading-relaxed mt-3">
                   Paid AI talks and hands-on <a href="/services#ai-workshops" className="text-accent font-semibold hover:underline">workshops for teams</a>. Most recent: {workshops[0].host}, {workshops[0].city}, {formatWorkshopDate(workshops[0].date)}.
@@ -289,10 +289,13 @@ export default function About() {
               <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" className="btn-outline gap-3 px-8">
                 <Linkedin size={18} /> LinkedIn
               </a>
-              <a href="mailto:contact@anjanipandey.com" className="btn-outline gap-3 px-8">
-                <Mail size={18} /> Email
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn-outline gap-3 px-8">
+                WhatsApp
               </a>
             </div>
+            <p className="text-sm text-accent-light mt-4">
+              <Mail size={14} className="inline mr-1" /> Or email <a href="mailto:contact@anjanipandey.com" className="underline select-all">contact@anjanipandey.com</a>
+            </p>
           </div>
         </div>
       </section>

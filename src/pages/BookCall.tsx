@@ -71,7 +71,7 @@ export default function BookCall() {
             <p className="text-sm text-accent-light/70 mb-12 -mt-6">
               Starting from zero with AI? You don't need a call. The{' '}
               <a href="/services#ai-setup-sprint" className="text-primary font-semibold hover:underline">AI Setup Sprint</a>{' '}
-              is the entry path; two lines by email gets you started.
+              is the entry path; two lines on WhatsApp gets you started.
             </p>
 
             {/* Reassurance Block */}
