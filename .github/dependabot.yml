@@ -1,0 +1,17 @@
+# Dependabot rules for anjanipandey.com (added 2026-10-24).
+# Security fix proposals still open by themselves. This file only blocks
+# the big build-tool jump (vite 6 -> 7/8) that breaks the build: the
+# @tailwindcss/vite add-on only works with vite up to 7, and the vite 8
+# proposals failed on Vercel on 2026-10-23. Remove the ignore once
+# @tailwindcss/vite supports the newer vite.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # 0 = no routine version-bump proposals; security proposals are unaffected.
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
