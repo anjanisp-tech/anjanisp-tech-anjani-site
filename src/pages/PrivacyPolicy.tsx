@@ -30,10 +30,7 @@ export default function PrivacyPolicy() {
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">1. Introduction</h2>
               <p>
-                This Privacy Policy explains how personal data is collected, used, stored, and protected when you access or interact with <a href="https://www.anjanipandey.com/" className="text-accent hover:underline">https://www.anjanipandey.com/</a>.
-              </p>
-              <p>
-                This website operates globally and may be accessed from multiple jurisdictions, including the European Union, the United Kingdom, the United States, and other regions.
+                This Privacy Policy explains how personal data is collected, used, stored, and protected when you access or interact with <a href="https://www.anjanipandey.com/" className="text-accent hover:underline">https://www.anjanipandey.com/</a>. This website operates globally and may be accessed from multiple jurisdictions, including the European Union, the United Kingdom, the United States, and other regions.
               </p>
               <p>
                 By using this website, you acknowledge the practices described in this Policy.
@@ -105,10 +102,7 @@ export default function PrivacyPolicy() {
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">6. International Data Transfers</h2>
               <p>
-                As this website operates globally, personal data may be processed or stored in countries outside your country of residence.
-              </p>
-              <p>
-                Where applicable under GDPR, appropriate safeguards such as standard contractual clauses or reputable service providers with compliant data protection standards are relied upon.
+                As this website operates globally, personal data may be processed or stored in countries outside your country of residence. Where applicable under GDPR, appropriate safeguards such as standard contractual clauses or reputable service providers with compliant data protection standards are relied upon.
               </p>
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">7. Data Retention</h2>

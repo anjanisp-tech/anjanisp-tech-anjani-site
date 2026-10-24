@@ -30,10 +30,7 @@ export default function TermsOfService() {
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">1. Acceptance of Terms</h2>
               <p>
-                By accessing or using this website, you agree to these Terms of Service.
-              </p>
-              <p>
-                If you do not agree, please discontinue use.
+                By accessing or using this website, you agree to these Terms of Service. If you do not agree, please discontinue use.
               </p>
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">2. Nature of Content</h2>
@@ -113,10 +110,7 @@ export default function TermsOfService() {
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">7. Governing Law and Jurisdiction</h2>
               <p>
-                These Terms are governed by the laws of India.
-              </p>
-              <p>
-                Any disputes shall fall under the exclusive jurisdiction of courts in Bengaluru, Karnataka.
+                These Terms are governed by the laws of India. Any disputes shall fall under the exclusive jurisdiction of courts in Bengaluru, Karnataka.
               </p>
               <p>
                 For international users, nothing in these Terms limits rights granted under mandatory consumer protection laws in their jurisdiction.
