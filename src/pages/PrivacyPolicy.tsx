@@ -30,7 +30,7 @@ export default function PrivacyPolicy() {
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">1. Introduction</h2>
               <p>
-                This Privacy Policy explains how personal data is collected, used, stored, and protected when you access or interact with <a href="https://www.anjanipandey.com/" className="text-accent hover:underline">https://www.anjanipandey.com/</a>. This website operates globally and may be accessed from multiple jurisdictions, including the European Union, the United Kingdom, the United States, and other regions.
+                This Privacy Policy explains how personal data is collected, used, stored, and protected when you access or interact with <a href="https://www.anjanipandey.com/" className="text-accent hover:underline">https://www.anjanipandey.com/</a>. This website operates globally and can be accessed from multiple jurisdictions, including the European Union, the United Kingdom, the United States, and other regions.
               </p>
               <p>
                 By using this website, you acknowledge the practices described in this Policy.
@@ -54,7 +54,7 @@ export default function PrivacyPolicy() {
                 <li>Subscribe to updates</li>
                 <li>Send a direct inquiry</li>
               </ul>
-              <p>You may provide:</p>
+              <p>You can provide:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Name</li>
                 <li>Email address</li>
@@ -65,7 +65,7 @@ export default function PrivacyPolicy() {
               </ul>
 
               <h3 className="text-xl font-bold mt-8 mb-4">B. Automatically Collected Data</h3>
-              <p>When visiting the website, certain technical information may be collected:</p>
+              <p>When visiting the website, certain technical information can be collected:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>IP address</li>
                 <li>Browser type and version</li>
@@ -75,7 +75,7 @@ export default function PrivacyPolicy() {
                 <li>Referring URL</li>
                 <li>Usage patterns</li>
               </ul>
-              <p>This may be collected via cookies, analytics tools, or hosting providers.</p>
+              <p>This can be collected through cookies, analytics tools, or hosting providers.</p>
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">4. Legal Basis for Processing (GDPR)</h2>
               <p>
@@ -89,7 +89,7 @@ export default function PrivacyPolicy() {
               </ul>
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">5. Purpose of Data Processing</h2>
-              <p>Personal data may be used to:</p>
+              <p>Personal data can be used to:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Respond to inquiries</li>
                 <li>Schedule calls or consultations</li>
@@ -102,7 +102,7 @@ export default function PrivacyPolicy() {
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">6. International Data Transfers</h2>
               <p>
-                As this website operates globally, personal data may be processed or stored in countries outside your country of residence. Where applicable under GDPR, appropriate safeguards such as standard contractual clauses or reputable service providers with compliant data protection standards are relied upon.
+                As this website operates globally, personal data can be processed or stored in countries outside your country of residence. Where applicable under GDPR, appropriate safeguards such as standard contractual clauses or reputable service providers with compliant data protection standards are relied upon.
               </p>
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">7. Data Retention</h2>
@@ -116,7 +116,7 @@ export default function PrivacyPolicy() {
               <p>If you request deletion, data will be deleted unless retention is legally required.</p>
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">8. Your Data Protection Rights</h2>
-              <p>Depending on your jurisdiction, you may have the right to:</p>
+              <p>Depending on your jurisdiction, you have some or all of these rights:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Access your personal data</li>
                 <li>Rectify inaccurate data</li>
@@ -132,13 +132,13 @@ export default function PrivacyPolicy() {
               </p>
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">9. Cookies and Analytics</h2>
-              <p>This website may use:</p>
+              <p>This website can use:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Essential cookies</li>
                 <li>Analytics services such as Google Analytics or similar tools</li>
               </ul>
-              <p>Cookies may collect anonymized traffic data. You may disable cookies through browser settings.</p>
-              <p>Where required by law, cookie consent mechanisms may be implemented.</p>
+              <p>Cookies can collect anonymized traffic data. You can disable cookies through browser settings.</p>
+              <p>Where required by law, cookie consent mechanisms can be put in place.</p>
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">10. Data Security</h2>
               <p>
@@ -149,7 +149,7 @@ export default function PrivacyPolicy() {
               </p>
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">11. Third-Party Service Providers</h2>
-              <p>The website may use third-party services such as:</p>
+              <p>The website can use third-party services such as:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Hosting providers</li>
                 <li>Analytics platforms</li>
@@ -167,7 +167,7 @@ export default function PrivacyPolicy() {
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">13. Updates to This Policy</h2>
               <p>
-                This Privacy Policy may be updated periodically. The effective date will reflect the latest revision.
+                This Privacy Policy can be updated from time to time. The effective date will reflect the latest revision.
               </p>
               <p>
                 Continued use of the website constitutes acceptance of updates.

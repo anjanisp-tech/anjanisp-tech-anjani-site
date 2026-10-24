@@ -24,10 +24,10 @@ Chapters 01 to 06 are the six failure classes of the MetMov method.
 Chapter 07 is the operating-in-public log.
 
 - [01 Who Decides](https://www.anjanipandey.com/manual/who-decides): Decision Architecture Failure. Nothing big moves until the founder says yes.
-- [02 Chaos, Not Cadence](https://www.anjanipandey.com/manual/chaos-not-cadence): Execution Rhythm Failure. Plans are agreed in meetings and quietly die.
+- [02 Plans That Never Get Done](https://www.anjanipandey.com/manual/chaos-not-cadence): Execution Rhythm Failure. Plans are agreed in meetings and quietly die.
 - [03 Growth That Breaks Things](https://www.anjanipandey.com/manual/growth-that-breaks): Growth Structure Failure. Every new order makes the company more fragile.
 - [04 Letting Go](https://www.anjanipandey.com/manual/letting-go): Leadership Maturity Failure. Delegated work keeps coming back.
-- [05 Seen, Not Acted On](https://www.anjanipandey.com/manual/seen-not-acted-on): Governance Failure. The dashboard is green; the business is not.
+- [05 Numbers Nobody Acts On](https://www.anjanipandey.com/manual/seen-not-acted-on): Governance Failure. The dashboard is green; the business is not.
 - [06 Pointed the Same Way](https://www.anjanipandey.com/manual/pointed-the-same-way): Strategic Alignment Failure. Everyone works hard on different companies.
 - [07 Operating in Public](https://www.anjanipandey.com/manual/operating-in-public): running a company of one on AI agents, written as it happens.
 - [All essays](https://www.anjanipandey.com/writing)

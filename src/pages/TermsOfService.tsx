@@ -84,7 +84,7 @@ export default function TermsOfService() {
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">5. External Links</h2>
               <p>
-                The website may link to third-party platforms such as:
+                The website can link to third-party platforms such as:
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>LinkedIn</li>

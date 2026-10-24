@@ -56,7 +56,7 @@ export const CHAPTERS: Chapter[] = [
   {
     slug: 'chaos-not-cadence',
     number: '02',
-    title: 'Chaos, Not Cadence',
+    title: 'Plans That Never Get Done',
     method: 'Execution Rhythm Failure',
     ask: 'Plans are agreed in meetings and quietly die.',
     intro:
@@ -101,7 +101,7 @@ export const CHAPTERS: Chapter[] = [
   {
     slug: 'seen-not-acted-on',
     number: '05',
-    title: 'Seen, Not Acted On',
+    title: 'Numbers Nobody Acts On',
     method: 'Governance Failure',
     ask: 'The dashboard is green. The business is not.',
     intro:
@@ -161,7 +161,7 @@ export const FILING: Record<string, ChapterSlug> = {
   'the-escalation-layer-why-every-decision-lands-on-the-founder': 'who-decides',
   'decision-fragmentation-the-ownership-void-that-slows-every-scaling-business': 'who-decides',
   'why-founder-control-vs-growth-is-the-real-ceiling-on-your-business': 'who-decides',
-  // 02 Chaos, Not Cadence (Execution Rhythm: meetings, execution lag, KPI fragmentation)
+  // 02 Plans That Never Get Done, was Chaos, Not Cadence until 2026-10-24 (address unchanged) (Execution Rhythm: meetings, execution lag, KPI fragmentation)
   'early-warning-the-meeting-attendance-signal-founders-miss': 'chaos-not-cadence',
   'the-hidden-constraint-problem': 'chaos-not-cadence',
   'the-output-illusion': 'chaos-not-cadence',
@@ -183,7 +183,7 @@ export const FILING: Record<string, ChapterSlug> = {
   'delegation-dies-at-the-first-mistake': 'letting-go',
   'three-launches-in-one-week-is-a-warning': 'letting-go',
   'why-team-conflicts-land-on-the-founder': 'letting-go',
-  // 05 Seen, Not Acted On (Governance: dashboard illusion, cash volatility, compliance neglect)
+  // 05 Numbers Nobody Acts On, was Seen, Not Acted On until 2026-10-24 (address unchanged) (Governance: dashboard illusion, cash volatility, compliance neglect)
   'your-dashboard-is-lying-to-you-why-business-dashboard-vs-real-governance-is-the-question-most-founders-get-wrong': 'seen-not-acted-on',
   'the-execution-illusion-why-your-dashboards-are-lying-and-what-to-do-about-it': 'seen-not-acted-on',
   'cash-flow-volatility-in-smes-is-a-system-problem-not-a-finance-problem': 'seen-not-acted-on',
