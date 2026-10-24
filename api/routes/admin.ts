@@ -367,7 +367,10 @@ router.post("/posts", async (req, res, next) => {
   adminAuth(req, res, next);
 }, async (req, res) => {
   const { title, date, category, excerpt, content, is_premium, img } = req.body;
-  const id = title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
+  // Keep the address of an existing post when its title is edited (2026-10-24, site copy rewrite).
+  // A new post still gets its address from the title, exactly as before.
+  const givenId = typeof req.body.id === 'string' ? req.body.id.trim() : '';
+  const id = givenId || title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
   // Auto-generate a branded cover when none was supplied.
   let coverImg = (img || '').trim();
   if (!coverImg) {
