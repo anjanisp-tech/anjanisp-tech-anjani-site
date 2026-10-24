@@ -20,7 +20,7 @@ export interface Guide {
 export const guides: Guide[] = [
   {
     slug: 'ai-consulting-stack',
-    title: 'Running a Consulting Firm on AI Without Code',
+    title: 'Running a Firm on AI Without Code',
     subtitle: 'Zero coding. Zero technical background. Here\u2019s the exact AI stack, workflows, and mental models I use to run MetMov.',
     description: 'A non-technical founder\u2019s guide to building a lean consulting operation using AI as infrastructure. No coding required. Real tools, real costs, real tradeoffs from someone who can\u2019t write a line of code.',
     category: 'AI + Operations',
