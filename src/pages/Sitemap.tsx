@@ -12,6 +12,7 @@ export default function Sitemap() {
     { name: 'Resources', path: '/resources' },
     { name: 'Personal OS', path: '/os', external: true },
     { name: 'Bottleneck Cost Calculator', path: '/calculator' },
+    { name: 'AI Tool Comparison', path: '/ai-tools' },
     { name: 'Book a Call', path: '/book' },
     { name: 'Privacy Policy', path: '/privacy' },
     { name: 'Terms of Service', path: '/terms' },

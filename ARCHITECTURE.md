@@ -83,6 +83,11 @@ The platform is designed to digitize and scale the MetMov methodology, which foc
 - **Structural Edits**: Actions that modify `.tsx` files (like `UPDATE_METADATA` or `ADD_PAGE`) must be executed in the AI Studio environment and then Published to the live site.
 - **Verification**: Google Search Console (GSC) verification is handled via a permanent meta tag in `index.html`.
 
+### 7. AI Tool Comparison page (/ai-tools), added 2026-10-29
+- Page: `src/pages/AiToolComparison.tsx`. Data: `src/data/aiToolPrices.ts` (prices, notes, data rules, limits, sources, last-checked date).
+- Refreshed once a month by the "Money lanes builder" scheduled task from the makers' own pricing pages. The monthly refresh edits ONLY `src/data/aiToolPrices.ts`.
+- Static route, pre-rendered, listed in the HTML sitemap.
+
 ## Development Conventions
 - Use `node --import tsx server.ts` to run the dev server.
 - All backend routes should be defined in `api/index.ts`.

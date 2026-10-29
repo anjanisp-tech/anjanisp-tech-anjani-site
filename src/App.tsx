@@ -21,6 +21,7 @@ const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const Admin = lazy(() => import('./pages/Admin'));
 const Sitemap = lazy(() => import('./pages/Sitemap'));
 const BottleneckCostCalculator = lazy(() => import('./pages/BottleneckCostCalculator'));
+const AiToolComparison = lazy(() => import('./pages/AiToolComparison'));
 const Resources = lazy(() => import('./pages/Resources'));
 const ResourceGuideDetail = lazy(() => import('./pages/ResourceGuideDetail'));
 const About = lazy(() => import('./pages/About'));
@@ -111,6 +112,7 @@ export default function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/calculator" element={<BottleneckCostCalculator />} />
+            <Route path="/ai-tools" element={<AiToolComparison />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/resources/:slug" element={<ResourceGuideDetail />} />
         {/* 2026-10-02: any other address gets a real not-found page. */}
