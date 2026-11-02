@@ -2,6 +2,7 @@
 // shows, checks each one, and rewrites src/data/heroImages.ts from what passed.
 //
 //   node scripts/hero-sketches/render.mjs            render + check every svg/*.svg
+//   node scripts/hero-sketches/render.mjs --only=blog-x,case-y   render + check just these
 //   node scripts/hero-sketches/render.mjs --check    check public/hero only, write nothing
 //
 // The automatic look check (the only gate for fully automatic new-post sketches):
@@ -24,6 +25,10 @@ const SVG_DIR = path.join(here, 'svg');
 const HERO_DIR = path.join(root, 'public', 'hero');
 const LIST = path.join(root, 'src', 'data', 'heroImages.ts');
 const checkOnly = process.argv.includes('--check');
+// --only key1,key2 renders just those sketches (the automatic job uses this so
+// pictures already live are never re-rendered).
+const onlyArg = process.argv.find((a) => a.startsWith('--only='));
+const only = onlyArg ? new Set(onlyArg.slice(7).split(',').filter(Boolean)) : null;
 
 export async function checkPng(buf, { strict = true } = {}) {
   const img = sharp(buf);
@@ -79,6 +84,7 @@ async function main() {
   if (!checkOnly) {
     for (const f of fs.readdirSync(SVG_DIR).filter((x) => x.endsWith('.svg')).sort()) {
       const key = f.replace(/\.svg$/, '');
+      if (only && !only.has(key)) continue;
       let png;
       try {
         png = await sharp(fs.readFileSync(path.join(SVG_DIR, f))).png({ compressionLevel: 9, palette: true, quality: 90 }).toBuffer();
