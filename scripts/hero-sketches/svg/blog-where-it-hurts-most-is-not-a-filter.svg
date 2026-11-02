@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs>
+<pattern id="d" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1.4" fill="rgba(207,219,232,0.10)"/></pattern>
+<radialGradient id="v" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#13243d"/><stop offset="1" stop-color="#0d1a2e"/></radialGradient>
+<marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#cfdbe8"/></marker>
+<marker id="at" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2bc0ae"/></marker>
+<marker id="ad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5d7391"/></marker>
+</defs>
+<rect width="1200" height="630" fill="url(#v)"/><rect width="1200" height="630" fill="url(#d)"/>
+<g fill="none" stroke="#cfdbe8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="380" cy="315" rx="40" ry="28" stroke="#2bc0ae" stroke-width="6"/><ellipse cx="380" cy="315" rx="82" ry="58" stroke="#5d7391" stroke-width="3.5"/><ellipse cx="380" cy="315" rx="124" ry="88" stroke="#5d7391" stroke-width="3.5"/><ellipse cx="380" cy="315" rx="166" ry="118" stroke="#5d7391" stroke-width="3.5"/><ellipse cx="380" cy="315" rx="208" ry="148" stroke="#5d7391" stroke-width="3.5"/>
+<path d="M380 120 V200 M380 430 V510 M150 315 H250 M510 315 H610" stroke="#cfdbe8"/>
+<path d="M760 170 H1040 L940 330 V500 H860 V330 Z"/>
+<path d="M800 210 H1000" stroke="#5d7391" stroke-width="3.5"/>
+<circle cx="830" cy="120" r="12" fill="#cfdbe8"/><circle cx="900" cy="100" r="12" fill="#cfdbe8"/><circle cx="970" cy="125" r="12" fill="#cfdbe8"/></g></svg>

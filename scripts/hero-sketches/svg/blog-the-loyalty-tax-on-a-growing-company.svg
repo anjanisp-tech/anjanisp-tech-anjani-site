@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs>
+<pattern id="d" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1.4" fill="rgba(207,219,232,0.10)"/></pattern>
+<radialGradient id="v" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#13243d"/><stop offset="1" stop-color="#0d1a2e"/></radialGradient>
+<marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#cfdbe8"/></marker>
+<marker id="at" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2bc0ae"/></marker>
+<marker id="ad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5d7391"/></marker>
+</defs>
+<rect width="1200" height="630" fill="url(#v)"/><rect width="1200" height="630" fill="url(#d)"/>
+<g fill="none" stroke="#cfdbe8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><path d="M140 520 H1060" stroke="#5d7391" stroke-width="3.5"/><rect x="170" y="360" width="160" height="160" rx="10" stroke="#5d7391" stroke-width="3.5"/><rect x="220.0" y="450" width="60" height="50" rx="6" stroke="#2bc0ae" stroke-width="5"/><rect x="400" y="270" width="240" height="250" rx="10" stroke="#5d7391" stroke-width="3.5"/><rect x="490.0" y="450" width="60" height="50" rx="6" stroke="#2bc0ae" stroke-width="5"/><rect x="730" y="170" width="330" height="350" rx="10" /><rect x="865.0" y="450" width="60" height="50" rx="6" stroke="#2bc0ae" stroke-width="5"/>
+<path d="M360 300 L410 270 M640 200 L690 170" stroke="#5d7391" stroke-width="3.5" marker-end="url(#ad)"/></g></svg>

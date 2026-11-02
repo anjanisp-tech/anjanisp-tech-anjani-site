@@ -52,6 +52,13 @@ The platform is designed to digitize and scale the MetMov methodology, which foc
 - **Backend Efficiency**: Lazy imports and module caching in the API layer.
 - **AI Streaming**: Real-time response streaming for perceived speed.
 
+### 6. Post pictures and share images (thumbnail self-healing, 2026-11-02)
+- **Share image route**: `/api/og/<blog|case>/<slug>` (inside the single Express function, `api/_og.ts`). Always returns an image: blob `cms/hero/<kind>-<slug>.png`, else the post's own cover (`img`), else its idea sketch in `public/hero`, else a title card drawn on the spot (`api/_cardRender.ts`, opentype.js text-as-shapes + sharp, fonts inlined in `api/_cardFonts.ts`). Every post and case study page sets og:image to this route.
+- **Watchdog**: `/api/og-health?token=...` (`OG_HEALTH_TOKEN` or `HEALTH_TOKEN`). Checks every post's share image, lists code problems in `escalations` and pieces still on the title card in `needsSketch`.
+- **Idea sketches**: textless navy/teal line drawings. Source in `scripts/hero-sketches/draw.py`; `node scripts/hero-sketches/render.mjs` renders them to `public/hero`, runs the look check and regenerates `src/data/heroImages.ts`. Pages use `src/lib/cardImage.ts` (cover first, then sketch, else text only).
+- **Retired**: the Gemini + Imagen cover maker (`api/_autocard.ts`) broke around 2026-08-20; moved to `archive/autocard-retired-2026-11-02/`. Publishing no longer generates a cover.
+- **Function cap**: the Hobby plan allows 12 functions; this site has exactly 12. New routes go inside `api/index.ts` via `_`-prefixed modules.
+
 ## Environment Variables (.env)
 - `GEMINI_API_KEY`: Google AI API key.
 - `GOOGLE_SERVICE_ACCOUNT_EMAIL`: Service account email for Drive access.

@@ -10,6 +10,7 @@ import { extractAnswerBlock, answerFaqSchema } from '../lib/answerBlock';
 import PostEnding from '../components/PostEnding';
 import { chapterForPost, postsInChapter } from '../data/chapters';
 import { track } from '../lib/track';
+import { pagePicture, shareImage } from '../lib/cardImage';
 import NotFound from './NotFound';
 
 interface Comment {
@@ -177,6 +178,7 @@ export default function BlogPostDetail() {
         description={post.excerpt}
         canonical={`https://www.anjanipandey.com/blog/${post.id}`}
         ogType="article"
+        ogImage={shareImage('blog', post.id)}
       />
       <Helmet>
         <script type="application/ld+json">{JSON.stringify({
@@ -184,6 +186,7 @@ export default function BlogPostDetail() {
           "@type": "Article",
           "headline": post.title,
           "description": post.excerpt,
+          "image": shareImage('blog', post.id),
           "author": {
             "@type": "Person",
             "name": "Anjani Pandey",
@@ -227,9 +230,9 @@ export default function BlogPostDetail() {
             </header>
 
             {/* Cover Image */}
-            {post.img && (
+            {pagePicture('blog', post.id, post.img) && (
               <div className="aspect-video overflow-hidden border border-border mb-16">
-                <img src={post.img} alt={post.title} className="w-full h-full object-cover" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
+                <img src={pagePicture('blog', post.id, post.img)} alt="" className="w-full h-full object-cover" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
               </div>
             )}
 

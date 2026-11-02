@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs>
+<pattern id="d" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1.4" fill="rgba(207,219,232,0.10)"/></pattern>
+<radialGradient id="v" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#13243d"/><stop offset="1" stop-color="#0d1a2e"/></radialGradient>
+<marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#cfdbe8"/></marker>
+<marker id="at" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2bc0ae"/></marker>
+<marker id="ad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5d7391"/></marker>
+</defs>
+<rect width="1200" height="630" fill="url(#v)"/><rect width="1200" height="630" fill="url(#d)"/>
+<g fill="none" stroke="#cfdbe8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><rect x="200" y="130" width="300" height="380" rx="10" /><path d="M230 200 l9.0 9.0 l18.0 -20.0" stroke="#5d7391" stroke-width="3.5"/><path d="M280 205 H460" stroke="#5d7391" stroke-width="3.5"/><path d="M230 270 l9.0 9.0 l18.0 -20.0" stroke="#5d7391" stroke-width="3.5"/><path d="M280 275 H460" stroke="#5d7391" stroke-width="3.5"/><path d="M230 340 l9.0 9.0 l18.0 -20.0" stroke="#5d7391" stroke-width="3.5"/><path d="M280 345 H460" stroke="#5d7391" stroke-width="3.5"/><path d="M230 410 l9.0 9.0 l18.0 -20.0" stroke="#5d7391" stroke-width="3.5"/><path d="M280 415 H460" stroke="#5d7391" stroke-width="3.5"/>
+<path d="M700 470 L760 330 L830 400 L900 250 L960 340 L1020 300"/>
+<path d="M690 510 H1040" stroke="#5d7391" stroke-width="3.5"/>
+<path d="M500 345 C580 345, 600 300, 680 300" stroke="#5d7391" stroke-width="3.5" stroke-dasharray="10 9"/>
+<circle cx="900" cy="250" r="34" stroke="#2bc0ae" stroke-width="5"/>
+<path d="M684 300 H720" stroke="#2bc0ae" stroke-width="6"/><path d="M730 285 l12 30 M742 285 l-12 30" stroke="#2bc0ae" stroke-width="4"/></g></svg>
