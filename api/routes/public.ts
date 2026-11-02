@@ -3,8 +3,16 @@ import fs from "fs";
 import path from "path";
 import { getUtils, getKnowledge } from "../helpers.js";
 import * as db from "../dbService.js";
+import ogCard from "../_og.js";
+import ogHealth from "../_ogHealth.js";
 
 const router = express.Router();
+
+// Share image + its watchdog (thumbnail self-healing plan, 2026-11-02). Served
+// from this one Express function, not their own api/ files: the Hobby plan caps
+// a deployment at 12 functions and this site is already at 12.
+router.get("/og/:kind/:slug", (req, res) => ogCard({ query: { kind: req.params.kind, slug: req.params.slug }, headers: req.headers }, res));
+router.get("/og-health", (req, res) => ogHealth({ query: req.query, headers: req.headers }, res));
 
 // Simple Ping Route for testing
 router.get("/ping", (req, res) => {

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import SEO from '../components/SEO';
+import { pagePicture } from '../lib/cardImage';
 import { caseStudies } from '../data/caseStudyData';
 
 interface CaseStudy {
@@ -56,9 +57,9 @@ export default function CaseStudies() {
             <div className="grid md:grid-cols-2 gap-10">
               {items.map((c) => (
                 <Link key={c.slug} to={`/case-studies/${c.slug}`} className="group block rounded-sm overflow-hidden border border-border  transition-all">
-                  {c.img ? (
-                    <div className="aspect-[16/9] overflow-hidden">
-                      <img src={c.img} alt={c.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  {pagePicture('case', c.slug, c.img) ? (
+                    <div className="aspect-[1200/630] overflow-hidden">
+                      <img src={pagePicture('case', c.slug, c.img)} alt="" loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     </div>
                   ) : null}
                   <div className="p-8 space-y-4">

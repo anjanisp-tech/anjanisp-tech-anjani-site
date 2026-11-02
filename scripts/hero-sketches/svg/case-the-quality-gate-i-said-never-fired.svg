@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs>
+<pattern id="d" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1.4" fill="rgba(207,219,232,0.10)"/></pattern>
+<radialGradient id="v" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#13243d"/><stop offset="1" stop-color="#0d1a2e"/></radialGradient>
+<marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#cfdbe8"/></marker>
+<marker id="at" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2bc0ae"/></marker>
+<marker id="ad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5d7391"/></marker>
+</defs>
+<rect width="1200" height="630" fill="url(#v)"/><rect width="1200" height="630" fill="url(#d)"/>
+<g fill="none" stroke="#cfdbe8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="200" cy="315" r="16"/><circle cx="280" cy="315" r="16"/><circle cx="360" cy="315" r="16"/><circle cx="440" cy="315" r="16"/>
+<path d="M480 315 H560" marker-end="url(#a)"/>
+<path d="M590 170 V460 M680 170 V460"/><path d="M590 170 H680" stroke-width="7"/>
+<path d="M700 315 H800" marker-end="url(#a)"/>
+<circle cx="850" cy="315" r="16"/><circle cx="920" cy="315" r="16"/><circle cx="990" cy="315" r="16"/>
+<path d="M635 165 C635 70, 280 70, 280 280" stroke="#2bc0ae" stroke-width="6" marker-end="url(#at)"/>
+<path d="M635 465 C635 560, 360 560, 360 350" stroke="#2bc0ae" stroke-width="6" marker-end="url(#at)"/></g></svg>

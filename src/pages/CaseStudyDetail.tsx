@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import SEO from '../components/SEO';
+import { pagePicture, shareImage } from '../lib/cardImage';
 import { caseStudies } from '../data/caseStudyData';
 import NotFound from './NotFound';
 
@@ -54,6 +55,8 @@ export default function CaseStudyDetail() {
         title={`${cs.title} | Anjani Pandey`}
         description={cs.excerpt}
         canonical={`https://www.anjanipandey.com/case-studies/${cs.slug}`}
+        ogType="article"
+        ogImage={shareImage('case', cs.slug)}
       />
       <article className="pt-32 pb-24 md:pt-40">
         <div className="container-custom max-w-3xl">
@@ -70,9 +73,9 @@ export default function CaseStudyDetail() {
           <h1 className="mb-6">{cs.title}</h1>
           <p className="text-xl text-accent-light leading-relaxed mb-10">{cs.excerpt}</p>
 
-          {cs.img && (
-            <div className="aspect-video rounded-sm overflow-hidden mb-12">
-              <img src={cs.img} alt={cs.title} className="w-full h-full object-cover" />
+          {pagePicture('case', cs.slug, cs.img) && (
+            <div className="aspect-[1200/630] rounded-sm overflow-hidden mb-12">
+              <img src={pagePicture('case', cs.slug, cs.img)} alt="" className="w-full h-full object-cover" />
             </div>
           )}
 

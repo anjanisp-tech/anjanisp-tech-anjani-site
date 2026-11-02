@@ -34,8 +34,8 @@ apiApp.use((err: any, req: any, res: any, next: any) => {
   });
 });
 
-// Publishing a post generates AI cover art (Gemini concept + Imagen + upload),
-// which can take ~10-15s; raise the function limit so the save doesn't time out.
+// /api/og-health checks every post's share image in one call (~60 fetches);
+// keep the function limit raised so the check can finish.
 export const maxDuration = 60;
 
 export default apiApp;

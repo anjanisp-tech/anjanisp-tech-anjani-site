@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import SEO from '../components/SEO';
 import { blogPosts as seedPosts } from '../data/blogData';
 import { track } from '../lib/track';
+import { pagePicture } from '../lib/cardImage';
 
 interface BlogPost {
   id: string;
@@ -265,25 +266,24 @@ export default function Blog() {
                 <Loader2 className="animate-spin text-accent" size={32} />
               </div>
             ) : blogPosts.length > 0 ? (
-              blogPosts.map((post) => (
+              blogPosts.map((post) => { const pic = pagePicture('blog', post.id, post.img); return (
                 <article key={post.id} className="group">
                   <div className="flex flex-col sm:flex-row gap-6 md:gap-8 items-start sm:items-stretch">
-                    {/* Thumbnail on the left. On mobile it keeps the card's native
-                        ratio; on sm+ it stretches to match the text-block height
-                        (object-left keeps the wordmark + title start visible). */}
-                    <Link
-                      to={`/blog/${post.id}`}
-                      className="block w-full sm:w-48 md:w-60 shrink-0 rounded-sm overflow-hidden border border-border/60 bg-muted aspect-[1200/630] sm:aspect-auto"
-                    >
-                      {post.img && (
+                    {/* Picture on the left, always at the card's own 1200x630 shape so a
+                        sketch is never cropped (2026-11-02). No picture, no box. */}
+                    {pic && (
+                      <Link
+                        to={`/blog/${post.id}`}
+                        className="block w-full sm:w-56 md:w-72 shrink-0 self-start rounded-sm overflow-hidden border border-border/60 bg-muted aspect-[1200/630]"
+                      >
                         <img
-                          src={post.img}
-                          alt={post.title}
+                          src={pic}
+                          alt=""
                           loading="lazy"
-                          className="w-full h-full object-cover object-left group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                      )}
-                    </Link>
+                      </Link>
+                    )}
                     {/* Content on the right */}
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
@@ -305,7 +305,7 @@ export default function Blog() {
                   </div>
                   <div className="h-px bg-border/50 mt-12" />
                 </article>
-              ))
+              ); })
             ) : (
               <div className="py-20 text-center">
                 <h3 className="text-xl font-bold text-accent/40">No articles found matching your search.</h3>

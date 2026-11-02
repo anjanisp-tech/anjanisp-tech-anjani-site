@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs>
+<pattern id="d" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1.4" fill="rgba(207,219,232,0.10)"/></pattern>
+<radialGradient id="v" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#13243d"/><stop offset="1" stop-color="#0d1a2e"/></radialGradient>
+<marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#cfdbe8"/></marker>
+<marker id="at" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2bc0ae"/></marker>
+<marker id="ad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5d7391"/></marker>
+</defs>
+<rect width="1200" height="630" fill="url(#v)"/><rect width="1200" height="630" fill="url(#d)"/>
+<g fill="none" stroke="#cfdbe8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<rect x="160" y="240" width="150" height="160" rx="10" />
+<path d="M190 280 H280 M190 315 H270 M190 350 H280" stroke="#5d7391" stroke-width="3.5"/>
+<path d="M310 280 C380 200, 430 260, 470 200 L500 230" stroke="#5d7391" stroke-width="3.5" stroke-dasharray="10 9"/>
+<path d="M515 215 l18 18 m0 -18 l-18 18" stroke="#5d7391" stroke-width="4"/>
+<path d="M310 360 H600" stroke="#2bc0ae" stroke-width="6"/>
+<rect x="600" y="335" width="50" height="50" rx="6" stroke="#2bc0ae" stroke-width="5"/><path d="M609 358 l9.0 9.0 l18.0 -20.0" stroke="#2bc0ae" stroke-width="5"/>
+<path d="M650 360 H760 L840 260 H900 M760 360 L840 440 H900" stroke="#2bc0ae" stroke-width="6"/>
+<rect x="910" y="200" width="140" height="110" rx="10" /><rect x="910" y="390" width="140" height="110" rx="10" /></g></svg>

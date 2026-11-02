@@ -1,7 +1,6 @@
 import express from "express";
 import { getUtils, getKnowledge } from "../helpers.js";
 import * as db from "../dbService.js";
-import { generateCardUrl } from "../_autocard.js";
 
 const router = express.Router();
 
@@ -371,11 +370,11 @@ router.post("/posts", async (req, res, next) => {
   // A new post still gets its address from the title, exactly as before.
   const givenId = typeof req.body.id === 'string' ? req.body.id.trim() : '';
   const id = givenId || title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
-  // Auto-generate a branded cover when none was supplied.
-  let coverImg = (img || '').trim();
-  if (!coverImg) {
-    coverImg = await generateCardUrl({ kind: 'blog', title, category, slug: id, summary: excerpt });
-  }
+  // No cover is generated here any more (2026-11-02). The old Gemini + Imagen
+  // card maker broke in Aug 2026 and is retired to archive/. A post without a
+  // cover gets its idea sketch (public/hero) or the drawn title card from
+  // /api/og/blog/<id>, so it is never blank.
+  const coverImg = (img || '').trim();
   try {
     const dbType = await db.getDbType();
     let post;
@@ -681,11 +680,8 @@ router.post("/casestudies", async (req, res, next) => {
   const b = req.body || {};
   const slug = (b.slug && b.slug.trim()) || slugifyCs(b.title);
   const results = JSON.stringify(Array.isArray(b.results) ? b.results : []);
-  // Auto-generate a branded cover when none was supplied.
-  let coverImg = (b.img || '').trim();
-  if (!coverImg) {
-    coverImg = await generateCardUrl({ kind: 'case', title: b.title, category: b.category, slug, summary: b.excerpt });
-  }
+  // No cover is generated here (2026-11-02): see the note on POST /posts.
+  const coverImg = (b.img || '').trim();
   try {
     const dbType = await db.getDbType();
     if (dbType === 'postgres') {

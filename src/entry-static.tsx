@@ -32,6 +32,7 @@ import Markdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import { blogPosts } from './data/blogData';
 import { extractAnswerBlock, answerFaqSchema } from './lib/answerBlock';
+import { shareImage } from './lib/cardImage';
 
 /** JSON-LD safe for inlining: no sequence can close the script tag. */
 const ld = (o: unknown) => JSON.stringify(o).replace(/</g, '\\u003c');
@@ -65,6 +66,7 @@ function SSRBlogPostDetail() {
     '@type': 'Article',
     headline: post.title,
     description: post.excerpt,
+    image: shareImage('blog', post.id),
     author: { '@type': 'Person', name: 'Anjani Pandey', url: 'https://www.anjanipandey.com' },
     publisher: { '@type': 'Person', name: 'Anjani Pandey' },
     datePublished: post.date,
@@ -79,6 +81,7 @@ function SSRBlogPostDetail() {
         description={post.excerpt}
         canonical={url}
         ogType="article"
+        ogImage={shareImage('blog', post.id)}
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld(article) }} />
       {faq ? (
