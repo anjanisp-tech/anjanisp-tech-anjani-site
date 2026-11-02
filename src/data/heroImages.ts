@@ -10,14 +10,25 @@
 export const HERO_IMAGES: ReadonlySet<string> = new Set([
   'blog-delegation-dies-at-the-first-mistake',
   'blog-devotion-is-a-schedule',
+  'blog-every-agent-i-build-now-ships-with-a-list-of-what-it-must-not-do',
+  'blog-every-business-is-the-same-seven-boxes',
   'blog-operator-to-builder-my-own-report-lied',
   'blog-the-loyalty-tax-on-a-growing-company',
   'blog-the-question-nobody-asked-me-at-year-five',
   'blog-the-stamp-said-twelve-checks-ran-two-had',
   'blog-three-launches-in-one-week-is-a-warning',
   'blog-two-leaders-one-goal-two-definitions',
+  'blog-what-founders-ask-before-they-trust-an-ai-operating-system-for-a-business',
   'blog-where-it-hurts-most-is-not-a-filter',
   'blog-your-second-business-gets-your-leftovers',
+  'case-112-scheduled-jobs-and-how-many-really-ran',
+  'case-71-idea-files-made-searchable-zero-installs',
+  'case-putting-every-content-rule-behind-a-check',
+  'case-rebuilding-my-firms-website-with-an-ai-pair',
+  'case-taking-website-publishing-off-a-person',
+  'case-the-quality-gate-i-said-never-fired',
+  'case-when-the-notes-say-done-and-it-is-not',
+  'case-writer-notes-that-leaked-onto-live-pages',
 ]);
 
 export type HeroKind = 'blog' | 'case';
