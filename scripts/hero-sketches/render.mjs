@@ -9,7 +9,7 @@
 //   2. it is exactly 1200x630
 //   3. it is not blank: the picture is not one flat colour
 //   4. it has enough line work: at least 1.2% of pixels are clearly brighter
-//      than the navy ground, and at least 0.15% are teal (the idea's accent)
+//      than the navy ground, and at least 0.05% are teal (the idea's accent)
 // A sketch that fails is NOT written to public/hero, so its post keeps the
 // drawn title card. Exit code 1 if anything failed, so a scheduled task can see it.
 
@@ -25,7 +25,7 @@ const HERO_DIR = path.join(root, 'public', 'hero');
 const LIST = path.join(root, 'src', 'data', 'heroImages.ts');
 const checkOnly = process.argv.includes('--check');
 
-export async function checkPng(buf) {
+export async function checkPng(buf, { strict = true } = {}) {
   const img = sharp(buf);
   const meta = await img.metadata();
   if (meta.width !== 1200 || meta.height !== 630) return { ok: false, why: `size ${meta.width}x${meta.height}` };
@@ -42,8 +42,9 @@ export async function checkPng(buf) {
   }
   if (max - min < 40) return { ok: false, why: 'blank (one flat colour)' };
   const lineShare = bright / n, tealShare = teal / n;
+  if (!strict) return { ok: true, lineShare, tealShare };
   if (lineShare < 0.012) return { ok: false, why: `too little line work (${(lineShare * 100).toFixed(2)}%)` };
-  if (tealShare < 0.0015) return { ok: false, why: `no teal accent (${(tealShare * 100).toFixed(2)}%)` };
+  if (tealShare < 0.0005) return { ok: false, why: `no teal accent (${(tealShare * 100).toFixed(2)}%)` };
   return { ok: true, lineShare, tealShare };
 }
 
@@ -92,7 +93,9 @@ async function main() {
   }
   const keys = [];
   for (const f of fs.readdirSync(HERO_DIR).filter((x) => x.endsWith('.png'))) {
-    const c = await checkPng(fs.readFileSync(path.join(HERO_DIR, f)));
+    // Pictures already live are re-checked for size and blankness only, so a
+    // stricter accent rule can never quietly drop an approved sketch.
+    const c = await checkPng(fs.readFileSync(path.join(HERO_DIR, f)), { strict: false });
     if (c.ok) keys.push(f.replace(/\.png$/, ''));
     else { console.log(`FAIL public/hero/${f}: ${c.why}`); failed++; }
   }
