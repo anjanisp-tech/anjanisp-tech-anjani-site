@@ -81,8 +81,11 @@ export default function Home() {
                   <p className="text-sm">Chapter 07, then the AI Setup Sprint.</p>
                 </div>
               </div>
-              <a href={OPERATING_SPINE_URL} target="_blank" rel="noopener noreferrer" data-cta="operating-spine" className="btn-primary justify-self-start gap-2">
-                Book a 30-minute call <ArrowRight size={16} />
+              <Link to="/services#workshop-form" data-cta="workshop-form" className="btn-primary justify-self-start gap-2">
+                Ask about a team workshop <ArrowRight size={16} />
+              </Link>
+              <a href={OPERATING_SPINE_URL} target="_blank" rel="noopener noreferrer" data-cta="operating-spine" className="text-sm font-bold text-primary inline-flex items-center gap-1">
+                Or book a 30-minute call <ArrowRight size={14} />
               </a>
             </aside>
           </div>

@@ -186,6 +186,34 @@ router.post("/chatbot-lead", async (req, res) => {
   }
 });
 
+// Workshop enquiry (form in the AI Workshops section of /services). Added 2026-11-04.
+router.post("/workshop-lead", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const clip = (v: any, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+    const email = clip(b.email, 200);
+    if (clip(b.website, 200)) return res.json({ success: true }); // hidden trap field: bots fill it
+    if (!email) return res.status(400).json({ error: "Email is required" });
+    if (!isValidEmail(email)) return res.status(400).json({ error: "Invalid email format" });
+    const row = [clip(b.name, 120), email, clip(b.company, 160), clip(b.team_size, 40), clip(b.goal, 1000), clip(b.page, 200)];
+    await db.ensureWorkshopLeads();
+    await db.executeDual(
+      "INSERT INTO workshop_leads (name, email, company, team_size, goal, page) VALUES ($1, $2, $3, $4, $5, $6)",
+      "INSERT INTO workshop_leads (name, email, company, team_size, goal, page) VALUES (?, ?, ?, ?, ?, ?)",
+      row
+    );
+    const { sendNotification } = await getUtils();
+    sendNotification(
+      "New workshop enquiry",
+      `Name: ${row[0] || "-"}\nEmail: ${email}\nCompany: ${row[2] || "-"}\nTeam size: ${row[3] || "-"}\nGoal: ${row[4] || "-"}\nSource: /services workshop form`
+    ).catch(() => {});
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[WORKSHOP LEAD ERROR]", err);
+    res.status(500).json({ error: "Failed to save enquiry" });
+  }
+});
+
 // Resource Lead Capture
 router.post("/resource-lead", async (req, res) => {
   try {

@@ -182,6 +182,20 @@ router.post("/subscribe", async (req, res) => {
       [email]
     );
 
+    // Weekly email sender = Kit (free plan, Anjani 2026-11-04). Off until KIT_FORM_ID is set.
+    // Kit's public form address takes only the email; Kit sends its own confirm email.
+    const kitForm = (process.env.KIT_FORM_ID || "").trim();
+    if (/^\d+$/.test(kitForm)) {
+      try {
+        const r = await fetch(`https://app.kit.com/forms/${kitForm}/subscriptions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+          body: new URLSearchParams({ email_address: email }).toString(),
+        });
+        if (!r.ok) console.warn("[KIT] form post failed", r.status);
+      } catch (e: any) { console.warn("[KIT] form post error", e?.message); }
+    }
+
     sendNotification("New Newsletter Subscriber", `Email: ${email}`).catch(() => {});
     res.json({ success: true });
   } catch (err: any) {

@@ -299,3 +299,12 @@ export async function ensureResourceLeads(): Promise<void> {
     `CREATE TABLE IF NOT EXISTS resource_leads (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL, resource_name TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`
   );
 }
+
+// Workshop enquiries from the /services workshop form (added 2026-11-04, growth build step 6).
+// Read by the lead-board job (step 7). No email is ever sent from here to the enquirer.
+export async function ensureWorkshopLeads(): Promise<void> {
+  await execDDL(
+    `CREATE TABLE IF NOT EXISTS workshop_leads (id SERIAL PRIMARY KEY, name TEXT, email TEXT NOT NULL, company TEXT, team_size TEXT, goal TEXT, page TEXT, created_at TIMESTAMP DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS workshop_leads (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT NOT NULL, company TEXT, team_size TEXT, goal TEXT, page TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`
+  );
+}

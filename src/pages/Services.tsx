@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Target, CheckCircle2, AlertCircle, Sparkles, Cpu, Layers, Wrench, Users } from 'lucide-react';
+import WorkshopForm from '../components/WorkshopForm';
 import { MINI_DIAGNOSTIC_URL, FIT_CALL_URL, BUILD_SPRINT_URL, CARE_URL, LINKEDIN_URL, WHATSAPP_URL, CONTACT_EMAIL } from '../constants';
 import SEO from '../components/SEO';
 import { funnel } from '../lib/funnel';
@@ -105,6 +106,14 @@ const services = [
 ];
 
 export default function Services() {
+  // Scroll to #workshop-form (or any #section) when arriving from another page. Added 2026-11-04.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.location.hash) return;
+    const id = window.location.hash.slice(1);
+    const t = setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+    return () => clearTimeout(t);
+  }, []);
+
   useEffect(() => {
     const handler = (ev: MouseEvent) => {
       const target = ev.target as HTMLElement | null;
@@ -126,7 +135,7 @@ export default function Services() {
   return (
     <div className="bg-white min-h-screen">
       <SEO
-        title="Services | Operating Spine & Personal OS | Anjani Pandey"
+        title="AI Workshops and AI Setup for Small Firms | Anjani Pandey"
         description="Two tracks. For businesses: MetMov's Operating Spine methodology. For operators: Personal OS Build Sprint and Care. AI setup sprints for individuals and hands-on AI workshops for teams."
         canonical="https://www.anjanipandey.com/services"
         jsonLd={{
@@ -707,6 +716,7 @@ export default function Services() {
                   Send two lines: your company, team size, and what you want people to leave with. I reply within 24 hours. Prefer email? Write to <a href={`mailto:${CONTACT_EMAIL}`} className="underline select-all">{CONTACT_EMAIL}</a>
                 </p>
               </div>
+              <WorkshopForm />
             </div>
           </div>
         </div>
