@@ -6,12 +6,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let cachedKnowledge: string | null = null;
+let cachedFor: string = ""; // which file the cache holds (2026-11-05: chat and admin can read different files)
 let lastSync: number = 0;
 const SYNC_INTERVAL = 1000 * 60 * 60; // 1 hour
 
 export async function getKnowledgeBase(force: boolean = false, fileIdOverride?: string): Promise<string> {
   const now = Date.now();
-  if (!force && cachedKnowledge && (now - lastSync < SYNC_INTERVAL)) {
+  if (!force && cachedKnowledge && cachedFor === (fileIdOverride || "") && (now - lastSync < SYNC_INTERVAL)) {
     return cachedKnowledge;
   }
 
@@ -113,6 +114,7 @@ export async function getKnowledgeBase(force: boolean = false, fileIdOverride?: 
     }
 
     cachedKnowledge = result.value;
+    cachedFor = fileIdOverride || "";
     lastSync = now;
     
     console.log(`[KNOWLEDGE] Sync complete. Length: ${cachedKnowledge.length} characters.`);

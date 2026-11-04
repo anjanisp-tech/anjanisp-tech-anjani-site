@@ -51,8 +51,9 @@ router.post("/chat", async (req, res) => {
     }
 
     const { getKnowledgeBase } = await getKnowledge();
-    const fileIdOverride = await getFileIdOverride();
-    const knowledge = await getKnowledgeBase(false, fileIdOverride);
+    // 2026-11-05 (Anjani's yes): this chat reads its OWN public facts doc, not the shared MetMov brain.
+    const chatDocId = process.env.CHAT_KNOWLEDGE_FILE_ID || "160lNzUwUX_OrSG_jpjoBsDTWEPstYD660DvIXn3mNuo";
+    const knowledge = await getKnowledgeBase(false, chatDocId);
 
     const { GoogleGenAI } = await import("@google/genai");
     const ai = new GoogleGenAI({ apiKey });
@@ -69,12 +70,7 @@ WHO ANJANI IS:
 - Previously at BHEL, Udaan, Y-NOT
 - Writing about systems, scale, and what AI changes about both
 
-HOW TO WORK WITH ANJANI (current facts, November 2026. These override anything in the context below):
-1. Team AI workshop (his MAIN offer): a hands-on leadership session or half-day where a small, growing firm's team builds its first AI helper and leaves with safe rules for using AI. YES, Anjani runs AI workshops for teams. Enquire with the workshop form: anjanipandey.com/services#workshop-form
-2. AI Readiness Review: 2 to 3 weeks, one quick win built.
-3. After a workshop, through MetMov (his firm): Safe AI Setup, then Diagnose (14 working days), then the Operating Spine Install (about 90 days). MetMov works with founder-led companies so the business runs without the founder being the system.
-4. For one person: AI Setup Sprint (first working AI system in 2 to 3 sessions) and Personal OS Build Sprint + Care (full personal OS in 4 to 6 weeks, then ongoing care). Claude is the kernel. Level4-OS is his own running proof.
-NAMES: say "free 30-minute call". Never say "fit call", "Fit Call", "Mini Diagnostic" or "Diagnostic Sprint"; if the visitor uses an old name, answer with the current one.
+OFFERS AND FACTS: use the context below. It is current (November 2026) and lists the offers in order, with the team AI workshop as the main offer.
 
 WHAT ANJANI THINKS ABOUT:
 1. Business Structure & Scale: Why growing companies break, structural diseases, the Operating Spine framework
