@@ -174,7 +174,7 @@ router.post("/chatbot-lead", async (req, res) => {
     await db.execute("INSERT INTO chatbot_leads (email, query) VALUES (?, ?)", [email, query || null]);
 
     const { sendNotification } = await getUtils();
-    sendNotification(
+    await sendNotification(
       "New Chatbot Lead",
       `Email: ${email}\nQuery: ${query || "(no query)"}\nSource: Chatbot widget`
     ).catch(() => {});
@@ -203,7 +203,7 @@ router.post("/workshop-lead", async (req, res) => {
       row
     );
     const { sendNotification } = await getUtils();
-    sendNotification(
+    await sendNotification(
       "New workshop enquiry",
       `Name: ${row[0] || "-"}\nEmail: ${email}\nCompany: ${row[2] || "-"}\nTeam size: ${row[3] || "-"}\nGoal: ${row[4] || "-"}\nSource: /services workshop form`
     ).catch(() => {});
@@ -225,7 +225,7 @@ router.post("/resource-lead", async (req, res) => {
     await db.execute("INSERT INTO resource_leads (email, resource_name) VALUES (?, ?)", [email, resource_name || null]);
 
     const { sendNotification } = await getUtils();
-    sendNotification(
+    await sendNotification(
       "New Resource Lead",
       `Email: ${email}\nResource: ${resource_name || "(unknown)"}\nSource: Resource gate`
     ).catch(() => {});

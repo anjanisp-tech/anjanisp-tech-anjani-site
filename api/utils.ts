@@ -107,7 +107,7 @@ export async function sendNotification(subject: string, message: string): Promis
   }
   try {
     const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.VITE_RESEND_FROM_EMAIL || 'onboarding@resend.dev';
-    await fetch('https://api.resend.com/emails', {
+    const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -120,6 +120,11 @@ export async function sendNotification(subject: string, message: string): Promis
         text: message
       })
     });
+    if (!r.ok) {
+      console.error("[RESEND] refused:", r.status, (await r.text()).slice(0, 300));
+    } else {
+      console.log("[RESEND] sent:", subject);
+    }
   } catch (err) {
     console.error("[RESEND] Error:", err);
   }

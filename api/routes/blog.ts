@@ -161,7 +161,7 @@ router.post("/blog/:id/comments", async (req, res) => {
       );
     }
 
-    sendNotification(`New Comment on ${id}`, `From: ${name}\nComment: ${comment}`).catch(() => {});
+    await sendNotification(`New Comment on ${id}`, `From: ${name}\nComment: ${comment}`).catch(() => {});
     res.status(201).json(commentObj);
   } catch (err: any) {
     res.status(500).json({ error: "Failed to save comment", details: err.message });
@@ -196,7 +196,7 @@ router.post("/subscribe", async (req, res) => {
       } catch (e: any) { console.warn("[KIT] form post error", e?.message); }
     }
 
-    sendNotification("New Newsletter Subscriber", `Email: ${email}`).catch(() => {});
+    await sendNotification("New Newsletter Subscriber", `Email: ${email}`).catch(() => {});
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: "Failed to subscribe", details: err.message });
