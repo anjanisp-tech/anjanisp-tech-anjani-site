@@ -16,7 +16,11 @@ async function getFileIdOverride(): Promise<string | undefined> {
 }
 
 // Knowledge Base Endpoint
-router.get("/knowledge", async (req, res) => {
+router.get("/knowledge", async (req, res, next) => {
+  // Locked 2026-11-05: this returned the full knowledge document to anyone. Admin login only now.
+  const { adminAuth } = await getUtils();
+  adminAuth(req, res, next);
+}, async (req, res) => {
   try {
     const { getKnowledgeBase } = await getKnowledge();
     const fileIdOverride = await getFileIdOverride();
