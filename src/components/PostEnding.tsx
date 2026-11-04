@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { OPERATING_SPINE_URL, FIT_CALL_URL } from '../constants';
+import { OPERATING_SPINE_URL } from '../constants';
 import type { Chapter } from '../data/chapters';
 import { track } from '../lib/track';
 
@@ -10,7 +10,8 @@ import { track } from '../lib/track';
  *  1. the bottleneck calculator: the reader puts their own number on the
  *     problem the essay just described;
  *  2. the door: one offer, chosen by the chapter (Operating Spine through
- *     MetMov for the five diseases, the AI Setup Sprint for chapter six).
+ *     MetMov for the five diseases, the team workshop for chapter six;
+ *     workshop door from 2026-11-04, Anjani's yes).
  * Fires the same GA4 event names the old bridge used, so the charter metric
  * ("views arriving from anjanipandey.com") keeps counting.
  */
@@ -64,14 +65,14 @@ export default function PostEnding({ chapter, compact = false }: { chapter: Chap
       )}
 
       <div className="door">
-        <span className="label-mono">{spine ? 'If this chapter is your company' : 'If you want this running for you'}</span>
+        <span className="label-mono">{spine ? 'If this chapter is your company' : 'If you want your team using AI safely'}</span>
         <h3 className="text-2xl md:text-3xl font-bold tracking-[-0.03em] mb-0">
-          {spine ? 'The fix is not a better you. It is an operating spine.' : 'Start with one working system built around your week.'}
+          {spine ? 'The fix is not a better you. It is an operating spine.' : 'Start with one hands-on workshop for your team.'}
         </h3>
         <p className="text-accent-light max-w-2xl">
           {spine
             ? 'Clear owners, a steady rhythm, and decision rights that do not need you in the room. I install it in 90 days, through MetMov, for founder-led businesses.'
-            : 'The AI Setup Sprint is two or three focused sessions that leave you with a Claude-based system doing real work. Fixed price. No ongoing commitment.'}
+            : 'A hands-on session where your people build their first AI helper on their own work, with simple rules for using it safely.'}
         </p>
         <div className="flex flex-wrap gap-3 pt-1">
           {spine ? (
@@ -83,9 +84,9 @@ export default function PostEnding({ chapter, compact = false }: { chapter: Chap
             </>
           ) : (
             <>
-              <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" data-cta="ai-sprint" onClick={door('primary')} className="btn-primary gap-2">
-                Book the AI Setup Sprint call <ArrowRight size={16} />
-              </a>
+              <Link to="/services#workshop-form" data-cta="workshop-form" onClick={door('primary')} className="btn-primary gap-2">
+                Ask about a team workshop <ArrowRight size={16} />
+              </Link>
               <Link to="/services" onClick={door('services')} className="btn-outline">Compare all three offers</Link>
             </>
           )}
