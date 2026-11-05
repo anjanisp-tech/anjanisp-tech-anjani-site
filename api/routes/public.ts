@@ -72,6 +72,8 @@ router.get("/sitemap.xml", async (req, res) => {
       { path: "/calculator",                    changefreq: "monthly", priority: "0.7" },
       { path: "/resources",                     changefreq: "weekly",  priority: "0.8" },
       { path: "/resources/ai-consulting-stack", changefreq: "monthly", priority: "0.8" },
+      // /ai-tools added 2026-11-05 (growth plan 8A S17): live page, was missing from the sitemap.
+      { path: "/ai-tools",                      changefreq: "monthly", priority: "0.8" },
       { path: "/book",                          changefreq: "monthly", priority: "0.7" },
       { path: "/privacy",                       changefreq: "yearly",  priority: "0.3" },
       { path: "/terms",                         changefreq: "yearly",  priority: "0.3" },
