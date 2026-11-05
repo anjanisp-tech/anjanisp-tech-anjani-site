@@ -46,6 +46,26 @@
       "source": "/manual/growth-induced-fragility",
       "destination": "/manual/growth-that-breaks",
       "permanent": true
+    },
+    {
+      "source": "/blog/founder-overload-map",
+      "destination": "/blog/decision-fragmentation-the-ownership-void-that-slows-every-scaling-business",
+      "permanent": true
+    },
+    {
+      "source": "/blog/hiring-trap-growing-companies",
+      "destination": "/blog/when-the-hiring-plan-is-the-actual-problem",
+      "permanent": true
+    },
+    {
+      "source": "/blog/systems-outlast-heroics",
+      "destination": "/blog/sustainable-companies-run-on-systems-fragile-ones-run-on-heroics",
+      "permanent": true
+    },
+    {
+      "source": "/blog/why-companies-break-at-rs50-cr-the-middle-layer-problem-in-scaling-operations-for-founder-led-businesses",
+      "destination": "/blog/the-escalation-layer-why-every-decision-lands-on-the-founder",
+      "permanent": true
     }
   ],
   "rewrites": [
