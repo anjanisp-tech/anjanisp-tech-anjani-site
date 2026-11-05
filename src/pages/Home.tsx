@@ -5,7 +5,7 @@ import SEO from '../components/SEO';
 import ChapterFigure from '../components/ChapterFigure';
 import { blogPosts as seedPosts, type BlogPost } from '../data/blogData';
 import { CHAPTERS, postsInChapter, parseDate } from '../data/chapters';
-import { FIT_CALL_URL, OPERATING_SPINE_URL } from '../constants';
+import { FIT_CALL_URL, OPERATING_SPINE_URL, METMOV_URL } from '../constants';
 
 /**
  * The Field Manual (2026-10-01). The home page is a table of contents, not a
@@ -144,10 +144,11 @@ export default function Home() {
             <span className="label-mono">Four ways to work with me</span>
             <div className="rule-top">
               {[
-                { t: 'AI Setup Sprint', s: 'For individuals. Your first working AI system, in 2 to 3 sessions.', href: '/services' },
-                { t: 'Build Sprint + Care', s: 'For operators. A full personal OS, built in 4 to 6 weeks, then kept compounding.', href: '/services' },
+                // Order follows brand rules v1.6 (2026-11-04): workshop, Readiness Review, MetMov next step, one-person sprints lower down. 8A S17 fix 2, 2026-11-05.
                 { t: 'AI workshops for teams', s: 'For companies. A hands-on session where your people build their first AI helper.', href: '/services#ai-workshops' },
-                { t: 'Operating Spine Install', s: 'For the business, through MetMov. The backbone that lets the firm scale without the founder as the system.', href: OPERATING_SPINE_URL },
+                { t: 'AI Readiness Review', s: 'For a firm that wants a plan before it buys another AI tool. Over two to three weeks I pick the first jobs worth handing to AI, then build one of them.', href: '/services#ai-readiness-review' },
+                { t: 'Safe AI Setup, then Diagnose, through MetMov', s: 'For a firm that wants more after a workshop. MetMov sets AI up safely across the whole firm, then finds what to fix first.', href: METMOV_URL },
+                { t: 'For one person', s: 'Your own working AI system, built with you in a few sessions.', href: '/services#ai-setup-sprint' },
               ].map((o) => {
                 const inner = (
                   <>
@@ -157,10 +158,17 @@ export default function Home() {
                 );
                 const cls = 'group grid gap-1 py-4 border-b border-border';
                 return o.href.startsWith('http')
-                  ? <a key={o.t} href={o.href} target="_blank" rel="noopener noreferrer" data-cta="operating-spine" className={cls}>{inner}</a>
+                  ? <a key={o.t} href={o.href} target="_blank" rel="noopener noreferrer" data-cta="metmov-safe-ai-setup" className={cls}>{inner}</a>
                   : <Link key={o.t} to={o.href} className={cls}>{inner}</Link>;
               })}
             </div>
+            {/* /os is a static page in public/os, not a React route, so a plain link. */}
+            <a href="/os" className="text-sm font-bold text-primary inline-flex items-center gap-1 mt-2">
+              See the system I run my own firm on <ArrowRight size={14} />
+            </a>
+            <Link to="/case-studies" className="text-sm font-bold text-primary inline-flex items-center gap-1">
+              See the work: case studies from my own builds <ArrowRight size={14} />
+            </Link>
             <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-primary inline-flex items-center gap-1 mt-2">
               Not sure which? Book a 30-minute call <ArrowRight size={14} />
             </a>
