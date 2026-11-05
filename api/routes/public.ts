@@ -5,6 +5,7 @@ import { getUtils, getKnowledge } from "../helpers.js";
 import * as db from "../dbService.js";
 import ogCard from "../_og.js";
 import ogHealth from "../_ogHealth.js";
+import { notHidden } from "../hiddenPosts.js";
 
 const router = express.Router();
 
@@ -100,7 +101,7 @@ router.get("/sitemap.xml", async (req, res) => {
         posts = await db.getInitialPosts();
       }
 
-      for (const post of posts) {
+      for (const post of posts.filter(notHidden)) {
         const date = post.created_at
           ? new Date(post.created_at).toISOString().split('T')[0]
           : (post.date || today);

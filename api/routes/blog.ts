@@ -1,6 +1,7 @@
 import express from "express";
 import { getUtils, isValidEmail } from "../helpers.js";
 import * as db from "../dbService.js";
+import { notHidden } from "../hiddenPosts.js";
 
 const router = express.Router();
 
@@ -68,10 +69,10 @@ router.get("/posts", async (req, res) => {
       } else {
         filtered.sort((a: any, b: any) => String(b.date).localeCompare(String(a.date)));
       }
-      return res.json(filtered.slice(offset, offset + limit));
+      return res.json(filtered.filter(notHidden).slice(offset, offset + limit));
     }
 
-    res.json(posts);
+    res.json(posts.filter(notHidden));
   } catch (err: any) {
     res.status(500).json({ status: "error", error: "Failed to fetch posts", details: err.message });
   }

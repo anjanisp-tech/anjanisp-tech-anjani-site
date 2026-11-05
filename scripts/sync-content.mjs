@@ -61,7 +61,9 @@ async function main() {
   try {
     const rows = await sql`SELECT id, title, date, category, excerpt, content, img, is_premium FROM posts ORDER BY created_at DESC`;
     if (Array.isArray(rows) && rows.length > 0) {
-      const mapped = rows.map((r) => ({
+      // Same list as api/hiddenPosts.ts (8A S17 fix 3, 2026-11-05): folded posts stay in the DB but out of the built site.
+      const HIDDEN_POST_IDS = new Set(['founder-overload-map', 'hiring-trap-growing-companies', 'systems-outlast-heroics', 'why-companies-break-at-rs50-cr-the-middle-layer-problem-in-scaling-operations-for-founder-led-businesses']);
+      const mapped = rows.filter((r) => !HIDDEN_POST_IDS.has(String(r.id))).map((r) => ({
         id: r.id,
         title: r.title ?? '',
         date: r.date ?? '',
