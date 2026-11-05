@@ -5,7 +5,7 @@ import { getUtils, getKnowledge } from "../helpers.js";
 import * as db from "../dbService.js";
 import ogCard from "../_og.js";
 import ogHealth from "../_ogHealth.js";
-import { notHidden } from "../hiddenPosts.js";
+import { notHidden } from "../_hiddenPosts.js";
 
 const router = express.Router();
 

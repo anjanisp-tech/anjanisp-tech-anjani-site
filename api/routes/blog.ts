@@ -1,7 +1,7 @@
 import express from "express";
 import { getUtils, isValidEmail } from "../helpers.js";
 import * as db from "../dbService.js";
-import { notHidden } from "../hiddenPosts.js";
+import { notHidden } from "../_hiddenPosts.js";
 
 const router = express.Router();
 
