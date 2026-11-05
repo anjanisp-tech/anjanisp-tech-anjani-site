@@ -640,7 +640,7 @@ export default function Services() {
                 <Target size={22} />
               </div>
               <div className="text-xs font-bold uppercase tracking-widest text-white/50 mb-2">For the business</div>
-              <h3 className="text-xl font-bold mb-2">Safe AI Setup, then Diagnose</h3>
+              <h3 className="text-xl font-bold mb-2 text-white">Safe AI Setup, then Diagnose</h3>
               <div className="text-sm font-semibold text-white/70 mb-4">MetMov &middot; after a workshop</div>
               <p className="text-sm text-white/70 leading-relaxed mb-6 flex-grow">When the whole firm is ready, MetMov sets up AI with safety controls first. Diagnose then takes 14 working days and shows what to fix in how the firm runs, and the install after it takes about 90 days.</p>
               <a href="https://www.metmov.com" target="_blank" rel="noopener noreferrer" data-cta-surface="ladder_operating_spine" className="text-sm font-bold flex items-center gap-2 text-white hover:gap-3 transition-all">
