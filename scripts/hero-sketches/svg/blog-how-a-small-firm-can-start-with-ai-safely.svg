@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs>
+<pattern id="d" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1.4" fill="rgba(207,219,232,0.10)"/></pattern>
+<radialGradient id="v" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#13243d"/><stop offset="1" stop-color="#0d1a2e"/></radialGradient>
+<marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#cfdbe8"/></marker>
+<marker id="at" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2bc0ae"/></marker>
+<marker id="ad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5d7391"/></marker>
+</defs>
+<rect width="1200" height="630" fill="url(#v)"/><rect width="1200" height="630" fill="url(#d)"/>
+<g fill="none" stroke="#cfdbe8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<rect x="140" y="140" width="400" height="350" rx="22" stroke="#cfdbe8" stroke-width="4.5" stroke-dasharray="14 12"/>
+<rect x="245" y="255" width="170" height="130" rx="10" /><path d="M270 285 H390" stroke="#5d7391" stroke-width="3.5"/><path d="M270 313 H390" stroke="#5d7391" stroke-width="3.5"/><path d="M270 341 H390" stroke="#5d7391" stroke-width="3.5"/>
+<path d="M330 250 V172" stroke="#5d7391" stroke-width="3.5" marker-end="url(#ad)"/>
+<path d="M300 158 H360" stroke-width="6"/>
+<path d="M240 320 H172" stroke="#5d7391" stroke-width="3.5" marker-end="url(#ad)"/>
+<path d="M158 290 V350" stroke-width="6"/>
+<path d="M330 390 V458" stroke="#5d7391" stroke-width="3.5" marker-end="url(#ad)"/>
+<path d="M300 472 H360" stroke-width="6"/>
+<path d="M420 320 H640" marker-end="url(#a)"/>
+<rect x="655" y="255" width="150" height="130" rx="10" />
+<path d="M685 295 H775 M685 323 H775 M685 351 H750" stroke="#5d7391" stroke-width="3.5"/>
+<rect x="905" y="255" width="150" height="130" rx="10" stroke="#5d7391" stroke-width="3.5"/>
+<path d="M935 295 H1025 M935 323 H1025 M935 351 H1000" stroke="#5d7391" stroke-width="3.5"/>
+<path d="M730 392 V440 H980 V392" stroke="#2bc0ae" stroke-width="5.5"/>
+<path d="M830 300 H880 M880 300 l-12 -10 M880 300 l-12 10" stroke="#2bc0ae" stroke-width="5"/>
+<path d="M880 340 H830 M830 340 l12 -10 M830 340 l12 10" stroke="#2bc0ae" stroke-width="5"/>
+<circle cx="855" cy="490" r="34" stroke="#2bc0ae" stroke-width="5"/>
+<path d="M842 490 l9.0 9.0 l18.0 -20.0" stroke="#2bc0ae" stroke-width="6"/>
+<path d="M855 440 V456" stroke="#2bc0ae" stroke-width="5"/></g></svg>
