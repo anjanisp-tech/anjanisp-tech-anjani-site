@@ -394,7 +394,7 @@ export default function BottleneckCostCalculator() {
                               rel="noopener noreferrer"
                               className="btn-outline py-3 px-6"
                             >
-                              Book a Fit Call
+                              Book a free 30-minute call
                             </a>
                           </div>
                         </div>
@@ -415,7 +415,7 @@ export default function BottleneckCostCalculator() {
                         rel="noopener noreferrer"
                         className="btn-primary flex-1 py-4"
                       >
-                        Book a Fit Call
+                        Book a free 30-minute call
                       </a>
                       <a
                         href={MINI_DIAGNOSTIC_URL}

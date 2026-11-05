@@ -159,7 +159,7 @@ export const initialPosts = [
     title: "THE FOUNDER OVERLOAD MAP",
     date: "2024-03-25",
     category: "Scaling Strategy",
-    excerpt: "The 25-disease taxonomy of founder-led businesses and how to identify structural gaps.",
+    excerpt: "How founder-led businesses outgrow their structure, and how to spot the gaps early.",
     content: "Full content of the Founder Overload Map..."
   },
   {

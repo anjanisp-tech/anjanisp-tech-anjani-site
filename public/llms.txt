@@ -46,11 +46,13 @@ All prices are agreed on a call; none are published.
   or online. A conversation plus a guided build where each person makes a
   working AI helper on their own laptop, using practice data. Most recent:
   GO DESi, Bengaluru, 9 October 2026.
-- Operating Spine Install, through MetMov: diagnosis and installation of
-  the operating backbone (decision rights, review rhythm, KPIs,
-  escalation) for founder-led businesses, so the firm runs without the
-  founder as the system. Also Diagnostic Sprint and Fractional COO.
-  Details: https://www.metmov.com/operating-spine
+- AI Readiness Review: 2 to 3 weeks for a firm that wants a plan before
+  it buys more AI tools. Picks the first jobs worth handing to AI and
+  builds one of them.
+- MetMov Safe AI Setup, then Diagnose, through MetMov (the firm Anjani
+  founded): after a team workshop, MetMov sets up AI with safety controls
+  for the whole firm. Diagnose takes 14 working days; the install after
+  it takes about 90 days. Details: https://www.metmov.com
 
 ## Key pages
 
