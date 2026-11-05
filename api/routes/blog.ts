@@ -183,18 +183,24 @@ router.post("/subscribe", async (req, res) => {
       [email]
     );
 
-    // Weekly email sender = Kit (free plan, Anjani 2026-11-04). Off until KIT_FORM_ID is set.
-    // Kit's public form address takes only the email; Kit sends its own confirm email.
-    const kitForm = (process.env.KIT_FORM_ID || "").trim();
-    if (/^\d+$/.test(kitForm)) {
+    // Weekly email list = Resend contacts (Anjani 2026-11-05; Kit dropped: Kit quarantines
+    // server-sent sign-ups for a robot check while answering 200). Segment "General".
+    // Any failure is logged loudly; the sign-up is already saved above either way.
+    const resendKey = (process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY || "").trim();
+    const segmentId = (process.env.RESEND_SEGMENT_ID || "2f2d3dfe-37cb-4f19-9221-e15e81e43280").trim();
+    if (!resendKey) {
+      console.error("[RESEND-LIST] key missing, sign-up not added to the email list");
+    } else {
       try {
-        const r = await fetch(`https://app.kit.com/forms/${kitForm}/subscriptions`, {
+        const r = await fetch("https://api.resend.com/contacts", {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-          body: new URLSearchParams({ email_address: email }).toString(),
+          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ email, unsubscribed: false, segments: [{ id: segmentId }] }),
         });
-        if (!r.ok) console.warn("[KIT] form post failed", r.status);
-      } catch (e: any) { console.warn("[KIT] form post error", e?.message); }
+        const body = (await r.text()).slice(0, 300);
+        if (r.ok) console.log("[RESEND-LIST] added to email list");
+        else console.error("[RESEND-LIST] refused:", r.status, body);
+      } catch (e: any) { console.error("[RESEND-LIST] error", e?.message); }
     }
 
     await sendNotification("New Newsletter Subscriber", `Email: ${email}`).catch(() => {});
