@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
             <h1 className="text-4xl md:text-6xl font-bold mb-12">Privacy Policy</h1>
             
             <div className="prose prose-lg prose-accent max-w-none text-accent-light">
-              <p className="font-bold">Effective Date: 21 February 2026</p>
+              <p className="font-bold">Effective Date: 19 November 2026</p>
               <p>Website: <a href="https://www.anjanipandey.com/" className="text-accent hover:underline">https://www.anjanipandey.com/</a></p>
               
               <div className="bg-muted/30 p-6 rounded-sm border border-border mb-12">
@@ -53,6 +53,7 @@ export default function PrivacyPolicy() {
                 <li>Book a call</li>
                 <li>Subscribe to updates</li>
                 <li>Send a direct inquiry</li>
+                <li>Use the chat assistant on this site (the messages you type)</li>
               </ul>
               <p>You can provide:</p>
               <ul className="list-disc pl-6 space-y-2">
@@ -87,6 +88,11 @@ export default function PrivacyPolicy() {
                 <li><strong>Contractual Necessity</strong>: if you enter into a consulting engagement</li>
                 <li><strong>Legal Obligation</strong>: if required under applicable law</li>
               </ul>
+
+              <h2 className="text-2xl font-bold text-accent mt-12 mb-6">4A. If You Are in India</h2>
+              <p>
+                If you are located in India, personal data is processed under India's Digital Personal Data Protection Act, 2023 and its rules. You can use the rights in section 8 by writing to <a href="mailto:contact@anjanipandey.com" className="text-accent hover:underline">contact@anjanipandey.com</a>.
+              </p>
 
               <h2 className="text-2xl font-bold text-accent mt-12 mb-6">5. Purpose of Data Processing</h2>
               <p>Personal data can be used to:</p>
@@ -155,7 +161,11 @@ export default function PrivacyPolicy() {
                 <li>Analytics platforms</li>
                 <li>Scheduling tools</li>
                 <li>Email service providers</li>
+                <li>AI chat assistant: Google's Gemini API processes the messages you type into the chat assistant to generate replies</li>
               </ul>
+              <p>
+                The chat assistant is an AI, not a person. Please do not type personal or confidential details into it.
+              </p>
               <p>
                 These providers process data solely to support website functionality and are expected to maintain appropriate data protection standards.
               </p>
