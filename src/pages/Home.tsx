@@ -84,6 +84,9 @@ export default function Home() {
               <Link to="/services#workshop-form" data-cta="workshop-form" className="btn-primary justify-self-start gap-2">
                 Ask about a team workshop <ArrowRight size={16} />
               </Link>
+              <Link to="/ai-check" data-cta="ai-check" className="text-sm font-bold text-primary inline-flex items-center gap-1">
+                Or take the 4-minute AI check <ArrowRight size={14} />
+              </Link>
               <a href={OPERATING_SPINE_URL} target="_blank" rel="noopener noreferrer" data-cta="operating-spine" className="text-sm font-bold text-primary inline-flex items-center gap-1">
                 Or book a 30-minute call <ArrowRight size={14} />
               </a>

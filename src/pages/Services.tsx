@@ -301,6 +301,7 @@ export default function Services() {
                 </a>
                 <p className="text-sm text-accent-light">Paid engagement. Scope and price agreed on a free 30-minute call.</p>
               </div>
+              <p className="text-sm text-accent-light mt-6 mb-0">Not sure where your firm stands? <Link to="/ai-check" data-cta="ai-check" className="font-bold text-primary">Take the 4-minute AI check</Link> and get a short report from me.</p>
             </div>
           </div>
         </div>

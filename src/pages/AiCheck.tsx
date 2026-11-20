@@ -9,7 +9,7 @@ import { track } from '../lib/track';
 // AI check (plan line D17, built 2026-11-20). Questions approved by Anjani 2026-11-20.
 // Each scored answer is 0, 1 or 2 (higher = more work to do). 11 scored questions, 0 to 22.
 // Saves to /api/ai-check-lead. Anjani sends a one-page report within 2 working days.
-// PREVIEW: noindex until Anjani says yes to go live.
+// LIVE from 2026-11-20 (Anjani's yes).
 
 type Opt = { t: string; s: number };
 type Q = { id: string; part: number; q: string; opts: Opt[] };
