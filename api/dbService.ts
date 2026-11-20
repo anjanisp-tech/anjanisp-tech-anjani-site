@@ -302,6 +302,14 @@ export async function ensureResourceLeads(): Promise<void> {
 
 // Workshop enquiries from the /services workshop form (added 2026-11-04, growth build step 6).
 // Read by the lead-board job (step 7). No email is ever sent from here to the enquirer.
+// AI check answers (plan line D17, 2026-11-20). answers = JSON of q1..q11 scores.
+export async function ensureAiCheckLeads(): Promise<void> {
+  await execDDL(
+    `CREATE TABLE IF NOT EXISTS ai_check_leads (id SERIAL PRIMARY KEY, name TEXT, email TEXT NOT NULL, company TEXT, role TEXT, team_size TEXT, heard_from TEXT, first_wish TEXT, answers TEXT, score INTEGER, band TEXT, weakest_part TEXT, created_at TIMESTAMP DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS ai_check_leads (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT NOT NULL, company TEXT, role TEXT, team_size TEXT, heard_from TEXT, first_wish TEXT, answers TEXT, score INTEGER, band TEXT, weakest_part TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`
+  );
+}
+
 export async function ensureWorkshopLeads(): Promise<void> {
   await execDDL(
     `CREATE TABLE IF NOT EXISTS workshop_leads (id SERIAL PRIMARY KEY, name TEXT, email TEXT NOT NULL, company TEXT, team_size TEXT, goal TEXT, page TEXT, created_at TIMESTAMP DEFAULT NOW())`,

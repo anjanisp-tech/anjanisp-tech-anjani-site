@@ -219,6 +219,40 @@ router.post("/workshop-lead", async (req, res) => {
   }
 });
 
+// AI check (anjanipandey.com/ai-check, plan line D17). Added 2026-11-20.
+// The score is worked out again here from the answers, so a tampered score is ignored.
+router.post("/ai-check-lead", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const clip = (v: any, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+    if (clip(b.website, 200)) return res.json({ success: true }); // hidden trap field: bots fill it
+    const email = clip(b.email, 200);
+    if (!email || !isValidEmail(email)) return res.status(400).json({ error: "Valid email is required" });
+    const ids = ["q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11"];
+    const a = (b.answers && typeof b.answers === "object") ? b.answers : {};
+    const clean: Record<string, number> = {};
+    for (const id of ids) { const v = Number(a[id]); if (![0,1,2].includes(v)) return res.status(400).json({ error: "Please answer every question" }); clean[id] = v; }
+    const score = ids.reduce((n, id) => n + clean[id], 0);
+    const band = score <= 6 ? "Ready to grow" : score <= 14 ? "Ready for a first safe job" : "Start with the basics";
+    const row = [clip(b.name,120), email, clip(b.company,160), clip(b.role,120), clip(b.team_size,40), clip(b.heard_from,200), clip(b.first_wish,1000), JSON.stringify(clean), score, band, clip(b.weakest_part,60)];
+    await db.ensureAiCheckLeads();
+    await db.executeDual(
+      "INSERT INTO ai_check_leads (name, email, company, role, team_size, heard_from, first_wish, answers, score, band, weakest_part) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      "INSERT INTO ai_check_leads (name, email, company, role, team_size, heard_from, first_wish, answers, score, band, weakest_part) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+      row
+    );
+    const { sendNotification } = await getUtils();
+    await sendNotification(
+      "New AI check",
+      `Name: ${row[0] || "-"}\nEmail: ${email}\nFirm: ${row[2] || "-"}\nRole: ${row[3] || "-"}\nPeople: ${row[4] || "-"}\nScore: ${score} of 22 (${band})\nWeakest part: ${row[10] || "-"}\nWants AI for: ${row[6] || "-"}\nHeard from: ${row[5] || "-"}\nReport due within 2 working days. Source: /ai-check`
+    ).catch(() => {});
+    res.json({ success: true, score, band });
+  } catch (err: any) {
+    console.error("[AI CHECK LEAD ERROR]", err);
+    res.status(500).json({ error: "Failed to save answers" });
+  }
+});
+
 // Resource Lead Capture
 router.post("/resource-lead", async (req, res) => {
   try {
