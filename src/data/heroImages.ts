@@ -25,6 +25,7 @@ export const HERO_IMAGES: ReadonlySet<string> = new Set([
   'blog-what-your-team-should-never-paste-into-ai',
   'blog-where-it-hurts-most-is-not-a-filter',
   'blog-which-first-job-to-give-ai-in-a-small-firm',
+  'blog-why-i-still-approve-all-my-own-work',
   'blog-why-team-conflicts-land-on-the-founder',
   'blog-your-calendar-is-your-real-strategy',
   'blog-your-second-business-gets-your-leftovers',
