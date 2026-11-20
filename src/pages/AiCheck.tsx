@@ -159,7 +159,7 @@ export default function AiCheck() {
                 </div>
               </div>
               <div>
-                <p className="font-bold mb-2">Three things to try first ({PARTS[weakest].toLowerCase()})</p>
+                <p className="font-bold mb-2">Three things to try first: {PARTS[weakest]}</p>
                 <ul className="list-disc pl-6 text-accent-light">
                   {TIPS[weakest].map(t => <li key={t} className="mb-2">{t}</li>)}
                 </ul>
