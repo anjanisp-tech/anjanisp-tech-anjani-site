@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import SEO from '../components/SEO';
@@ -132,7 +131,6 @@ export default function AiCheck() {
         description="Eleven questions on how your firm uses AI today, how safe it is, and where to start. Your score shows right away, and I send a one-page report within 2 working days."
         canonical="https://www.anjanipandey.com/ai-check"
       />
-      <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
 
       <section className="pt-32 md:pt-40">
         <div className="container-custom max-w-[760px]">
