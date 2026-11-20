@@ -134,6 +134,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/team-check/:code",
+      "destination": "/index.html"
+    },
+    {
       "source": "/resources",
       "destination": "/index.html"
     },

@@ -22,6 +22,7 @@ const Admin = lazy(() => import('./pages/Admin'));
 const Sitemap = lazy(() => import('./pages/Sitemap'));
 const BottleneckCostCalculator = lazy(() => import('./pages/BottleneckCostCalculator'));
 const AiCheck = lazy(() => import('./pages/AiCheck'));
+const TeamCheck = lazy(() => import('./pages/TeamCheck'));
 const AiToolComparison = lazy(() => import('./pages/AiToolComparison'));
 const Resources = lazy(() => import('./pages/Resources'));
 const ResourceGuideDetail = lazy(() => import('./pages/ResourceGuideDetail'));
@@ -114,6 +115,7 @@ export default function App() {
             <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/calculator" element={<BottleneckCostCalculator />} />
             <Route path="/ai-check" element={<AiCheck />} />
+            <Route path="/team-check/:code" element={<TeamCheck />} />
             <Route path="/ai-tools" element={<AiToolComparison />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/resources/:slug" element={<ResourceGuideDetail />} />

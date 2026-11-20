@@ -253,6 +253,37 @@ router.post("/ai-check-lead", async (req, res) => {
   }
 });
 
+// Team AI check (anjanipandey.com/team-check/<code>). Added 2026-11-20. No email alert (hundreds of answers).
+// Group rule: C if they set up helpers or connected tools, or call themselves a builder;
+// A if they use AI monthly or less AND call themselves starting out or getting there; else B.
+// What people have done counts more than how they rate themselves.
+const TEAM_CODES = ["vct26"];
+router.post("/team-check-response", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const clip = (v: any, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+    if (clip(b.website, 200)) return res.json({ success: true }); // bot trap
+    const code = clip(b.code, 40).toLowerCase();
+    if (!TEAM_CODES.includes(code)) return res.status(400).json({ error: "Link not active" });
+    const done: string[] = Array.isArray(b.done) ? b.done.map((x: any) => clip(x, 120)).slice(0, 10) : [];
+    const freq = clip(b.freq, 80), self = clip(b.self, 120), team = clip(b.team, 120), task = clip(b.task, 1000);
+    if (!team || !freq || !self || !task) return res.status(400).json({ error: "Please answer the required questions" });
+    const built = done.some(d => /saved helper|Connected it/i.test(d)) || /^Builder/i.test(self);
+    const light = /^Never|few times a month/i.test(freq) && /^(Starting out|Getting there)/i.test(self);
+    const grp = built ? "C" : light ? "A" : "B";
+    await db.ensureTeamCheck();
+    await db.executeDual(
+      "INSERT INTO team_check_responses (code, team, freq, done, self_level, task, blocker, grp) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",
+      "INSERT INTO team_check_responses (code, team, freq, done, self_level, task, blocker, grp) VALUES (?,?,?,?,?,?,?,?)",
+      [code, team, freq, JSON.stringify(done), self, task, clip(b.blocker, 1000), grp]
+    );
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[TEAM CHECK ERROR]", err);
+    res.status(500).json({ error: "Failed to save answers" });
+  }
+});
+
 // Resource Lead Capture
 router.post("/resource-lead", async (req, res) => {
   try {
