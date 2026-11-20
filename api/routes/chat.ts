@@ -253,30 +253,54 @@ router.post("/ai-check-lead", async (req, res) => {
   }
 });
 
-// Team AI check (anjanipandey.com/team-check/<code>). Added 2026-11-20. No email alert (hundreds of answers).
-// Group rule: C if they set up helpers or connected tools, or call themselves a builder;
-// A if they use AI monthly or less AND call themselves starting out or getting there; else B.
-// What people have done counts more than how they rate themselves.
-const TEAM_CODES = ["vct26"];
+// Team AI check: general form for any business (anjanipandey.com/team-check). Added 2026-11-20, made general the same day.
+// Saves to team_ai_checks, then adds a row to the Google Sheet "Team AI check - responses (anjanipandey.com)".
+// Group rule: C Builders if they set up helpers or connected tools, or call themselves a builder;
+// A Starting out if they use AI monthly or less AND call themselves starting out or getting there; else B Regular.
+// What people have done counts more than how they rate themselves. No email alert (could be hundreds).
+const TEAM_CHECK_SHEET_ID = "1w_qEcGkSglRfiETWHkgSRBa2KrcwERxisZCSW7Lvx7w";
+const GROUP_NAMES: Record<string, string> = { A: "Starting out", B: "Regular", C: "Builders" };
+async function appendTeamCheckRow(values: any[]) {
+  const { google } = await import("googleapis");
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || process.env.EMAIL;
+  let key = (process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || process.env.KEY || "").replace(/\\n/g, "\n");
+  if (key && !key.includes("\n")) {
+    const h = "-----BEGIN PRIVATE KEY-----", f = "-----END PRIVATE KEY-----";
+    if (key.startsWith(h) && key.endsWith(f)) key = `${h}\n${key.slice(h.length, key.length - f.length).replace(/\s/g, "").match(/.{1,64}/g)?.join("\n")}\n${f}\n`;
+  }
+  if (!email || !key) throw new Error("service account not set");
+  const auth = new google.auth.JWT({ email, key, scopes: ["https://www.googleapis.com/auth/spreadsheets"] });
+  const sheets = google.sheets({ version: "v4", auth });
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: TEAM_CHECK_SHEET_ID, range: "A:N", valueInputOption: "RAW", insertDataOption: "INSERT_ROWS",
+    requestBody: { values: [values] },
+  });
+}
 router.post("/team-check-response", async (req, res) => {
   try {
     const b = req.body || {};
     const clip = (v: any, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
     if (clip(b.website, 200)) return res.json({ success: true }); // bot trap
-    const code = clip(b.code, 40).toLowerCase();
-    if (!TEAM_CODES.includes(code)) return res.status(400).json({ error: "Link not active" });
+    const firm = clip(b.firm, 160), team = clip(b.team, 120), name = clip(b.name, 120);
+    const email = clip(b.email, 200);
+    if (email && !isValidEmail(email)) return res.status(400).json({ error: "Please check the email" });
     const done: string[] = Array.isArray(b.done) ? b.done.map((x: any) => clip(x, 120)).slice(0, 10) : [];
-    const freq = clip(b.freq, 80), self = clip(b.self, 120), team = clip(b.team, 120), task = clip(b.task, 1000);
-    if (!team || !freq || !self || !task) return res.status(400).json({ error: "Please answer the required questions" });
+    const freq = clip(b.freq, 80), self = clip(b.self, 120), task = clip(b.task, 1000), blocker = clip(b.blocker, 1000);
+    if (!firm || !team || !freq || !self || !task) return res.status(400).json({ error: "Please answer the required questions" });
+    const code = clip(b.code, 40).toLowerCase() || firm.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
     const built = done.some(d => /saved helper|Connected it/i.test(d)) || /^Builder/i.test(self);
     const light = /^Never|few times a month/i.test(freq) && /^(Starting out|Getting there)/i.test(self);
     const grp = built ? "C" : light ? "A" : "B";
-    await db.ensureTeamCheck();
+    await db.ensureTeamAiChecks();
     await db.executeDual(
-      "INSERT INTO team_check_responses (code, team, freq, done, self_level, task, blocker, grp) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",
-      "INSERT INTO team_check_responses (code, team, freq, done, self_level, task, blocker, grp) VALUES (?,?,?,?,?,?,?,?)",
-      [code, team, freq, JSON.stringify(done), self, task, clip(b.blocker, 1000), grp]
+      "INSERT INTO team_ai_checks (code, firm, team, name, email, freq, done, self_level, task, blocker, grp) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      "INSERT INTO team_ai_checks (code, firm, team, name, email, freq, done, self_level, task, blocker, grp) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+      [code, firm, team, name, email, freq, JSON.stringify(done), self, task, blocker, grp]
     );
+    const ist = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false });
+    try {
+      await appendTeamCheckRow([ist, firm, team, name, email, GROUP_NAMES[grp], freq, done.join("; "), self, task, blocker, code, "", "Not started"]);
+    } catch (e: any) { console.error("[TEAM CHECK SHEET ERROR]", e?.message || e); } // saved in the database anyway
     res.json({ success: true });
   } catch (err: any) {
     console.error("[TEAM CHECK ERROR]", err);

@@ -318,6 +318,14 @@ export async function ensureTeamCheck(): Promise<void> {
   );
 }
 
+// General team AI check (anjanipandey.com/team-check, 2026-11-20). grp = A Starting out, B Regular, C Builders.
+export async function ensureTeamAiChecks(): Promise<void> {
+  await execDDL(
+    `CREATE TABLE IF NOT EXISTS team_ai_checks (id SERIAL PRIMARY KEY, code TEXT, firm TEXT NOT NULL, team TEXT, name TEXT, email TEXT, freq TEXT, done TEXT, self_level TEXT, task TEXT, blocker TEXT, grp TEXT, created_at TIMESTAMP DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS team_ai_checks (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT, firm TEXT NOT NULL, team TEXT, name TEXT, email TEXT, freq TEXT, done TEXT, self_level TEXT, task TEXT, blocker TEXT, grp TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`
+  );
+}
+
 export async function ensureWorkshopLeads(): Promise<void> {
   await execDDL(
     `CREATE TABLE IF NOT EXISTS workshop_leads (id SERIAL PRIMARY KEY, name TEXT, email TEXT NOT NULL, company TEXT, team_size TEXT, goal TEXT, page TEXT, created_at TIMESTAMP DEFAULT NOW())`,

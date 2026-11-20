@@ -115,6 +115,7 @@ export default function App() {
             <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/calculator" element={<BottleneckCostCalculator />} />
             <Route path="/ai-check" element={<AiCheck />} />
+            <Route path="/team-check" element={<TeamCheck />} />
             <Route path="/team-check/:code" element={<TeamCheck />} />
             <Route path="/ai-tools" element={<AiToolComparison />} />
             <Route path="/resources" element={<Resources />} />

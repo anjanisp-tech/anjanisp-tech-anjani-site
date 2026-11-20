@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { TEAM_CHECKS } from '../data/teamChecks';
 
-// Team AI check (plan line D8, built 2026-11-20). One question per screen.
-// Private: noindex, not linked, not in the sitemap. Answers go to /api/team-check-response,
-// which also places each person in a group (Starting out, Regular, Builders).
+// Team AI check: a general form any business can send to its people (built 2026-11-20, made general the same day).
+// One question per screen. Not indexed, not linked. Answers go to /api/team-check-response, which saves them,
+// writes a row to the Google Sheet and places each person in a group (Starting out, Regular, Builders).
+// Optional: /team-check?firm=Acme fills in the firm name; /team-check/<code> uses a team list from data/teamChecks.ts.
 
 type Step =
   | { id: 'team'; kind: 'team'; q: string }
@@ -14,7 +15,7 @@ type Step =
   | { id: string; kind: 'text'; q: string; required: boolean; hint?: string };
 
 const STEPS: Step[] = [
-  { id: 'team', kind: 'team', q: 'Which team are you in?' },
+  { id: 'team', kind: 'team', q: 'About you' },
   { id: 'freq', kind: 'one', required: true, q: 'How often do you use an AI tool (Claude, ChatGPT, Copilot or similar) for work?',
     opts: ['Never, or tried once or twice', 'A few times a month', 'Every week', 'Every day'] },
   { id: 'done', kind: 'many', required: false, q: 'Which of these have you done with AI at work? Pick all that apply.',
@@ -33,7 +34,7 @@ const STEPS: Step[] = [
 const label = 'font-mono text-[11px] uppercase tracking-[0.14em] text-accent-light';
 const field = 'w-full px-4 py-3 rounded-sm border border-border focus:border-accent bg-white outline-none transition-all text-base';
 const LETTERS = 'ABCDEFG';
-const COVERS = ['Your team', 'How often you use AI', 'What you have done with it', 'Where you see yourself', 'The one task to start with', 'What holds you back'];
+const COVERS = ['Your firm and team', 'How often you use AI', 'What you have done with it', 'Where you see yourself', 'The one task to start with', 'What holds you back'];
 
 function Frame({ top, right, children }: { top: React.ReactNode; right?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -68,9 +69,11 @@ function Row({ k, on, onClick, children, box }: { k: string; on: boolean; onClic
 
 export default function TeamCheck() {
   const { code = '' } = useParams();
-  const cfg = TEAM_CHECKS[code.toLowerCase()];
+  const [params] = useSearchParams();
+  const cfg = TEAM_CHECKS[code.toLowerCase()] || { teams: [], open: true };
+  const firmFromLink = (params.get('firm') || '').slice(0, 120);
   const [i, setI] = useState(-1); // -1 = intro
-  const [a, setA] = useState<Record<string, any>>({ done: [] });
+  const [a, setA] = useState<Record<string, any>>({ done: [], firm: firmFromLink });
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
 
 
@@ -87,7 +90,7 @@ export default function TeamCheck() {
   const step = STEPS[i];
   const val = step ? a[step.id] : undefined;
   const ok = !step ? true
-    : step.kind === 'team' ? !!(val && String(val).trim())
+    : step.kind === 'team' ? !!(a.firm && String(a.firm).trim() && a.team && String(a.team).trim())
     : step.kind === 'many' ? true
     : (step as any).required ? !!(val && String(val).trim()) : true;
 
@@ -148,14 +151,27 @@ export default function TeamCheck() {
       <div className="h-[2px] bg-border w-full -mt-8 mb-10"><div className="h-[2px] bg-accent transition-all" style={{ width: `${((i + 1) / STEPS.length) * 100}%` }} /></div>
       <h2 className="text-3xl md:text-4xl mb-8">{step.q}</h2>
 
-      {step.kind === 'team' && (cfg.teams.length ? (
-        <div className="border border-border rounded-sm overflow-hidden">{cfg.teams.map((t, n) => (
-          <Row key={t} k={LETTERS[n] || String(n + 1)} on={a.team === t} onClick={() => setA({ ...a, team: t })}>{t}</Row>
-        ))}</div>
-      ) : (
-        <input autoFocus type="text" value={a.team || ''} onChange={e => setA({ ...a, team: e.target.value })}
-          onKeyDown={e => e.key === 'Enter' && next()} className={field} placeholder="Your team" />
-      ))}
+      {step.kind === 'team' && (
+        <div className="grid gap-5">
+          <label className="grid gap-2"><span className={label}>Your firm</span>
+            <input autoFocus={!a.firm} type="text" value={a.firm || ''} onChange={e => setA({ ...a, firm: e.target.value })} className={field} autoComplete="organization" /></label>
+          {cfg.teams.length ? (
+            <div className="grid gap-2"><span className={label}>Your team or department</span>
+              <div className="border border-border rounded-sm overflow-hidden">{cfg.teams.map((t, n) => (
+                <Row key={t} k={LETTERS[n] || String(n + 1)} on={a.team === t} onClick={() => setA({ ...a, team: t })}>{t}</Row>
+              ))}</div></div>
+          ) : (
+            <label className="grid gap-2"><span className={label}>Your team or department</span>
+              <input autoFocus={!!a.firm} type="text" value={a.team || ''} onChange={e => setA({ ...a, team: e.target.value })} className={field} placeholder="For example: Finance, Sales, Operations" /></label>
+          )}
+          <div className="grid md:grid-cols-2 gap-5">
+            <label className="grid gap-2"><span className={label}>Your name (optional)</span>
+              <input type="text" value={a.name || ''} onChange={e => setA({ ...a, name: e.target.value })} className={field} autoComplete="name" /></label>
+            <label className="grid gap-2"><span className={label}>Work email (optional)</span>
+              <input type="email" value={a.email || ''} onChange={e => setA({ ...a, email: e.target.value })} className={field} autoComplete="email" /></label>
+          </div>
+        </div>
+      )}
 
       {step.kind === 'one' && (
         <div className="border border-border rounded-sm overflow-hidden">{(step as any).opts.map((o: string, n: number) => (
