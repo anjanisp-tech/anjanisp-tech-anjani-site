@@ -36,12 +36,6 @@ Chapter 07 is the operating-in-public log.
 
 All prices are agreed on a call; none are published.
 
-- AI Setup Sprint: 2 to 3 one-on-one sessions that end with a working
-  Claude-based AI system for one person's work.
-- Personal OS Build Sprint: a done-with-you build of a personal AI
-  operating system over 4 to 6 weeks.
-- Personal OS Care: monthly upkeep of a live Personal OS, with one new or
-  upgraded subsystem each quarter.
 - AI talks and workshops for teams: a paid, hands-on session, in person
   or online. A conversation plus a guided build where each person makes a
   working AI helper on their own laptop, using practice data. Most recent:
@@ -49,6 +43,12 @@ All prices are agreed on a call; none are published.
 - AI Readiness Review: 2 to 3 weeks for a firm that wants a plan before
   it buys more AI tools. Picks the first jobs worth handing to AI and
   builds one of them.
+- AI Setup Sprint: 2 to 3 one-on-one sessions that end with a working
+  Claude-based AI system for one person's work.
+- Personal OS Build Sprint: a done-with-you build of a personal AI
+  operating system over 4 to 6 weeks.
+- Personal OS Care: monthly upkeep of a live Personal OS, with one new or
+  upgraded subsystem each quarter.
 - MetMov Safe AI Setup, then Diagnose, through MetMov (the firm Anjani
   founded): after a team workshop, MetMov sets up AI with safety controls
   for the whole firm. Diagnose takes 14 working days; the install after
@@ -59,6 +59,7 @@ All prices are agreed on a call; none are published.
 - [Home](https://www.anjanipandey.com/): The Field Manual, contents and latest essays
 - [About](https://www.anjanipandey.com/about): background, career and quick facts
 - [Services](https://www.anjanipandey.com/services): all offers above
+- [Which AI tool fits a small team](https://www.anjanipandey.com/ai-tools): Claude, ChatGPT, Gemini and Microsoft Copilot compared for small teams, with a checklist
 - [The OS](https://www.anjanipandey.com/os): the AI operating system behind Chapter 07, with numbers read from the live system
 - [Case studies](https://www.anjanipandey.com/case-studies)
 - [Resources](https://www.anjanipandey.com/resources)
@@ -73,4 +74,4 @@ All prices are agreed on a call; none are published.
 - Proof points use directional bands by policy; own-system numbers are
   counted from the live system and dated on the page.
 
-# Updated: 2026-10-22
+# Updated: 2026-11-21
