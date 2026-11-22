@@ -20,6 +20,7 @@ import TermsOfService from './pages/TermsOfService';
 import Sitemap from './pages/Sitemap';
 import BottleneckCostCalculator from './pages/BottleneckCostCalculator';
 import AiToolComparison from './pages/AiToolComparison';
+import AiTraining from './pages/AiTraining';
 import AiCheck from './pages/AiCheck';
 import Resources from './pages/Resources';
 import ResourceGuideDetail from './pages/ResourceGuideDetail';
@@ -123,6 +124,7 @@ function StaticApp() {
         <Route path="/sitemap" element={<Sitemap />} />
         <Route path="/calculator" element={<BottleneckCostCalculator />} />
         <Route path="/ai-tools" element={<AiToolComparison />} />
+        <Route path="/ai-training" element={<AiTraining />} />
         <Route path="/ai-check" element={<AiCheck />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/resources/:slug" element={<ResourceGuideDetail />} />

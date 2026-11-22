@@ -24,6 +24,7 @@ const BottleneckCostCalculator = lazy(() => import('./pages/BottleneckCostCalcul
 const AiCheck = lazy(() => import('./pages/AiCheck'));
 const TeamCheck = lazy(() => import('./pages/TeamCheck'));
 const AiToolComparison = lazy(() => import('./pages/AiToolComparison'));
+const AiTraining = lazy(() => import('./pages/AiTraining'));
 const Resources = lazy(() => import('./pages/Resources'));
 const ResourceGuideDetail = lazy(() => import('./pages/ResourceGuideDetail'));
 const About = lazy(() => import('./pages/About'));
@@ -118,6 +119,7 @@ export default function App() {
             <Route path="/team-check" element={<TeamCheck />} />
             <Route path="/team-check/:code" element={<TeamCheck />} />
             <Route path="/ai-tools" element={<AiToolComparison />} />
+            <Route path="/ai-training" element={<AiTraining />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/resources/:slug" element={<ResourceGuideDetail />} />
         {/* 2026-10-02: any other address gets a real not-found page. */}
