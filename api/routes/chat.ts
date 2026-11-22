@@ -241,6 +241,11 @@ router.post("/ai-check-lead", async (req, res) => {
       "INSERT INTO ai_check_leads (name, email, company, role, team_size, heard_from, first_wish, answers, score, band, weakest_part) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
       row
     );
+    // Also a row in the "AI check" tab of the team-check sheet, where the report script makes the report and the draft (D17, 2026-11-22).
+    const istNow = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false });
+    try {
+      await appendTeamCheckRow([istNow, row[0], email, row[2], row[3], row[4], row[5], row[6], row[7], score, band, row[10], "Not started"], "'AI check'!A:M");
+    } catch (e: any) { console.error("[AI CHECK SHEET ERROR]", e?.message || e); } // saved in the database anyway
     const { sendNotification } = await getUtils();
     await sendNotification(
       "New AI check",
@@ -260,7 +265,7 @@ router.post("/ai-check-lead", async (req, res) => {
 // What people have done counts more than how they rate themselves. No email alert (could be hundreds).
 const TEAM_CHECK_SHEET_ID = "1w_qEcGkSglRfiETWHkgSRBa2KrcwERxisZCSW7Lvx7w";
 const GROUP_NAMES: Record<string, string> = { A: "Starting out", B: "Regular", C: "Builders" };
-async function appendTeamCheckRow(values: any[]) {
+async function appendTeamCheckRow(values: any[], range = "A:N") {
   const { google } = await import("googleapis");
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || process.env.EMAIL;
   let key = (process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || process.env.KEY || "").replace(/\\n/g, "\n");
@@ -272,7 +277,7 @@ async function appendTeamCheckRow(values: any[]) {
   const auth = new google.auth.JWT({ email, key, scopes: ["https://www.googleapis.com/auth/spreadsheets"] });
   const sheets = google.sheets({ version: "v4", auth });
   await sheets.spreadsheets.values.append({
-    spreadsheetId: TEAM_CHECK_SHEET_ID, range: "A:N", valueInputOption: "RAW", insertDataOption: "INSERT_ROWS",
+    spreadsheetId: TEAM_CHECK_SHEET_ID, range, valueInputOption: "RAW", insertDataOption: "INSERT_ROWS",
     requestBody: { values: [values] },
   });
 }
