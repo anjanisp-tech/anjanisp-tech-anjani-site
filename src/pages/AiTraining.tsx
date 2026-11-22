@@ -65,6 +65,10 @@ export default function AiTraining() {
               Start with the free AI check. It has 11 short questions and gives the owner a score and the weakest area to work on:{' '}
               <Link to="/ai-check" className="font-bold text-accent underline underline-offset-4">AI check</Link>.
             </p>
+            <p className="text-accent-light mb-4">
+              To see where each person on the team stands before the workshop, send them the{' '}
+              <Link to="/team-check" className="font-bold text-accent underline underline-offset-4">team AI check</Link>. Each person answers five short questions, and I send you one report for the whole team with no names in it.
+            </p>
             <p className="text-accent-light mb-12">
               Then <Link to="/book" className="font-bold text-accent underline underline-offset-4">book a short call</Link> and tell me your company, your team size and what you want people to leave with. We agree the scope and the price on that call.
             </p>

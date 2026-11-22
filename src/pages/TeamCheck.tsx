@@ -41,7 +41,8 @@ function Frame({ top, right, children }: { top: React.ReactNode; right?: React.R
     <div className="bg-surface min-h-screen">
       <Helmet>
         <title>Team AI check | Anjani Pandey</title>
-        <meta name="robots" content="noindex, nofollow" />
+        <meta name="description" content="Five short questions for each person on your team. The answers show who is starting out, who uses AI every week and who already builds with it, so the workshop fits the team." />
+        <link rel="canonical" href="https://www.anjanipandey.com/team-check" />
       </Helmet>
       <section className="pt-28 md:pt-36 pb-16">
         <div className="container-custom max-w-[720px]">

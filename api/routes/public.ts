@@ -72,6 +72,8 @@ router.get("/sitemap.xml", async (req, res) => {
       { path: "/case-studies",                  changefreq: "weekly",  priority: "0.8" },
       { path: "/calculator",                    changefreq: "monthly", priority: "0.7" },
       { path: "/ai-check",                      changefreq: "monthly", priority: "0.8" },
+      // /team-check made public 2026-11-22 (Anjani's yes; automatic firm report is live).
+      { path: "/team-check",                    changefreq: "monthly", priority: "0.7" },
       { path: "/resources",                     changefreq: "weekly",  priority: "0.8" },
       { path: "/resources/ai-consulting-stack", changefreq: "monthly", priority: "0.8" },
       // /ai-tools added 2026-11-05 (growth plan 8A S17): live page, was missing from the sitemap.
