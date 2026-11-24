@@ -8,6 +8,7 @@
 // drawn title card. Never blank.
 
 export const HERO_IMAGES: ReadonlySet<string> = new Set([
+  'blog-culture-will-not-beat-structure',
   'blog-delegation-dies-at-the-first-mistake',
   'blog-devotion-is-a-schedule',
   'blog-every-agent-i-build-now-ships-with-a-list-of-what-it-must-not-do',
