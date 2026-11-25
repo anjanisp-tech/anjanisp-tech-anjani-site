@@ -84,7 +84,7 @@ export default function PostEnding({ chapter, compact = false }: { chapter: Chap
             </>
           ) : (
             <>
-              <Link to="/services#workshop-form" data-cta="workshop-form" onClick={door('primary')} className="btn-primary gap-2">
+              <Link to="/ai-training#workshop-form" data-cta="workshop-form" onClick={door('primary')} className="btn-primary gap-2">
                 Ask about a team workshop <ArrowRight size={16} />
               </Link>
               <Link to="/services" onClick={door('services')} className="btn-outline">Compare all three offers</Link>

@@ -167,7 +167,7 @@ export default function AiCheck() {
                 <a href={FIT_CALL_URL} target="_blank" rel="noopener noreferrer" data-cta="ai-check-call" className="btn-primary gap-2">
                   Book a call <ArrowRight size={18} />
                 </a>
-                <Link to="/services#workshop-form" data-cta="workshop-form" className="btn-outline">See the team workshop</Link>
+                <Link to="/ai-training#workshop-form" data-cta="workshop-form" className="btn-outline">See the team workshop</Link>
               </div>
             </div>
           </div>

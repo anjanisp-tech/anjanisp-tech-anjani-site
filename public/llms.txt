@@ -40,6 +40,7 @@ All prices are agreed on a call; none are published.
   or online. A conversation plus a guided build where each person makes a
   working AI helper on their own laptop, using practice data. Most recent:
   GO DESi, Bengaluru, 9 October 2026.
+  Details and enquiry form: https://www.anjanipandey.com/ai-training
 - AI Readiness Review: 2 to 3 weeks for a firm that wants a plan before
   it buys more AI tools. Picks the first jobs worth handing to AI and
   builds one of them.
@@ -59,6 +60,7 @@ All prices are agreed on a call; none are published.
 - [Home](https://www.anjanipandey.com/): The Field Manual, contents and latest essays
 - [About](https://www.anjanipandey.com/about): background, career and quick facts
 - [Services](https://www.anjanipandey.com/services): all offers above
+- [AI training for teams](https://www.anjanipandey.com/ai-training): the team AI workshop, what people leave with, and how to start
 - [Which AI tool fits a small team](https://www.anjanipandey.com/ai-tools): Claude, ChatGPT, Gemini and Microsoft Copilot compared for small teams, with a checklist
 - [The OS](https://www.anjanipandey.com/os): the AI operating system behind Chapter 07, with numbers read from the live system
 - [Case studies](https://www.anjanipandey.com/case-studies)

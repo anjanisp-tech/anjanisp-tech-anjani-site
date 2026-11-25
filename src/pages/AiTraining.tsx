@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import WorkshopForm from '../components/WorkshopForm';
 
 // Search page S23 (growth plan 8A), copy approved by Anjani 2026-11-22.
 // Text is the approved draft word for word: _drafts\growth_week_2026-11-21\S23_ai_training_page_anjanipandey_DRAFT_2026-11-21.md
@@ -72,6 +73,11 @@ export default function AiTraining() {
             <p className="text-accent-light mb-12">
               Then <Link to="/book" className="font-bold text-accent underline underline-offset-4">book a short call</Link> and tell me your company, your team size and what you want people to leave with. We agree the scope and the price on that call.
             </p>
+
+            {/* Workshop enquiry form added 2026-11-26 so the 'Ask about a team workshop' buttons can land here. Approved copy above is unchanged. */}
+            <div className="mb-12">
+              <WorkshopForm />
+            </div>
 
             <h2 className="text-2xl font-bold text-accent mb-4">After the workshop</h2>
             <p className="text-accent-light">

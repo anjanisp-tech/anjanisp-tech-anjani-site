@@ -81,7 +81,7 @@ export default function Home() {
                   <p className="text-sm">Chapter 07, then the AI Setup Sprint.</p>
                 </div>
               </div>
-              <Link to="/services#workshop-form" data-cta="workshop-form" className="btn-primary justify-self-start gap-2">
+              <Link to="/ai-training#workshop-form" data-cta="workshop-form" className="btn-primary justify-self-start gap-2">
                 Ask about a team workshop <ArrowRight size={16} />
               </Link>
               <Link to="/ai-check" data-cta="ai-check" className="text-sm font-bold text-primary inline-flex items-center gap-1">
