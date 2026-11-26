@@ -5,8 +5,8 @@
  * Never add a price that was not read on a maker page that day; write "not checked" instead.
  */
 
-export const LAST_CHECKED = '2026-10-29';
-export const LAST_CHECKED_LABEL = '29 October 2026';
+export const LAST_CHECKED = '2026-11-26';
+export const LAST_CHECKED_LABEL = '26 November 2026';
 
 export interface PriceRow {
   tool: string;
@@ -24,9 +24,9 @@ export const priceRows: PriceRow[] = [
   { tool: 'ChatGPT', plan: 'Business, standard seat', usdYearly: '20', usdMonthly: '25', inr: 'Not shown in rupees on maker page', seats: '2 or more' },
   { tool: 'ChatGPT', plan: 'Business, premium seat', usdYearly: '100', usdMonthly: '125', inr: 'Not shown in rupees on maker page', seats: '2 or more' },
   { tool: 'ChatGPT', plan: 'Enterprise', usdYearly: 'Contact sales', usdMonthly: 'Contact sales', inr: 'Contact sales', seats: 'Not stated' },
-  { tool: 'Gemini', plan: 'Workspace Business Starter', usdYearly: '7', usdMonthly: '8.40', inr: '270 yearly', seats: 'Up to 300' },
-  { tool: 'Gemini', plan: 'Workspace Business Standard', usdYearly: '14', usdMonthly: '16.80', inr: '1,080 yearly (864 on offer)', seats: 'Up to 300' },
-  { tool: 'Gemini', plan: 'Workspace Business Plus', usdYearly: '22', usdMonthly: '26.40', inr: 'Plan not shown on India page', seats: 'Up to 300' },
+  { tool: 'Gemini', plan: 'Workspace Business Starter', usdYearly: 'Not checked', usdMonthly: 'Not checked', inr: '270 yearly', seats: 'Up to 300' },
+  { tool: 'Gemini', plan: 'Workspace Business Standard', usdYearly: 'Not checked', usdMonthly: 'Not checked', inr: '1,080 yearly (864 on offer)', seats: 'Up to 300' },
+  { tool: 'Gemini', plan: 'Workspace Business Plus', usdYearly: 'Not checked', usdMonthly: 'Not checked', inr: 'Plan not shown on India page', seats: 'Up to 300' },
   { tool: 'Microsoft Copilot', plan: 'Copilot Business add-on', usdYearly: '18 (first-year offer, normally 21)', usdMonthly: '25.20', inr: '1,495.73 yearly offer (normally 1,745), 2,094 monthly', seats: 'Not stated' },
   { tool: 'Microsoft Copilot', plan: 'Business Standard with Copilot', usdYearly: '23.50', usdMonthly: '28.20', inr: '1,955 yearly, 2,346 monthly', seats: 'Up to 300' },
   { tool: 'Microsoft Copilot', plan: 'Business Premium with Copilot', usdYearly: '32', usdMonthly: '38.40', inr: '2,660 yearly, 3,192 monthly', seats: 'Up to 300' },
@@ -38,6 +38,7 @@ export const priceNotes: string[] = [
   "Google's India page shows rupees. The Claude and ChatGPT pages showed US dollars only, so their rupee price is whatever the checkout shows.",
   "Google's price covers the whole Workspace suite, so a firm already on Workspace isn't paying twice.",
   "Microsoft's add-on offer runs until 31 December 2026, for firms that already have an eligible Microsoft 365 Business plan.",
+  "Google's dollar prices weren't checked this month. Its page only showed local currency from India, so those cells say not checked.",
 ];
 
 /** One paragraph on data rules for business plans. */
@@ -59,6 +60,6 @@ export const sources: Source[] = [
   { label: 'ChatGPT Business premium seats', url: 'https://openai.com/index/premium-seats-chatgpt-business' },
   { label: 'Google Workspace pricing', url: 'https://workspace.google.com/pricing' },
   { label: 'Google Workspace pricing, India', url: 'https://workspace.google.com/pricing?hl=en_in' },
-  { label: 'Microsoft 365 Copilot Business', url: 'https://www.microsoft.com/en-us/microsoft-365/copilot/business' },
-  { label: 'Microsoft 365 Copilot pricing, India', url: 'https://www.microsoft.com/en-in/microsoft-365-copilot/pricing' },
+  { label: 'Microsoft 365 Copilot pricing', url: 'https://www.microsoft.com/en-us/copilot/pricing/business' },
+  { label: 'Microsoft 365 Copilot pricing, India', url: 'https://www.microsoft.com/en-in/copilot/pricing/business' },
 ];
