@@ -16,6 +16,7 @@ export const HERO_IMAGES: ReadonlySet<string> = new Set([
   'blog-good-execution-kept-me-from-choosing',
   'blog-how-a-small-firm-can-start-with-ai-safely',
   'blog-i-nearly-turned-away-the-right-client',
+  'blog-measure-growth-by-what-you-stop-doing',
   'blog-operator-to-builder-my-own-report-lied',
   'blog-the-loyalty-tax-on-a-growing-company',
   'blog-the-question-nobody-asked-me-at-year-five',
